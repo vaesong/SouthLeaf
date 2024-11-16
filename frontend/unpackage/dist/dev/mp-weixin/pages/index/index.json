@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "首页",
-  "usingComponents": {}
+  "usingComponents": {
+    "footer-info": "../../components/FooterInfo/FooterInfo"
+  }
 }

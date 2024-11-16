@@ -1,4 +1,201 @@
+.works-page.data-v-2475a018 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 15rpx; 
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
 
-.container {
-	padding: 20rpx;
+/* 顶部栏样式 */
+.top-bar.data-v-2475a018 {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  background-color: #fff;
+  overflow: hidden;
+}
+.category-bar.data-v-2475a018 {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 20rpx 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+.category-item.data-v-2475a018 {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 30rpx;
+  font-size: 28rpx;
+  color: #333;
+  cursor: pointer;
+  padding-bottom: 10rpx;
+  position: relative;
+}
+.category-item .underline.data-v-2475a018 {
+  width: 100%;
+  height: 4rpx;
+  background-color: transparent;
+  transition: background-color 0.3s;
+  position: absolute;
+  bottom: 0;
+}
+.category-item.active .underline.data-v-2475a018 {
+  background-color: #1e90ff;
+}
+.category-item.active.data-v-2475a018 {
+  color: #1e90ff;
+}
+.search-icon.data-v-2475a018 {
+  width: 40rpx; /* 图标宽度 */
+  height: 40rpx; /* 图标高度 */
+  margin-left: 20rpx;
+  cursor: pointer; /* 鼠标悬停变为指针 */
+}
+.toggle-layout-btn-container.data-v-2475a018 {
+  display: flex;
+  justify-content: flex-end; /* 将组件放置在右侧 */
+  align-items: center;
+  margin-left: 40rpx;
+}
+
+/* 网格布局 */
+.works-content.grid-layout.data-v-2475a018 {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 10rpx; /* 设置图片间隔 */
+}
+.work-item.grid-layout.data-v-2475a018 {
+  width: 49%; /* 每个项目占宽度的 48%，留出间隔 */
+  margin-bottom: 10rpx; /* 底部间隔 */
+}
+
+/* 网格布局下的 .work-image 样式 */
+.works-content.grid-layout .work-image.data-v-2475a018 {
+  width: 100%;
+  height: 500rpx;
+  /* aspect-ratio: 16/9;  */
+  object-fit: cover; /* 保持图片比例填充 */
+}
+
+/* 通用样式，让每个 text 元素单独占一行 */
+.work-info text.data-v-2475a018 {
+  display: block;
+  margin-bottom: 10rpx; /* 控制每行之间的间距 */
+}
+
+/* 网格布局的文本信息样式 */
+.works-content.grid-layout .work-info.data-v-2475a018 {
+  text-align: left; /* 靠左对齐 */
+}
+.works-content.grid-layout .work-title.data-v-2475a018 {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap; /* 不换行 */
+  overflow: hidden; /* 超出部分隐藏 */
+  text-overflow: ellipsis; /* 使用省略号 */
+  margin-bottom: 20rpx;
+}
+.works-content.grid-layout .work-category.data-v-2475a018 {
+  font-size: 22rpx;
+  color: #666;
+}
+
+/* 列表布局 */
+.works-content.list-layout.data-v-2475a018 {
+  display: block;
+  width: 100%;
+}
+.work-item.list-layout.data-v-2475a018 {
+  width: 100%; /* 占据整个宽度 */
+  margin-bottom: 100rpx;
+}
+
+/* 列表布局下的 .work-image 样式 */
+.works-content.list-layout .work-image.data-v-2475a018 {
+  width: 100%;
+  height: 600rpx; /* 适合列表布局的高度 */
+  object-fit: cover; /* 保持图片比例填充 */
+}
+
+/* 列表布局的文本信息样式 */
+.works-content.list-layout .work-info.data-v-2475a018 {
+  text-align: center; /* 居中对齐 */
+}
+.works-content.list-layout .work-title.data-v-2475a018 {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8rpx;
+}
+.works-content.list-layout .work-category.data-v-2475a018 {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+.works-content.list-layout .work-description.data-v-2475a018 {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.4;
+  margin-top: 25rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 限制描述文本显示两行 */
+  -webkit-box-orient: vertical;
+}
+.all-categories-view.data-v-2475a018 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  gap: 5rpx;
+}
+.category-preview.data-v-2475a018 {
+  position: relative;
+  width: 49.5%; /* 每行显示两个项目 */
+  height: 650rpx;
+  overflow: hidden;
+  cursor: pointer;
+}
+.category-icon.data-v-2475a018 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.overlay.data-v-2475a018 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 10rpx;
+}
+.category-name.data-v-2475a018 {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 10rpx;
+}
+.category-desc.data-v-2475a018 {
+  font-size: 24rpx;
 }

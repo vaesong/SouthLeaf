@@ -1,5 +1,10 @@
 <script>
 	export default {
+		data() {
+			return {
+				selectedCategory: null // 用于存储传递的 category 参数
+			};
+		},
 		onLaunch: function() {
 			console.log('App Launch')
 		},

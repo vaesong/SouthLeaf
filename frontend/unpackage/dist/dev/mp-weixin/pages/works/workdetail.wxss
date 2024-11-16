@@ -1,0 +1,88 @@
+.detail-page.data-v-33468508 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 15rpx;
+  box-sizing: border-box;
+}
+
+/* 顶部静态大图 */
+.image-container.data-v-33468508 {
+  width: 100%;
+  height: 1000rpx;
+}
+.detail-image.data-v-33468508 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 标题和布局切换按钮 */
+.detail-header.data-v-33468508 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 50rpx;
+  padding: 0 15rpx;
+}
+.work-title.data-v-33468508 {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 分类标签样式 */
+.work-category.data-v-33468508 {
+  background-color: #e0e0e0;
+  color: #8c8b8b;
+  font-size: 22rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
+  margin-top: 25rpx;
+  text-align: left;
+  align-self: flex-start;
+}
+
+/* 描述样式 */
+.detail-description.data-v-33468508 {
+  margin-top: 40rpx;
+  padding: 0 10rpx;
+  text-align: center;
+}
+.description-text.data-v-33468508 {
+  font-size: 24rpx;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* 通用的图片展示区域样式 */
+.image-gallery.data-v-33468508 {
+  margin-top: 60rpx;
+  width: 100%;
+  display: grid; /* 默认使用 grid 布局 */
+  gap: 10rpx; /* 设置图片之间的间距 */
+}
+
+/* 网格布局样式 */
+.image-gallery.grid-layout.data-v-33468508 {
+  grid-template-columns: repeat(2, 1fr); /* 固定为两列布局 */
+}
+
+/* 图片项的样式 */
+.grid-layout .gallery-image.data-v-33468508 {
+  margin-top: -5rpx;
+  width: 100%; /* 图片宽度占满网格单元格 */
+  border-radius: 10rpx;
+  object-fit: cover; /* 保持图片比例填充 */
+}
+
+/* 列表布局样式 */
+.image-gallery.list-layout.data-v-33468508 {
+  display: block; /* 列表布局采用 block 显示 */
+}
+.list-layout .gallery-image.data-v-33468508 {
+  width: 100%; /* 列表布局下，图片宽度占满整个容器 */
+  height: auto; /* 自动调整高度，按比例显示 */
+}

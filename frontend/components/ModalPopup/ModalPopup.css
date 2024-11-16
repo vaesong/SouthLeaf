@@ -1,0 +1,78 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  height: 50%; /* 设置为屏幕高度的 1/3 */
+  max-height: 50vh; /* 允许内容在更小的屏幕上自适应 */
+  background-color: #fff;
+  border-radius: 10px 10px 0 0; /* 顶部圆角 */
+  padding: 20px;
+  box-sizing: border-box;
+  animation: slide-up 0.3s ease-out;
+  overflow-y: auto; /* 如果内容超出，则出现滚动条 */
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  /* align-items: center; */
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.modal-image {
+  margin-top: 20px;
+  width: 180px;
+  height: 180px;
+  z-index: 1001;
+}
+
+.modal-text {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #666;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  color: #999;
+  line-height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

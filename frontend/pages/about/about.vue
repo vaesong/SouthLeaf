@@ -17,193 +17,138 @@
           我们力求每一次拍摄都能深刻反映客户的情感与故事，让每一张照片都成为独一无二的艺术品，珍藏永恒的美好回忆。
         </view>
         <text class="quote right-quote">”</text> <!-- 右引号 -->
-        <text class="link" @click="openWebsite">http://www.cangvision.com</text>
       </view>
 
       <!-- 四个功能按钮区域 -->
       <view class="button-group">
-        <button class="icon-button" @click="makePhoneCall">电话</button>
-        <button class="icon-button" @click="openWeChat">微信</button>
-        <button class="icon-button" @click="openLocation">地址</button>
-        <button class="icon-button" @click="openCalendar">日历</button>
+        <span class="icon-button" @click="makePhoneCall">
+          <image src="/static/icons/dianhua.png" mode="aspectFit" class="icon-image"></image>
+        </span>
+        <span class="icon-button" @click="openWeChat">
+          <image src="/static/icons/weixin2.png" mode="aspectFit" class="icon-image"></image>
+        </span>
+        <span class="icon-button" @click="openMap">
+          <image src="/static/icons/ditu.png" mode="aspectFit" class="icon-image"></image>
+        </span>
+        <span class="icon-button" @click="openCalendar">
+          <image src="/static/icons/rili.png" mode="aspectFit" class="icon-image"></image>
+        </span>
       </view>
   
       <!-- 在线预约按钮，靠近底部 -->
       <button class="reserve-button" @click="makeReservation">在线预约</button>
+
+      <!-- 团队成员标题 -->
+    <view class="team-section">
+      <text class="team-title">团队成员</text>
+      <text class="team-subtitle">Team</text>
     </view>
+
+    <!-- 团队成员列表 -->
+    <view class="member-list">
+      <view v-for="(member, index) in teamMembers" :key="index" 
+            :class="['member', { 'member-reverse': index % 2 === 1 }]">
+        <image :src="member.avatar" class="member-avatar" mode="widthFix"></image>
+        <view class="member-info">
+          <text class="member-name">{{ member.name }}</text>
+          <text class="member-title">{{ member.title }}</text>
+          <text class="member-description">{{ member.description }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 自定义弹出层 -->
+    <ModalPopup
+      v-if="showWeChat"
+      :isVisible="showWeChat"
+      title="枝南影像"
+      imageSrc="/static/info/wechat.png"
+      description="长按添加微信"
+      @close="showWeChat = false"
+    />
+
+    <!-- 底部信息区域 -->
+    <FooterInfo />
+  </view>
 </template>
 
 <script>
+  import FooterInfo from '@/components/FooterInfo/FooterInfo.vue'
+  import ModalPopup from "@/components/ModalPopup/ModalPopup.vue";
+
   export default {
+    components: {
+      FooterInfo,
+      ModalPopup
+    },
+    data() {
+      return {
+        showWeChat: false, // 控制弹出层的显示
+
+        teamMembers: [
+          {
+            name: '风言雾语',
+            title: '摄影师',
+            description: '枝南影像创始人，从业11年，千余场世界各地婚礼摄影经验，中国婚礼摄影奖项获得者',
+            avatar: '/static/about/member1.png'
+          },
+          {
+            name: '一方',
+            title: '妆造师',
+            description: '擅长捕捉婚礼中的动人瞬间，以其独特的视角和深厚的摄影功底受到客户一致好评',
+            avatar: '/static/about/member2.png'
+          },
+          // 更多成员信息...
+        ]
+      };
+    },
     methods: {
-      openWebsite() {
-        uni.navigateTo({
-          url: 'http://www.cangvision.com'
-        });
-      },
       makePhoneCall() {
         uni.makePhoneCall({
           phoneNumber: '18365519973'
         });
       },
       openWeChat() {
-        uni.showModal({
-          title: '添加微信',
-          content: '请添加微信号：your_wechat_id',
-          showCancel: true, // 显示取消按钮
-          confirmText: '复制微信号',
-          success: (res) => {
-            if (res.confirm) {
-              // 用户点击了确认，可以执行复制操作
-              uni.setClipboardData({
-                data: 'your_wechat_id',
-                success: () => {
-                  uni.showToast({
-                    title: '微信号已复制',
-                    icon: 'success'
-                  });
-                }
-              });
-            }
-          }
-        });
+        this.showWeChat = true; // 显示自定义弹出层
       },
-      openCalendar() {
-        uni.showDatePicker({
-          success: (res) => {
-            uni.showToast({
-              title: `选择的日期是：${res.date}`,
-              icon: 'none'
-            });
+      closeWeChat() {
+        this.showWeChat = false; // 隐藏自定义弹出层
+      },
+      openMap() {
+        uni.openLocation({
+          latitude: 22.732733,         // 替换为你的目标纬度
+          longitude: 114.137469,       // 替换为你的目标经度
+          name: "枝南影像",         // 地点名称
+          address: "广东省东莞市凤岗镇保利百合花园", // 详细地址
+          scale: 18,                // 地图缩放级别，范围5-18，默认18
+          success: () => {
+            console.log("地图打开成功");
           },
-          fail: () => {
-            uni.showToast({
-              title: '未选择日期',
-              icon: 'none'
-            });
+          fail: (err) => {
+            console.error("地图打开失败", err);
           }
         });
       },
       openCalendar() {
-        console.log('日历按钮被点击');
+        uni.showToast({
+          title: '开发中，敬请期待( •̀ .̫ •́ )✧', // 显示的提示内容
+          icon: 'none',        // 不使用图标
+          duration: 1000       // 显示时长，单位为毫秒（2秒后消失）
+        });
       },
       makeReservation() {
-        uni.navigateTo({
-          url: '/pages/reservation/reservation'
+        uni.showToast({
+          title: '开发中，敬请期待( •̀ .̫ •́ )✧', // 显示的提示内容
+          icon: 'none',        // 不使用图标
+          duration: 1000       // 显示时长，单位为毫秒（2秒后消失）
         });
       }
     }
   };
 </script>
+
   
 <style scoped>
-  .about-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  
-  /* Logo和三行文字区域 */
-  .logo-section {
-    text-align: center;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* 确保内容水平居中 */
-  }
-
- .logo {
-  width: 80px;         /* 宽度 */
-  height: 80px;        /* 高度 */
-  border-radius: 50%;  /* 圆形效果 */
-  margin-bottom: 10px;
-  display: block;      /* 确保图片居中时不受其他元素影响 */
-}
-
-
-  .title, .tagline, .location {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 5px;
-  }
-  
-  /* 公司简介区域，增加高度和间距 */
-  .description-section {
-    position: relative; /* 使引号定位相对于该容器 */
-    background-color: #f0f0f0;
-    padding: 30px;
-    margin-top: 20px;
-    width: 100%;
-    text-align: center;
-    border-radius: 5px;
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 120px;
-  }
-
-  .quote {
-    position: absolute; /* 使引号绝对定位 */
-    font-size: 50px; /* 调整引号大小 */
-    color: #aaa; /* 引号颜色 */
-  }
-
-  .left-quote {
-    top: -10px; /* 调整左引号位置 */
-    left: -10px; /* 调整左引号位置 */
-  }
-
-  .right-quote {
-    bottom: -30px; /* 调整右引号位置 */
-    right: -10px; /* 调整右引号位置 */
-  }
-
-  .description-text {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #333;
-    white-space: normal;
-    word-break: break-word;
-    text-align: left;
-    margin-bottom: 10px; /* 段落之间的间距 */
-  }
-
-  /* 链接样式 */
-  .link {
-    color: #1e90ff;
-    display: block;
-    margin-top: 10px;
-  }
-  
-  /* 功能按钮区域 */
-  .button-group {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-  .icon-button {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-  
-  /* 在线预约按钮 */
-  .reserve-button {
-    background-color: #66cc99;
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border-radius: 5px;
-    width: 80%;
-    text-align: center;
-    margin-bottom: 30px;
-  }
+  @import url("about.css")
 </style>
   

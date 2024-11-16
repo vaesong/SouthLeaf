@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "套系",
-  "usingComponents": {}
+  "usingComponents": {
+    "footer-info": "../../components/FooterInfo/FooterInfo"
+  }
 }

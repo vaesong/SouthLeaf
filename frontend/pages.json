@@ -13,6 +13,12 @@
 			}
 		},
 		{
+      "path": "pages/works/workdetail",
+      "style": {
+        "navigationBarTitleText": "作品详情"
+      }
+    },
+		{
 			"path": "pages/package/package",
 			"style": {
 				"navigationBarTitleText": "套系"
@@ -43,23 +49,33 @@
 		"backgroundColor": "#ffffff",
 		"list": [{
 				"pagePath": "pages/index/index",
-				"text": "首页"
+				"text": "首页",
+				"iconPath": "/static/icons/index.png",
+				"selectedIconPath": "/static/icons/index-active.png"
 			},
 			{
 				"pagePath": "pages/works/works",
-				"text": "作品"
+				"text": "作品",
+				"iconPath": "/static/icons/works.png",
+				"selectedIconPath": "/static/icons/works-active.png"
 			},
 			{
 				"pagePath": "pages/package/package",
-				"text": "套系"
+				"text": "套系",
+				"iconPath": "/static/icons/package.png",
+				"selectedIconPath": "/static/icons/package-active.png"
 			},
 			{
 				"pagePath": "pages/about/about",
-				"text": "关于"
+				"text": "关于",
+				"iconPath": "/static/icons/about.png",
+				"selectedIconPath": "/static/icons/about-active.png"
 			},
 			{
 				"pagePath": "pages/my/my",
-				"text": "我的"
+				"text": "我的",
+				"iconPath": "/static/icons/my.png",
+				"selectedIconPath": "/static/icons/my-active.png"
 			}
 		]
 	}

@@ -1,0 +1,84 @@
+.footer-info.data-v-c361fd8b {
+  position: relative; /* 确保 .footer-overlay 相对于 .footer-info 定位 */
+  display: flex;
+  flex-direction: column;
+  margin-top: 80rpx;
+  width: 100vw;
+  height: 450rpx; /* 设置固定高度 */
+  overflow: hidden; /* 确保内容不超出容器 */
+}
+.footer-background.data-v-c361fd8b {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 确保图片覆盖整个容器 */
+  z-index: 0; /* 背景图片在最底层 */
+}
+.footer-overlay.data-v-c361fd8b {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20rpx;
+  box-sizing: border-box;
+  z-index: 1; /* 确保覆盖层在图片之上 */
+}
+.contact-info-group.data-v-c361fd8b {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 30rpx;
+  padding: 0 20rpx;
+  margin-bottom: 20rpx; /* 与下方内容的间距 */
+}
+.contact-info.data-v-c361fd8b {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.557);
+  margin: 16rpx 0;
+  text-align: left; /* 居中对齐 */
+  display: inline;
+}
+.link.data-v-c361fd8b {
+  color: #1e8fff92;
+  text-decoration: underline;
+  display: inline;
+}
+.icon-buttons.data-v-c361fd8b {
+  display: flex;
+  justify-content: left;
+  padding: 0 20rpx;
+  margin-top: 10rpx;
+}
+.icon-button.data-v-c361fd8b {
+  background-color: transparent; /* 移除背景色 */
+  border: 1px solid rgba(155, 151, 151, 0.518); /* 设置边框 */
+  padding: 10rpx;
+  margin: 0 0rpx;
+  width: 60rpx;
+  height: 60rpx;
+  margin-right: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.footer-brand.data-v-c361fd8b {
+  margin-top: 40rpx;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #685da7;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 居中对齐 */
+}
+.footer-version.data-v-c361fd8b {
+  font-size: 20rpx;
+  color: #685da7;
+  margin-top: 10rpx;
+}

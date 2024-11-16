@@ -1,19 +1,30 @@
 <template>
-	<view class="container">
-		<text>test 套系</text>
+	<view class="package-page">
+		<text>test --- 套系</text>
+		<!-- 底部信息区域 -->
+		<FooterInfo />
 	</view>
 </template>
 
 <script>
+import FooterInfo from '@/components/FooterInfo/FooterInfo.vue'
+import ModalPopup from "@/components/ModalPopup/ModalPopup.vue";
+
 export default {
+	components: {
+		FooterInfo,
+		ModalPopup
+	},
 	data() {
-		return {}
+		return {
+		};
+	},
+	methods: {
 	}
-}
+};
 </script>
 
-<style>
-.container {
-	padding: 20rpx;
-}
+
+<style scoped>
+@import url("package.css")
 </style>
