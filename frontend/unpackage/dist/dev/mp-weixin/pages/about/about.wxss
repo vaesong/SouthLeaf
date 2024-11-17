@@ -3,7 +3,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 0 15px;
+    padding: 0 15rpx;
     box-sizing: border-box;
     overflow-x: hidden;
 }
@@ -11,75 +11,75 @@
   /* Logo和三行文字区域 */
 .logo-section.data-v-13a78ac6 {
     text-align: center;
-    margin-top: 60px;
+    margin-top: 120rpx;
     display: flex;
     flex-direction: column;
     align-items: center; /* 确保内容水平居中 */
 }
 .logo.data-v-13a78ac6 {
-    width: 80px;         /* 宽度 */
-    height: 80px;        /* 高度 */
+    width: 150rpx;         /* 宽度 */
+    height: 150rpx;        /* 高度 */
     border-radius: 50%;  /* 圆形效果 */
-    margin-bottom: 10px;
+    margin-bottom: 40rpx;
     display: block;      /* 确保图片居中时不受其他元素影响 */
 }
 .title.data-v-13a78ac6 {
-    font-size: 15px;
+    font-size: 30rpx;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 20rpx;
 }
 .tagline.data-v-13a78ac6 {
-    font-size: 12px;
+    font-size: 24rpx;
     color: #e8b23d;
-    margin-bottom: 10px;
+    margin-bottom: 20rpx;
 }
 .location.data-v-13a78ac6 {
-    font-size: 11px;
+    font-size: 22rpx;
     color: #999;
-    margin-bottom: 10px;
+    margin-bottom: 15rpx;
 }
   
   /* 公司简介区域，增加高度和间距 */
 .description-section.data-v-13a78ac6 {
     position: relative; /* 使引号定位相对于该容器 */
     background-color: #f0f0f0;
-    padding: 30px;
-    margin-top: 40px;
-    width: 100%;
+    padding: 60rpx;
+    margin-top: 80rpx;
+    width: 90%;
     text-align: center;
-    border-radius: 5px;
-    font-size: 14px;
+    border-radius: 10rpx;
+    font-size: 28rpx;
     line-height: 1.5;
-    min-height: 120px;
+    min-height: 240rpx;
 }
 .quote.data-v-13a78ac6 {
     position: absolute; /* 使引号绝对定位 */
-    font-size: 50px; /* 调整引号大小 */
+    font-size: 100rpx; /* 调整引号大小 */
     color: #aaa; /* 引号颜色 */
 }
 .left-quote.data-v-13a78ac6 {
-    top: -10px; /* 调整左引号位置 */
-    left: -10px; /* 调整左引号位置 */
+    top: -20rpx; /* 调整左引号位置 */
+    left: -20rpx; /* 调整左引号位置 */
 }
 .right-quote.data-v-13a78ac6 {
-    bottom: -30px; /* 调整右引号位置 */
-    right: -10px; /* 调整右引号位置 */
+    bottom: -60rpx; /* 调整右引号位置 */
+    right: -20rpx; /* 调整右引号位置 */
 }
 .description-text.data-v-13a78ac6 {
-    font-size: 14px;
+    font-size: 28rpx;
     line-height: 1.5;
     color: #333;
     white-space: normal;
     word-break: break-word;
     text-align: left;
-    margin-bottom: 10px; /* 段落之间的间距 */
+    margin-bottom: 20rpx; /* 段落之间的间距 */
 }
   
   /* 链接样式 */
 .link.data-v-13a78ac6 {
     color: #1e90ff;
     display: block;
-    margin-top: 10px;
+    margin-top: 20rpx;
 }
   
   /* 功能按钮区域 */
@@ -87,21 +87,21 @@
     display: flex;
     justify-content: space-around;
     width: 70%;
-    margin-top: 45px;
-    margin-bottom: 45px;
+    margin-top: 90rpx;
+    margin-bottom: 100rpx;
 }
 .icon-button.data-v-13a78ac6 {
     background-color: transparent;
     /* border: 1px solid rgba(255, 255, 255, 0.559); */
-    padding: 6px;
-    width: 30px;
-    height: 30px;
+    padding: 12rpx;
+    width: 60rpx;
+    height: 60rpx;
     border-radius: 50%;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0rpx 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 .icon-image.data-v-13a78ac6 {
     width: 65%;
@@ -114,12 +114,12 @@
 .reserve-button.data-v-13a78ac6 {
     background-color: #66cc99;
     color: white;
-    font-size: 14px;
+    font-size: 28rpx;
     /* padding: 5px 10px; */
-    border-radius: 5px;
-    width: 100px;
+    border-radius: 10rpx;
+    width: 200rpx;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 60rpx;
 }
   
   /* 团队部分整体样式 */
@@ -127,16 +127,16 @@
     display: flex;
     flex-direction: column; /* 垂直排列子元素 */
     text-align: center;
-    margin-top: 50px;
+    margin-top: 100rpx;
 }
 .team-title.data-v-13a78ac6 {
-    font-size: 18px;
+    font-size: 36rpx;
     font-weight: bold;
     color: #333;
-    margin-bottom: 5px;
+    margin-bottom: 10rpx;
 }
 .team-subtitle.data-v-13a78ac6 {
-    font-size: 14px;
+    font-size: 28rpx;
     color: #999;
 }
   
@@ -145,7 +145,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 100rpx;
     width: 100%;
 }
   
@@ -154,12 +154,12 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    width: 100%;
-    padding: 5px;
-    margin-bottom: 15px;
-    background-color: #f9f9f9f3;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0);
+    width: 98%;
+    padding: 10rpx;
+    margin-bottom: 30rpx;
+    background-color: #f0efefa9;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0);
 }
   
   /* 左右交替排列：偶数项从左到右，奇数项从右到左 */
@@ -169,13 +169,13 @@
   
   /* 成员头像样式 */
 .member-avatar.data-v-13a78ac6 {
-    width: 130px;
-    height: 130px;
+    width: 260rpx;
+    height: 260rpx;
     border-radius: 50%;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-top: 20rpx;
+    margin-bottom: 20rpx;
+    margin-left: 20rpx;
+    margin-right: 20rpx;
     object-fit: cover;
 }
   
@@ -183,27 +183,27 @@
 .member-info.data-v-13a78ac6 {
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
+    margin-top: 20rpx;
 }
   
   /* 姓名 */
 .member-name.data-v-13a78ac6 {
-    font-size: 15px;
+    font-size: 30rpx;
     font-weight: bold;
     color: #333;
 }
   
   /* 职称 */
 .member-title.data-v-13a78ac6 {
-    font-size: 12px;
+    font-size: 24rpx;
     color: #777;
-    margin-top: 2px; /* 与姓名之间的间距 */
+    margin-top: 4rpx; /* 与姓名之间的间距 */
 }
   
   /* 简介 */
 .member-description.data-v-13a78ac6 {
-    font-size: 12px;
+    font-size: 24rpx;
     color: #666;
     line-height: 1.4;
-    margin-top: 8px; /* 与职称之间的间距 */
+    margin-top: 16rpx; /* 与职称之间的间距 */
 }

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "套系详情",
+  "usingComponents": {
+    "footer-info": "../../components/FooterInfo/FooterInfo",
+    "section-header": "../../components/SectionHeader/SectionHeader"
+  }
+}

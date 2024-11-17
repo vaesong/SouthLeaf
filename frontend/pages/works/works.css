@@ -10,6 +10,10 @@
 
 /* 顶部栏样式 */
 .top-bar {
+  position: fixed;
+  z-index: 1100;
+  padding: 0 15rpx; 
+  max-width: 720rpx;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -70,7 +74,8 @@
   display: flex;
   justify-content: flex-end; /* 将组件放置在右侧 */
   align-items: center;
-  margin-left: 40rpx;
+  margin-left: 30rpx;
+  padding: 5rpx;
 }
 
 /* 网格布局 */

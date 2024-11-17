@@ -25,6 +25,12 @@
 			}
 		},
 		{
+      "path": "pages/package/pkgdetail",
+      "style": {
+        "navigationBarTitleText": "套系详情"
+      }
+    },
+		{
 			"path": "pages/about/about",
 			"style": {
 				"navigationBarTitleText": "关于"

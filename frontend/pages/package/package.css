@@ -3,7 +3,181 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 15px;
+  padding: 0 10px;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+.top-bar {
+  position: fixed;
+  z-index: 1100;
+  padding: 0 15rpx; 
+  max-width: 720rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  width: 100%;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+/* 顶部分类状态栏 */
+.category-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 20rpx 0;
+  background-color: #ffffff;
+}
+
+.category-scroll {
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll; /* 确保 scroll-view 启用横向滚动 */
+  white-space: nowrap;
+  flex: 1;
+}
+
+.category-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 30rpx;
+  font-size: 28rpx;
+  color: #333;
+  cursor: pointer;
+  padding-bottom: 10rpx;
+  position: relative;
+}
+
+.category-item.active {
+  color: #1e90ff;
+  font-weight: bold;
+  border-bottom: 5rpx solid #1e90ff;
+}
+
+/* 图标组样式 */
+.icon-group {
+  display: flex;
+  justify-content: flex-end; /* 将组件放置在右侧 */
+  align-items: center;
+  margin-left: 20rpx;
+}
+
+.icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-left: 20rpx;
+}
+
+.divider {
+  width: 100%;
+  height: 20rpx;
+  background-color: #f5f3f3;
+  border: none;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10rpx 0;
+  background-color: #ffffff;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 60%;
+  padding: 10rpx 0;
+  font-size: 28rpx;
+}
+
+.sort-option {
+  font-size: 26rpx;
+  color: #8c8b8b;
+  display: flex; /* 使用 flex 布局以便于图标对齐 */
+  align-items: center;
+}
+
+.sort-option.active {
+  color: #1e90ff;
+}
+
+.price-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0; /* 去除间距 */
+  margin-left: 10rpx;
+}
+
+.price-icons .uni-icons {
+  margin: 0; /* 确保图标没有外边距 */
+  line-height: 1; /* 确保没有额外的行高 */
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-direction: column; /* 确保内容垂直居中显示 */
+  margin-top: 200rpx;
+}
+
+/* 网格布局 */
+.pkgs-content.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 设置为两列布局 */
+  gap: 10rpx; /* 设置图片间隔 */
+  width: 100%; /* 确保网格布局占据整个宽度 */
+}
+
+.pkg-item.grid-layout {
+  width: 100%; /* 每个项目占据单元格宽度 */
+  margin-bottom: 30rpx; /* 底部间隔 */
+}
+
+.pkgs-content.grid-layout .pkg-image {
+  width: 100%;
+  height: 300rpx; /* 固定图片高度，适应网格布局 */
+  object-fit: cover; /* 保持图片比例填充 */
+  border-radius: 8rpx; /* 保持图片圆角 */
+}
+
+/* 列表布局 */
+.pkgs-content.list-layout {
+  display: block;
+  width: 100%;
+}
+
+.pkg-item.list-layout {
+  width: 100%;
+  margin-bottom: 80rpx; /* 列表布局的间隔 */
+}
+
+.pkgs-content.list-layout .pkg-image {
+  width: 100%;
+  height: 500rpx; /* 增加图片高度，使列表布局中图片更显眼 */
+  object-fit: cover;
+  border-radius: 8rpx; /* 保持图片圆角 */
+}
+
+.pkg-info {
+  font-size: 28rpx;
+  color: #333;
+  text-align: center;
+  margin-top: 10rpx;
+}
+
+.pkg-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  background: linear-gradient(to right, #1e90ff, #ff69b4, #1b9235); /* 渐变色 */
+  -webkit-background-clip: text; /* 将背景裁剪到文字 */
+  color: transparent; /* 使文字颜色透明，以显示背景 */
 }

@@ -1,0 +1,133 @@
+.pkgdetail-page.data-v-fe4970fe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 10px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.top-image.data-v-fe4970fe {
+	width: 100%;
+	height: 500rpx;
+	object-fit: cover;
+}
+.description.data-v-fe4970fe {
+  margin-top: 50rpx;
+  margin-bottom: 20rpx;
+  font-size: 24rpx;
+  line-height: 1.8; /* 增加行高，使文字更加舒展 */
+  letter-spacing: 2rpx; /* 增加字间距，提升阅读感 */
+  width: 80%;
+  text-align: center;
+  color: #333; /* 使用深灰色提升文字的优雅感 */
+  padding: 20rpx; /* 增加上下左右的内边距，使文字更加居中 */
+  text-shadow: 1rpx 1rpx 3rpx rgba(0, 0, 0, 0.1); /* 添加轻微阴影，提升层次感 */
+  box-sizing: border-box;
+}
+
+/* 名称和价格部分 */
+.title-price-section.data-v-fe4970fe {
+	width: 100%;
+	padding: 30rpx 20rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.package-title.data-v-fe4970fe {
+	font-size: 34rpx;
+	font-weight: bold;
+	color: #333;
+	margin-bottom: 10rpx;
+}
+.price-section.data-v-fe4970fe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.original-price.data-v-fe4970fe {
+  font-size: 26rpx;
+  color: #888;
+  text-decoration: line-through; /* 添加横线 */
+  margin-bottom: 5rpx;
+}
+.activity-price.data-v-fe4970fe {
+  font-size: 30rpx;
+  color: #ff4d4f;
+}
+.activity-time.data-v-fe4970fe {
+  font-size: 22rpx;
+  color: #888;
+}
+.package-price.data-v-fe4970fe {
+	font-size: 32rpx;
+	color: #ff4d4f; /* 红色价格 */
+}
+
+/* 灰色分隔线 */
+.divider-line1.data-v-fe4970fe {
+	width: 100vw;
+	height: 15rpx;
+	background-color: #f5efef;
+  margin-bottom: 60rpx;
+}
+.divider-line2.data-v-fe4970fe {
+	width: 100vw;
+	height: 3rpx;
+	background-color: #e6e3e3;
+	margin: 50rpx 0;
+}
+
+/* 图标网格区域 */
+.icon-grid.data-v-fe4970fe {
+	width: 100%;
+  height: 350rpx;
+	background-color: #e0dbdb69;
+	padding: 20rpx 0;
+	display: grid;
+  justify-items: center;
+	grid-template-columns: repeat(3, 1fr); /* 三列布局 */
+  border-radius: 10rpx;
+}
+.icon-item.data-v-fe4970fe {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.icon-image.data-v-fe4970fe {
+	width: 40rpx;
+	height: 40rpx;
+	margin-bottom: 10rpx;
+}
+.icon-text.data-v-fe4970fe {
+	font-size: 22rpx;
+	color: #666;
+	text-align: center;
+}
+.content-wrapper.data-v-fe4970fe {
+  width: 100%;
+  padding: 0; /* 去掉 padding 以便 SectionHeader 占满 */
+  box-sizing: border-box;
+  margin-bottom: 50rpx;
+}
+.info-item.data-v-fe4970fe {
+  margin-top: 10rpx;
+  margin-bottom: 20rpx; /* 每一条服务信息之间的间距 */
+  padding: 0 30rpx;
+}
+.info-text.data-v-fe4970fe {
+  font-size: 24rpx;
+  line-height: 1.8; /* 增加行高，使文字更加舒展 */
+  letter-spacing: 2rpx; /* 增加字间距，提升阅读感 */
+  text-align: center;
+  color: #333;
+  box-sizing: border-box;
+}
+.gallery-item.data-v-fe4970fe {
+  display: block; /* 列表布局采用 block 显示 */
+  width: 100%;
+}
+.gallery-image.data-v-fe4970fe {
+  width: 100%; /* 列表布局下，图片宽度占满整个容器 */
+  height: auto; /* 自动调整高度，按比例显示 */
+}

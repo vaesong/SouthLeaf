@@ -1,0 +1,1 @@
+<view class="section-header data-v-af217af4"><view class="left-color-bar data-v-af217af4" style="{{'background-color:' + a}}"></view><text class="title data-v-af217af4">{{b}}</text><view wx:if="{{c}}" class="more-arrow data-v-af217af4" bindtap="{{e}}"><uni-icons wx:if="{{d}}" class="data-v-af217af4" u-i="af217af4-0" bind:__l="__l" u-p="{{d}}"/></view></view>

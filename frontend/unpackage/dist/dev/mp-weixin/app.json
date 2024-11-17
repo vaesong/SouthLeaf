@@ -4,6 +4,7 @@
     "pages/works/works",
     "pages/works/workdetail",
     "pages/package/package",
+    "pages/package/pkgdetail",
     "pages/about/about",
     "pages/my/my"
   ],

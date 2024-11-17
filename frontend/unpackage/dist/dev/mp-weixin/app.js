@@ -6,6 +6,7 @@ if (!Math) {
   "./pages/works/works.js";
   "./pages/works/workdetail.js";
   "./pages/package/package.js";
+  "./pages/package/pkgdetail.js";
   "./pages/about/about.js";
   "./pages/my/my.js";
 }

@@ -37,8 +37,8 @@ export default {
 <style>
 .toggle-layout-btn {
   max-width: 60rpx;
-  width: 40rpx;
-  height: 40rpx;
+  width: 35rpx;
+  height: 35rpx;
   background: transparent;
   border: none;
   display: flex;

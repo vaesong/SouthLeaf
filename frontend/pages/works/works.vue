@@ -124,7 +124,11 @@ export default {
           package: '写真',
           imageSrc: [
             '/static/works/kid_0.jpg',
-            '/static/works/kid_1.jpg'
+            '/static/works/kid_1.jpg',
+            '/static/works/kid_2.jpg',
+            '/static/works/kid_3.jpg',
+            '/static/works/kid_4.jpg',
+            '/static/works/kid_5.jpg'
           ],
           time: '2023-07-10'
         },

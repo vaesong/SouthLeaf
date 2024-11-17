@@ -55,9 +55,17 @@
 }
 
 .description-text {
+  margin-top: 50rpx;
+  margin-bottom: 20rpx;
   font-size: 24rpx;
-  color: #444;
-  line-height: 1.6;
+  line-height: 1.8; /* 增加行高，使文字更加舒展 */
+  letter-spacing: 2rpx; /* 增加字间距，提升阅读感 */
+  width: 80%;
+  text-align: center;
+  color: #333; /* 使用深灰色提升文字的优雅感 */
+  padding: 20rpx; /* 增加上下左右的内边距，使文字更加居中 */
+  text-shadow: 1rpx 1rpx 3rpx rgba(0, 0, 0, 0.1); /* 添加轻微阴影，提升层次感 */
+  box-sizing: border-box;
 }
 
 /* 通用的图片展示区域样式 */
