@@ -1,51 +1,30 @@
 {
 	"pages": [
 		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "首页"
-			}
+			"path": "pages/index/index"
 		},
 		{
-			"path": "pages/works/works",
-			"style": {
-				"navigationBarTitleText": "作品"
-			}
+			"path": "pages/works/works"
 		},
 		{
-      "path": "pages/works/workdetail",
-      "style": {
-        "navigationBarTitleText": "作品详情"
-      }
+      "path": "pages/works/workdetail"
     },
 		{
-			"path": "pages/package/package",
-			"style": {
-				"navigationBarTitleText": "套系"
-			}
+			"path": "pages/package/package"
 		},
 		{
-      "path": "pages/package/pkgdetail",
-      "style": {
-        "navigationBarTitleText": "套系详情"
-      }
+      "path": "pages/package/pkgdetail"
     },
 		{
-			"path": "pages/about/about",
-			"style": {
-				"navigationBarTitleText": "关于"
-			}
+			"path": "pages/about/about"
 		},
 		{
-			"path": "pages/my/my",
-			"style": {
-				"navigationBarTitleText": "我的"
-			}
+			"path": "pages/my/my"
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "苍影摄影",
+		"navigationBarTitleText": "",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},

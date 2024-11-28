@@ -1,5 +1,4 @@
 {
-  "navigationBarTitleText": "作品详情",
   "usingComponents": {
     "footer-info": "../../components/FooterInfo/FooterInfo",
     "toggle-layout-button": "../../components/ToggleLayoutButton/ToggleLayoutButton"

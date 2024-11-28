@@ -7,3 +7,75 @@
   box-sizing: border-box;
   overflow-x: hidden;
 }
+.user-info.data-v-2f1ef635 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100vw;
+  height: 250rpx;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f8f8; /* 增加灰色背景 */
+}
+.user-details.data-v-2f1ef635 {
+  display: flex;
+  flex-direction: column;
+  margin-left: 50rpx;
+}
+.user-name.data-v-2f1ef635 {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+.user-phone.data-v-2f1ef635 {
+  font-size: 28rpx;
+  color: #ff4d4f;
+  margin-top: 20rpx;
+  padding: 4rpx 12rpx;
+  border: 1px solid #ff4d4f;
+  border-radius: 30rpx;
+}
+.user-avatar.data-v-2f1ef635 {
+  width: 130rpx;
+  height: 130rpx;
+  border-radius: 50%;
+  margin-right: 50rpx;
+}
+.order-status.data-v-2f1ef635 {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin: 40rpx 0;
+}
+.status-item.data-v-2f1ef635 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.status-icon.data-v-2f1ef635 {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-bottom: 20rpx;
+}
+.status-text.data-v-2f1ef635 {
+  font-size: 24rpx;
+  color: #333;
+}
+.function-list.data-v-2f1ef635 {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  overflow: hidden;
+}
+.function-item.data-v-2f1ef635 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx 50rpx;
+  font-size: 28rpx;
+  color: #333;
+  border-bottom: 1px solid #e6e6e6;
+}
+.function-item.data-v-2f1ef635:last-child {
+  border-bottom: none;
+}

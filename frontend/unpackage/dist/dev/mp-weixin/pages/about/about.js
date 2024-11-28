@@ -95,7 +95,7 @@ if (!Math) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_assets._imports_0$1,
+    a: common_assets._imports_0$2,
     b: common_assets._imports_1,
     c: common_vendor.o((...args) => $options.makePhoneCall && $options.makePhoneCall(...args)),
     d: common_assets._imports_1$1,

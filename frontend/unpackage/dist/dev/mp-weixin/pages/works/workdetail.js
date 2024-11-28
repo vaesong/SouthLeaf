@@ -34,6 +34,7 @@ const _sfc_main = {
     this.loadWorkDetails(id);
   },
   methods: {
+    // 后端接口，根据 id 查询数据
     loadWorkDetails(id) {
       const work = {
         id: 1,

@@ -53,15 +53,15 @@ if (!Math) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_assets._imports_0$2,
+    a: common_assets._imports_0$4,
     b: common_vendor.o((...args) => $options.openWeChat && $options.openWeChat(...args)),
     c: common_assets._imports_1$1,
     d: common_vendor.o((...args) => $options.openWeChat && $options.openWeChat(...args)),
-    e: common_assets._imports_2,
+    e: common_assets._imports_2$1,
     f: common_vendor.o((...args) => $options.openXiaoHongShu && $options.openXiaoHongShu(...args)),
-    g: common_assets._imports_3$1,
+    g: common_assets._imports_3$2,
     h: common_vendor.o((...args) => $options.openWeibo && $options.openWeibo(...args)),
-    i: common_assets._imports_4$1,
+    i: common_assets._imports_4$2,
     j: common_vendor.o((...args) => $options.openDouYin && $options.openDouYin(...args)),
     k: $data.showWeChat
   }, $data.showWeChat ? {

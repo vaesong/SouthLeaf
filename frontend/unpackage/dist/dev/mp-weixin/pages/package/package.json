@@ -1,5 +1,4 @@
 {
-  "navigationBarTitleText": "套系",
   "usingComponents": {
     "footer-info": "../../components/FooterInfo/FooterInfo",
     "toggle-layout-button": "../../components/ToggleLayoutButton/ToggleLayoutButton",

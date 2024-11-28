@@ -7,3 +7,130 @@
   box-sizing: border-box;
   overflow-x: hidden;
 }
+
+.top-swiper {
+  width: 100vw;
+  height: 500rpx; /* 根据需要调整轮播图高度 */
+}
+
+.swiper-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 分类图标区域样式 */
+.category-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 50rpx 0;
+  width: 100%;
+  padding: 15rpx 0;
+  overflow-x: auto; /* 启用水平滚动 */
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120rpx; /* 每个分类图标的宽度 */
+  margin: 0 40rpx; /* 增加分类项之间的左右间距 */
+}
+
+.icon-background {
+  width: 140rpx; /* 灰色圆形的大小，比图片稍大 */
+  height: 140rpx;
+  border-radius: 50%;
+  background-color: #e0e0e06f; /* 灰色背景 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15rpx;
+}
+
+.category-icon {
+  width: 110rpx; /* 图片稍小于灰色背景 */
+  height: 110rpx;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.category-name {
+  font-size: 26rpx;
+  color: #333;
+  text-align: center;
+  white-space: nowrap; /* 禁止换行 */
+  overflow: hidden; /* 隐藏超出部分 */
+  text-overflow: ellipsis; /* 使用省略号表示超出部分 */
+}
+
+/* 父容器样式 */
+.section-container {
+  width: 100%;
+}
+
+.works-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx; /* 控制项目之间的间距 */
+}
+
+.work-item {
+  width: 49%; /* 每个项目宽度固定为 50% 以下 */
+  margin-bottom: 10rpx; /* 控制每行项目之间的间距 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* 高度设为宽度的 100%，确保正方形 */
+}
+
+.work-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
+  object-fit: cover;
+}
+
+.work-title {
+  font-size: 24rpx;
+  color: #333;
+  margin-top: 10rpx;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 90%;
+}
+
+.divider-line {
+	width: 100vw;
+	height: 15rpx;
+	background-color: #e6e3e385;
+	margin: 50rpx 0;
+}
+
+/* 用户评价占位图片样式 */
+.review-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 300rpx; /* 根据需要调整高度 */
+  border-radius: 8rpx;
+  margin-top: 20rpx;
+}
+
+.placeholder-image {
+  width: 90%; /* 根据实际图片尺寸调整 */
+  opacity: 0.5; /* 半透明效果，突出图片为空 */
+}

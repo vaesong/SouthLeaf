@@ -7,3 +7,87 @@
   box-sizing: border-box;
   overflow-x: hidden;
 }
+
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100vw;
+  height: 250rpx;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f8f8; /* 增加灰色背景 */
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  margin-left: 50rpx;
+}
+
+.user-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-phone {
+  font-size: 28rpx;
+  color: #ff4d4f;
+  margin-top: 20rpx;
+  padding: 4rpx 12rpx;
+  border: 1px solid #ff4d4f;
+  border-radius: 30rpx;
+}
+
+.user-avatar {
+  width: 130rpx;
+  height: 130rpx;
+  border-radius: 50%;
+  margin-right: 50rpx;
+}
+
+.order-status {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin: 40rpx 0;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-bottom: 20rpx;
+}
+
+.status-text {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.function-list {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.function-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx 50rpx;
+  font-size: 28rpx;
+  color: #333;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.function-item:last-child {
+  border-bottom: none;
+}

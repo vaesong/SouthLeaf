@@ -232,7 +232,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     }),
     b: $data.scrollLeft,
-    c: common_assets._imports_0,
+    c: common_assets._imports_0$1,
     d: common_vendor.o((...args) => $options.navigateToSearchPage && $options.navigateToSearchPage(...args)),
     e: common_vendor.o($options.updateLayoutClass),
     f: common_vendor.p({
