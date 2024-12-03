@@ -12,7 +12,7 @@
     <view class="category-section">
       <view v-for="(category, index) in filteredCategories" :key="category.id" class="category-item" @click="goToWorks(category.name)">
         <view class="icon-background">
-          <image :src="category.icons[0]" class="category-icon" mode="aspectFill" />
+          <image :src="encodeURI(category.images[0])" class="category-icon" mode="aspectFill" />
         </view>
         <text class="category-name">{{ category.name }}</text>
       </view>
@@ -90,6 +90,8 @@ import FooterInfo from '@/components/FooterInfo/FooterInfo.vue';
 import ModalPopup from "@/components/ModalPopup/ModalPopup.vue";
 import SectionHeader from "@/components/SectionHeader/SectionHeader.vue";
 
+import { getAllCategories } from '@/api/category';
+
 export default {
 	components: {
 		FooterInfo,
@@ -108,16 +110,7 @@ export default {
         ],
 			
 			//后期接口，获取所有的目录类型
-			categories: [
-			{ id: 0, name: '全部', desc: 'ALL', icons: ['/static/works/han_2.jpg']},
-			{ id: 1, name: '创始人档', desc: 'Founder Portfolio', icons: ['/static/works/han_2.jpg'] },
-			{ id: 2, name: '儿童', desc: 'Child Portrait', icons: ['/static/works/han_2.jpg'] },
-			{ id: 3, name: '亲子全家福', desc: 'Family Portrait', icons: ['/static/works/han_2.jpg'] },
-			{ id: 4, name: '婚纱', desc: 'Bridal Photography', icons: ['/static/works/han_2.jpg'] },
-			{ id: 5, name: '写真', desc: 'Portrait Photography', icons: ['/static/works/han_2.jpg'] },
-			{ id: 6, name: '孕照', desc: 'Maternity Photography', icons: ['/static/works/han_2.jpg'] },
-			{ id: 7, name: '证件照', desc: 'Passport Photo', icons: ['/static/works/han_2.jpg'] },
-      ],
+			categories: [],
 
 			// 后端接口，获取作品信息（可选择个数，默认全部）
 			works:[
@@ -332,10 +325,19 @@ export default {
 	computed: {
     filteredCategories() {
       // 过滤掉 id 为 0 的 "全部"目录
-      return this.categories.filter(category => category.id !== 0);
+      return this.categories.filter(category => category.name !== '全部');
     }
   },
 	methods: {
+    async fetchCategories() {
+			try {
+				// 调用后端接口获取分类数据
+				this.categories = await getAllCategories();
+			} catch (error) {
+				console.error('加载类别失败:', error.message);
+			}
+		},
+
 		goToWorks(categoryName) {
       // 将 categoryName 存储到全局状态或本地存储
       getApp().globalData.selectedCategory = categoryName;
@@ -368,7 +370,10 @@ export default {
         url: `/pages/package/pkgdetail?id=${pkg.id}`
       });
     }
-	}
+	},
+  mounted() {
+		this.fetchCategories(); // 页面加载时获取分类数据
+	},
 };
 </script>
 

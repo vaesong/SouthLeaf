@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const api_category = require("../../api/category.js");
 const common_assets = require("../../common/assets.js");
 const FooterInfo = () => "../../components/FooterInfo/FooterInfo.js";
 const ModalPopup = () => "../../components/ModalPopup/ModalPopup.js";
@@ -21,16 +22,7 @@ const _sfc_main = {
         "/static/works/han_4.jpg"
       ],
       //后期接口，获取所有的目录类型
-      categories: [
-        { id: 0, name: "全部", desc: "ALL", icons: ["/static/works/han_2.jpg"] },
-        { id: 1, name: "创始人档", desc: "Founder Portfolio", icons: ["/static/works/han_2.jpg"] },
-        { id: 2, name: "儿童", desc: "Child Portrait", icons: ["/static/works/han_2.jpg"] },
-        { id: 3, name: "亲子全家福", desc: "Family Portrait", icons: ["/static/works/han_2.jpg"] },
-        { id: 4, name: "婚纱", desc: "Bridal Photography", icons: ["/static/works/han_2.jpg"] },
-        { id: 5, name: "写真", desc: "Portrait Photography", icons: ["/static/works/han_2.jpg"] },
-        { id: 6, name: "孕照", desc: "Maternity Photography", icons: ["/static/works/han_2.jpg"] },
-        { id: 7, name: "证件照", desc: "Passport Photo", icons: ["/static/works/han_2.jpg"] }
-      ],
+      categories: [],
       // 后端接口，获取作品信息（可选择个数，默认全部）
       works: [
         {
@@ -240,10 +232,17 @@ const _sfc_main = {
   },
   computed: {
     filteredCategories() {
-      return this.categories.filter((category) => category.id !== 0);
+      return this.categories.filter((category) => category.name !== "全部");
     }
   },
   methods: {
+    async fetchCategories() {
+      try {
+        this.categories = await api_category.getAllCategories();
+      } catch (error) {
+        console.error("加载类别失败:", error.message);
+      }
+    },
     goToWorks(categoryName) {
       getApp().globalData.selectedCategory = categoryName;
       common_vendor.index.switchTab({
@@ -268,6 +267,9 @@ const _sfc_main = {
         url: `/pages/package/pkgdetail?id=${pkg.id}`
       });
     }
+  },
+  mounted() {
+    this.fetchCategories();
   }
 };
 if (!Array) {
@@ -290,7 +292,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     b: common_vendor.f($options.filteredCategories, (category, index, i0) => {
       return {
-        a: category.icons[0],
+        a: encodeURI(category.images[0]),
         b: common_vendor.t(category.name),
         c: category.id,
         d: common_vendor.o(($event) => $options.goToWorks(category.name), category.id)
