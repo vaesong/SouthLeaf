@@ -56,7 +56,7 @@
       <view class="works-grid">
         <view v-for="(pkg, index) in packages" :key="index" class="work-item" @click="viewPkgDetails(pkg)">
           <view class="image-wrapper">
-            <image :src="pkg.imageSrc[0]" class="work-image" mode="aspectFill" />
+            <image :src="pkg.images[0]" class="work-image" mode="aspectFill" />
           </view>
           <text class="work-title">{{ pkg.title }}</text>
         </view>
@@ -91,6 +91,8 @@ import ModalPopup from "@/components/ModalPopup/ModalPopup.vue";
 import SectionHeader from "@/components/SectionHeader/SectionHeader.vue";
 
 import { getAllCategories } from '@/api/category';
+import { getSwipperImages } from '@/api/swipper';
+import { getAllPackages } from '@/api/package';
 
 export default {
 	components: {
@@ -101,13 +103,7 @@ export default {
 	data() {
 		return {
 			// 后端接口，获取轮播区图片
-			swiperImages: [
-          '/static/works/han_0.jpg',
-          '/static/works/han_1.jpg',
-          '/static/works/han_2.jpg',
-          '/static/works/han_3.jpg',
-          '/static/works/han_4.jpg',
-        ],
+			swiperImages: [],
 			
 			//后期接口，获取所有的目录类型
 			categories: [],
@@ -202,124 +198,7 @@ export default {
 			],
 
 			// 后端接口，获取套系信息（可选择个数，默认全部）
-			packages: [
-      {
-        id: 0, 
-        title: '秋日物语', 
-        description: '在这温馨璀璨的圣诞季，每一帧写真都定格了冬日里最温暖的笑容与梦幻光影。银铃轻响中，我们捕捉到了节日的魔法，让爱与祝福在镜头下静静绽放，封存成永恒的记忆篇章。',
-        category: '儿童',  
-        imageSrc: [
-          '/static/works/han_0.jpg',
-          '/static/works/han_1.jpg',
-          '/static/works/han_2.jpg'
-        ],
-
-        price: 618,
-        activityPrice: 328,
-        activateStart: '2024-09-01',
-        activateEnd: '2024-10-31',
-        services: [
-            '服务内容：12小时拍摄，全天不少于2000张原片，精修保底100张起，当日预告不少于30张',
-            '三机礼盒内容：U盘一个（内含电子版精修及jpg格式的原片）进口微喷工艺相册一本',
-            '附加项目：当日如需快修加收RMB2000元，三机位不少于80张增加机位RMB5000/总监机位，RMB3000/普通机位',
-            '※其它服务区域，请拨打服务热线4008-767-212，或请联系客服进行具体咨询'
-        ],
-        reminder: [
-          '※ 我们将收取全款费用的50%作为定金，尾款在拍摄结束后5个工作日付清',
-          '※ 产品交付时间15个工作日，以收到尾款开始计算',
-          '※ 客户如需自行选片必须提前告知',
-          '※ 我们不接受除高质量问题外任何原因的相册重做要求',
-        ]
-      },
-      {
-        id: 1,
-        title: '圣诞主题',
-        description: '捕捉秋日美景的每一个瞬间，金黄色的落叶、温暖的光影为婚礼增添浪漫的氛围。让这一季的秋色成为永恒的记忆，记录下新人的幸福时刻，感受岁月静好的秋日情怀。',
-        category: '写真',
-        imageSrc: [
-            '/static/works/kid_0.jpg',
-            '/static/works/kid_1.jpg',
-            '/static/works/kid_2.jpg',
-            '/static/works/kid_3.jpg',
-            '/static/works/kid_4.jpg',
-            '/static/works/kid_5.jpg'
-          ],
-        price: 520,
-        activityPrice: 450,
-        activateStart: '2024-09-01',
-        activateEnd: '2024-10-31',
-        services: [
-            '服务内容：8小时拍摄，全天不少于1500张原片，精修保底80张，当日预告不少于20张',
-            '三机礼盒内容：U盘一个（内含电子版精修及jpg格式的原片）高级相册一本，秋季主题定制相框一幅',
-            '附加项目：当日如需快修加收RMB1500元，三机位不少于60张增加机位RMB4000/总监机位，RMB2500/普通机位',
-            '※其它服务区域，请拨打服务热线4008-767-212，或请联系客服进行具体咨询'
-        ],
-        reminder: [
-          '※ 我们将收取全款费用的50%作为定金，尾款在拍摄结束后5个工作日付清',
-          '※ 产品交付时间15个工作日，以收到尾款开始计算',
-          '※ 客户如需自行选片必须提前告知',
-          '※ 我们不接受除高质量问题外任何原因的相册重做要求',
-        ]
-      },
-      {
-        id: 2, 
-        title: '秋日物语', 
-        description: '在这温馨璀璨的圣诞季，每一帧写真都定格了冬日里最温暖的笑容与梦幻光影。银铃轻响中，我们捕捉到了节日的魔法，让爱与祝福在镜头下静静绽放，封存成永恒的记忆篇章。',
-        category: '儿童',  
-        imageSrc: [
-          '/static/works/han_0.jpg',
-          '/static/works/han_1.jpg',
-          '/static/works/han_2.jpg'
-        ],
-
-        price: 618,
-        activityPrice: 328,
-        activateStart: '2024-09-01',
-        activateEnd: '2024-10-31',
-        services: [
-            '服务内容：12小时拍摄，全天不少于2000张原片，精修保底100张起，当日预告不少于30张',
-            '三机礼盒内容：U盘一个（内含电子版精修及jpg格式的原片）进口微喷工艺相册一本',
-            '附加项目：当日如需快修加收RMB2000元，三机位不少于80张增加机位RMB5000/总监机位，RMB3000/普通机位',
-            '※其它服务区域，请拨打服务热线4008-767-212，或请联系客服进行具体咨询'
-        ],
-        reminder: [
-          '※ 我们将收取全款费用的30%作为定金，尾款在拍摄结束后5个工作日付清',
-          '※ 产品交付时间15个工作日，以收到尾款开始计算',
-          '※ 客户如需自行选片必须提前告知',
-          '※ 我们不接受除高质量问题外任何原因的相册重做要求',
-        ]
-      },
-			{
-        id: 3,
-        title: '圣诞主题',
-        description: '捕捉秋日美景的每一个瞬间，金黄色的落叶、温暖的光影为婚礼增添浪漫的氛围。让这一季的秋色成为永恒的记忆，记录下新人的幸福时刻，感受岁月静好的秋日情怀。',
-        category: '写真',
-        imageSrc: [
-            '/static/works/kid_0.jpg',
-            '/static/works/kid_1.jpg',
-            '/static/works/kid_2.jpg',
-            '/static/works/kid_3.jpg',
-            '/static/works/kid_4.jpg',
-            '/static/works/kid_5.jpg'
-          ],
-        price: 520,
-        activityPrice: 450,
-        activateStart: '2024-09-01',
-        activateEnd: '2024-10-31',
-        services: [
-            '服务内容：8小时拍摄，全天不少于1500张原片，精修保底80张，当日预告不少于20张',
-            '三机礼盒内容：U盘一个（内含电子版精修及jpg格式的原片）高级相册一本，秋季主题定制相框一幅',
-            '附加项目：当日如需快修加收RMB1500元，三机位不少于60张增加机位RMB4000/总监机位，RMB2500/普通机位',
-            '※其它服务区域，请拨打服务热线4008-767-212，或请联系客服进行具体咨询'
-        ],
-        reminder: [
-          '※ 我们将收取全款费用的50%作为定金，尾款在拍摄结束后5个工作日付清',
-          '※ 产品交付时间15个工作日，以收到尾款开始计算',
-          '※ 客户如需自行选片必须提前告知',
-          '※ 我们不接受除高质量问题外任何原因的相册重做要求',
-        ]
-      },
-      ],
+			packages: [],
 		};
 	},
 	computed: {
@@ -329,12 +208,31 @@ export default {
     }
   },
 	methods: {
+    // 后端接口，获取分类信息
     async fetchCategories() {
 			try {
 				// 调用后端接口获取分类数据
 				this.categories = await getAllCategories();
 			} catch (error) {
 				console.error('加载类别失败:', error.message);
+			}
+		},
+
+    // 后端接口，获取轮播区数据
+    async fetchSwippers() {
+			try {
+				this.swiperImages = await getSwipperImages();
+			} catch (error) {
+				console.error('加载轮播区失败:', error.message);
+			}
+		},
+
+    // 后端接口，获取套系数据
+    async fetchPackages() {
+			try {
+				this.packages = await getAllPackages();
+			} catch (error) {
+				console.error('加载套系失败:', error.message);
 			}
 		},
 
@@ -373,6 +271,8 @@ export default {
 	},
   mounted() {
 		this.fetchCategories(); // 页面加载时获取分类数据
+    this.fetchSwippers(); // 页面加载时获取轮播区数据
+    this.fetchPackages(); // 页面加载时获取套系数据
 	},
 };
 </script>

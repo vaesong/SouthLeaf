@@ -1,6 +1,4 @@
-package cn.zhinan.uniapp.config;
-
-import cn.zhinan.uniapp.common.ApiResponse;
+package cn.zhinan.uniapp.common;
 
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
