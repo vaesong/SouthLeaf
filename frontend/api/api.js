@@ -1,105 +1,113 @@
-// 全局变量
-const baseURL = 'http://localhost:8090'; // 后端接口基础地址
-const timeout = 10000; // 超时时间
-
-// 通用错误提示
-const showToast = (message, icon = 'none') => {
-  uni.showToast({
-    title: message,
-    icon: icon,
-    duration: 1500,
-  });
+const timeout = 10000;
+const PUBLIC_ERROR_MESSAGES = {
+  PUBLIC_QUERY_INVALID: "请求内容有误，请返回重试",
+  PUBLIC_CURSOR_EXPIRED: "内容已更新，请重新加载",
+  PUBLIC_RESOURCE_UNAVAILABLE: "内容暂不可用",
+  PUBLIC_SERVICE_UNAVAILABLE: "服务暂时繁忙，请稍后重试",
+  PUBLIC_MEDIA_UNAVAILABLE: "部分图片暂时无法显示",
+  PUBLIC_RESPONSE_INVALID: "页面加载异常，请重试",
+  NETWORK_ERROR: "网络异常，请检查网络连接",
+  REQUEST_TIMEOUT: "请求超时，请稍后重试",
 };
-
-// 处理业务逻辑错误
-const handleBusinessError = (code, message) => {
-  switch (code) {
-    case 400:
-      showToast(message || '请求参数错误');
-      break;
-    case 401:
-      showToast('未授权，请登录后重试');
-      break;
-    case 403:
-      showToast('权限不足');
-      break;
-    case 500:
-      showToast(message || '服务器内部错误');
-      break;
-    default:
-      showToast(message || '未知错误');
-  }
+const statusByCode = {
+  OK: 200,
+  PUBLIC_QUERY_INVALID: 400,
+  PUBLIC_CURSOR_EXPIRED: 409,
+  PUBLIC_RESOURCE_UNAVAILABLE: 404,
+  PUBLIC_SERVICE_UNAVAILABLE: 503,
+  PUBLIC_MEDIA_UNAVAILABLE: 503,
+  PUBLIC_RESPONSE_INVALID: 500,
 };
+const showToast = (message, icon = "none") =>
+  wx.showToast({ title: message, icon, duration: 1800 });
+const getBaseURL = () => getApp().runtime.apiOrigin;
+const createError = (code, details = {}) =>
+  Object.assign(new Error(PUBLIC_ERROR_MESSAGES[code]), { code, ...details });
 
-// 处理 HTTP 错误
-const handleHttpError = (error) => {
-  console.error('HTTP 请求错误:', error); // 打印完整错误信息以供调试
-
-  if (error.errMsg.includes('timeout')) {
-    // 请求超时
-    showToast('请求超时，请稍后重试');
-  } else if (error.errMsg.includes('ERR_CONNECTION_REFUSED')) {
-    // 服务未启动或无法连接
-    showToast('无法连接到服务器，请告知开发人员');
-  } else if (error.errMsg.includes('request:fail')) {
-    // 小程序请求失败的一般性错误
-    showToast('网络异常，请检查网络连接');
-  } else {
-    // 其他未知错误
-    showToast('未知网络错误，请稍后重试');
-  }
-};
-
-
-
-// 封装请求逻辑
-const baseRequest = (method, url, data = {}, options = {}) => {
-  return new Promise((resolve, reject) => {
-    const token = uni.getStorageSync('token') || '';
-    uni.request({
-      url: `${baseURL}${url}`,
-      method,
-      data,
-      header: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-        ...options.headers,
-      },
+const get = (path, params = {}) =>
+  new Promise((resolve, reject) => {
+    const base = getBaseURL();
+    if (!base) {
+      reject(createError("NETWORK_ERROR"));
+      return;
+    }
+    const query = Object.entries(params)
+      .filter(
+        ([, value]) => value !== undefined && value !== null && value !== "",
+      )
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+      )
+      .join("&");
+    wx.request({
+      url: `${base}${path}${query ? `?${query}` : ""}`,
+      method: "GET",
+      data: {},
+      header: { "Content-Type": "application/json" },
       timeout,
-      success: (res) => {
-        const { code, data, message } = res.data;
-        if (code === 200) {
-          resolve(data);
-        } else {
-          handleBusinessError(code, message);
-          reject(new Error(message || '业务逻辑错误'));
+      success: (response) => {
+        const body = response.data;
+        if (
+          !body ||
+          typeof body !== "object" ||
+          typeof body.requestId !== "string" ||
+          !body.meta ||
+          statusByCode[body.code] !== response.statusCode
+        ) {
+          reject(createError("PUBLIC_RESPONSE_INVALID"));
+          return;
         }
+        if (body.code !== "OK") {
+          reject(
+            createError(body.code, {
+              requestId: body.requestId,
+              httpStatus: response.statusCode,
+            }),
+          );
+          return;
+        }
+        if (
+          body.data === null ||
+          body.data === undefined ||
+          typeof body.meta.contentVersion !== "string" ||
+          !body.meta.contentVersion ||
+          !["demo", "production"].includes(body.meta.dataMode)
+        ) {
+          reject(createError("PUBLIC_RESPONSE_INVALID"));
+          return;
+        }
+        if (getApp().runtime.release && body.meta.dataMode !== "production") {
+          reject(
+            createError("PUBLIC_SERVICE_UNAVAILABLE", {
+              requestId: body.requestId,
+            }),
+          );
+          return;
+        }
+
+        resolve({
+          data: body.data,
+          meta: body.meta,
+          requestId: body.requestId,
+        });
       },
-      fail: (error) => {
-        handleHttpError(error);
-        reject(error);
-      },
+      fail: (cause) =>
+        reject(
+          createError(
+            cause.errMsg?.toLowerCase().includes("timeout")
+              ? "REQUEST_TIMEOUT"
+              : "NETWORK_ERROR",
+            { cause },
+          ),
+        ),
     });
   });
-};
 
-// 封装的 HTTP 方法
-const http = {
-  get(url, params = {}, options = {}) {
-    const queryString = Object.keys(params)
-      .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-      .join('&');
-    return baseRequest('GET', `${url}?${queryString}`, {}, options);
-  },
-  post(url, data = {}, options = {}) {
-    return baseRequest('POST', url, data, options);
-  },
-  put(url, data = {}, options = {}) {
-    return baseRequest('PUT', url, data, options);
-  },
-  delete(url, options = {}) {
-    return baseRequest('DELETE', url, {}, options);
-  },
+module.exports = {
+  get,
+  PUBLIC_ERROR_MESSAGES,
+  showToast,
+  createError,
+  getBaseURL,
 };
-
-export default http;

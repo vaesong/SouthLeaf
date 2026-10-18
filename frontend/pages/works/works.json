@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "demo-notice": "../../components/demo-notice/index"
+  },
+  "enablePullDownRefresh": true
+}

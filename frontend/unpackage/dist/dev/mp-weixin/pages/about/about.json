@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "footer-info": "../../components/FooterInfo/FooterInfo",
-    "modal-popup": "../../components/ModalPopup/ModalPopup"
-  }
-}

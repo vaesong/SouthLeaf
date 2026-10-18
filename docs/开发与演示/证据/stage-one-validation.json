@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-18",
+  "scope": "stage-one-demo-engineering-not-production",
+  "frontend": "native WeChat; sole source frontend; zero npm runtime packages",
+  "checks": [
+    {
+      "check": "backend verify and startup guards",
+      "job": "j353",
+      "exit": 0,
+      "unitAndArchitectureTests": 38,
+      "realMysqlIntegrationTests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "check": "frontend verify and official npm audit",
+      "job": "j355",
+      "exit": 0,
+      "tests": 53,
+      "npmVulnerabilities": 0
+    },
+    {
+      "check": "fresh running backend smoke",
+      "job": "j356",
+      "exit": 0,
+      "publicChecks": 230,
+      "safetyChecks": 8
+    },
+    {
+      "check": "live native frontend contract",
+      "job": "j357",
+      "exit": 0,
+      "successCalls": 10,
+      "uniqueOperations": 9
+    },
+    {
+      "check": "single complete WeChat simulator UI regression",
+      "job": "j358",
+      "exit": 0,
+      "routes": 6,
+      "controls": [
+        "newest/oldest sorting and date order",
+        "category/layout preservation",
+        "works grid/editorial/list cycle",
+        "detail album/overview cycle"
+      ]
+    },
+    {
+      "check": "source-only export install/verify/audit/build/live contract and tamper detection",
+      "job": "j363",
+      "exit": 0,
+      "sourceFilesAtRun": 259
+    },
+    {
+      "check": "resolved Maven compile/runtime OSV",
+      "job": "j349",
+      "exit": 0,
+      "packages": 52,
+      "advisoryMatches": 0
+    },
+    {
+      "check": "CRLF-aware working/staged diff whitespace and active log file",
+      "job": "j361",
+      "exit": 0
+    },
+    {
+      "check": "legacy entries and tracked generated files absent",
+      "job": "j364",
+      "exit": 0
+    }
+  ],
+  "editorDiagnostics": {
+    "errors": 0,
+    "warnings": 0,
+    "scope": "analyzed frontend and shared request-rules file, not exhaustive static analysis"
+  },
+  "limitations": [
+    "not a fresh Git clone: source-only export used because user work is uncommitted",
+    "not production release or real device/system acceptance",
+    "npm and OSV are bounded dependency checks, not full SCA or exploitability proof",
+    "canonical UTF-8 LF text hashes and exact binary hashes; not a signed release"
+  ],
+  "stageTwo": [
+    "real content and admin upload/maintenance",
+    "photo rights and customer consent evidence",
+    "official AppID/domains/TLS/production credential isolation",
+    "real devices and production operational acceptance"
+  ],
+  "candidateHashing": "format 2: SHA-256, UTF-8 LF-normalized text, byte-exact binary"
+}

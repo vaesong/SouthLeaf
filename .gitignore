@@ -1,0 +1,19 @@
+# Generated outputs and local-only settings; never stage credentials.
+/backend/target/
+/backend/logs/
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env.local
+/frontend/.env.*.local
+/frontend/project.private.config.json
+/backend/.env*
+/backend/src/main/resources/application-local.properties
+/.trellis/.runtime/
+
+# Generated legacy output and isolated browser automation profiles.
+/frontend/unpackage/
+/outputs/.chrome-*/
+/nul
+
+# Local rights-unknown quarantine: not part of source distribution.
+/archive/legacy-frontend-assets/

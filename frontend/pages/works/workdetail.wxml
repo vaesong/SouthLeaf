@@ -1,0 +1,58 @@
+<view class="detail-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="detail-topbar"
+    ><text bindtap="handleGoBackTap" class="back">‹</text><text>作品详情</text
+    ><button open-type="share" class="share-button">分享</button></view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载作品...</view
+  ><view wx:elif="{{status === 'unavailable'}}" class="state-panel"
+    ><text>内容暂不可用</text
+    ><button bindtap="handleGoBackTap2">返回作品</button></view
+  ><view wx:elif="{{status === 'error'}}" class="state-panel"
+    ><text>作品暂时无法加载</text
+    ><button bindtap="handleLoadWorkTap">重试</button></view
+  ><block wx:else
+    ><view class="detail-heading"
+      ><text wx:if="{{work.businessLabels.length}}" class="eyebrow"
+        >{{work.businessLabel}}</text
+      ><text class="detail-title">{{work.title || '未命名作品'}}</text
+      ><text
+        wx:if="{{work.description || work.summary}}"
+        class="detail-description"
+        >{{work.description || work.summary}}</text
+      ></view
+    ><view class="gallery-toolbar"
+      ><text class="photo-count">{{availableMedia.length}} 张影像</text
+      ><button
+        aria-label="{{'切换相册排版，当前' + (layout === 'album' ? '画册' : '总览')}}"
+        bindtap="handleCycleLayoutTap"
+        class="layout-toggle"
+      >
+        {{layout === 'album' ? '画册' : '总览'}}<text>↻</text>
+      </button></view
+    ><view class="gallery {{'gallery-' + layout}}"
+      ><view
+        wx:for="{{availableMedia}}"
+        wx:for-item="media"
+        wx:for-index="index"
+        data-arg0="{{media}}"
+        bindtap="handlePreviewMediaTap"
+        wx:key="id"
+        class="gallery-item"
+        ><image
+          wx:if="{{!failedMedia[media.id || media.src]}}"
+          src="{{media.src}}"
+          mode="{{layout === 'album' ? 'widthFix' : 'aspectFill'}}"
+          data-arg0="{{media.id || media.src}}"
+          binderror="handleMarkGalleryMediaFailedError"
+        ></image
+        ><view wx:else class="gallery-empty">图片暂不可用</view></view
+      ></view
+    ><view wx:if="{{!availableMedia.length}}" class="gallery-empty"
+      >暂无可展示的图片</view
+    ><text class="gallery-note"
+      >{{layout === 'album' ? '慢慢向下，读完这一组故事。' :
+      '轻触照片，放大查看。'}}</text
+    ></block
+  ></view
+>

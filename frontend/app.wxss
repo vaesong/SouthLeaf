@@ -1,0 +1,11 @@
+page {
+  background: #fbfaf6;
+  color: #23231f;
+}
+view,
+text,
+image,
+button,
+scroll-view {
+  box-sizing: border-box;
+}

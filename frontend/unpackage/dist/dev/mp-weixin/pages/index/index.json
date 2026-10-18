@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "footer-info": "../../components/FooterInfo/FooterInfo",
-    "section-header": "../../components/SectionHeader/SectionHeader"
-  }
-}

@@ -1,0 +1,127 @@
+.share-button {
+  margin: 0;
+  padding: 0 18rpx;
+  background: transparent;
+  color: #315849;
+  font-size: 24rpx;
+  line-height: 2;
+  border: none;
+}
+.share-button::after {
+  border: none;
+}
+.pkgdetail-page {
+  min-height: 100vh;
+  background: #fbfaf6;
+  color: #23231f;
+}
+.detail-topbar {
+  height: 92rpx;
+  padding: 0 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #dedbd2;
+  color: #555047;
+  font-size: 24rpx;
+}
+.detail-topbar text:first-child,
+.detail-topbar text:last-child {
+  font-size: 42rpx;
+  color: #315849;
+}
+.top-image,
+.media-empty {
+  width: 100%;
+  height: 500rpx;
+  display: block;
+}
+.media-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee9df;
+  color: #9d978d;
+  font-size: 22rpx;
+}
+.detail-body {
+  padding: 34rpx 32rpx 60rpx;
+}
+.eyebrow {
+  display: block;
+  color: #315849;
+  font-size: 20rpx;
+  letter-spacing: 3rpx;
+}
+.package-title {
+  display: block;
+  font-family: serif;
+  font-size: 48rpx;
+  margin: 12rpx 0;
+}
+.description {
+  display: block;
+  color: #77756d;
+  font-size: 24rpx;
+  line-height: 1.8;
+}
+.price {
+  display: block;
+  color: #a54435;
+  font-size: 30rpx;
+  margin-top: 18rpx;
+}
+.detail-section {
+  margin-top: 38rpx;
+}
+.section-title {
+  display: block;
+  font-size: 29rpx;
+  font-weight: 500;
+  margin-bottom: 18rpx;
+}
+.detail-item {
+  position: relative;
+  padding-left: 24rpx;
+  margin-top: 14rpx;
+  color: #77756d;
+  font-size: 23rpx;
+  line-height: 1.8;
+}
+.detail-item:before {
+  content: "";
+  position: absolute;
+  left: 4rpx;
+  top: 16rpx;
+  width: 7rpx;
+  height: 7rpx;
+  border-radius: 50%;
+  background: #315849;
+}
+.tip-section {
+  padding: 24rpx;
+  background: #f5f1e9;
+  border-radius: 14rpx;
+}
+.muted {
+  color: #999;
+}
+.state-panel {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  color: #77756d;
+  font-size: 24rpx;
+}
+.state-panel button {
+  border: 1rpx solid #315849;
+  background: transparent;
+  color: #315849;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  padding: 0 24rpx;
+  line-height: 2.3;
+}

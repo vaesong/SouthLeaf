@@ -1,0 +1,69 @@
+<view class="package-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="page-intro"
+    ><text class="eyebrow">THE SERVICE COLLECTION</text
+    ><text class="page-title">拍摄服务</text
+    ><text class="page-summary"
+      >从一个主题开始，找到适合你的记录方式。</text
+    ></view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载公开服务...</view
+  ><view wx:elif="{{status === 'unavailable'}}" class="state-panel"
+    ><text>服务暂时不可用</text
+    ><button bindtap="handleGoHomeTap">返回首页</button></view
+  ><view wx:elif="{{status === 'error'}}" class="state-panel"
+    ><text>服务暂时无法加载</text
+    ><button bindtap="handleLoadPackagesTap">重试</button></view
+  ><block wx:else
+    ><view
+      wx:for="{{serviceGroups}}"
+      wx:for-item="business"
+      wx:for-index="index"
+      id="{{'service-' + business.id}}"
+      wx:key="id"
+      class="service-group"
+      ><view class="service-heading"
+        ><text class="service-number">{{business.number}}</text
+        ><view
+          ><text class="service-title">{{business.name}}</text
+          ><text wx:if="{{business.summary}}" class="service-summary"
+            >{{business.summary}}</text
+          ></view
+        ></view
+      ><image
+        wx:if="{{business.coverMedia && !failedMedia[business.id]}}"
+        src="{{business.coverMedia.src}}"
+        mode="aspectFill"
+        data-arg0="{{business.id}}"
+        binderror="handleMarkMediaFailedError"
+        class="service-image"
+      ></image
+      ><view wx:else class="service-image media-empty">图片暂不可用</view
+      ><view
+        wx:for="{{business.packages}}"
+        wx:for-item="pkg"
+        wx:for-index="index"
+        data-arg0="{{pkg.id}}"
+        bindtap="handleOpenPackageTap"
+        wx:key="id"
+        class="service-package"
+        ><view class="package-copy"
+          ><text class="package-name">{{pkg.name || '未命名套餐'}}</text
+          ><text wx:if="{{pkg.summary}}" class="package-summary"
+            >{{pkg.summary}}</text
+          ><text class="package-price">{{pkg.priceLabel}}</text></view
+        ><text class="package-arrow">↗</text></view
+      ><text wx:if="{{!business.packages.length}}" class="group-empty"
+        >{{nextCursor ? '更多方案可在下方继续加载' :
+        '该主题的服务方案正在整理中'}}</text
+      ></view
+    ><view wx:if="{{!serviceGroups.length}}" class="state-panel"
+      >暂时没有可展示的服务</view
+    ><view wx:if="{{nextCursor}}" class="load-more"
+      ><text wx:if="{{loadMoreError}}">加载失败，请重试</text
+      ><button disabled="{{loadingMore}}" bindtap="handleLoadMoreTap">
+        {{loadingMore ? '正在加载...' : '加载更多方案'}}
+      </button></view
+    ></block
+  ></view
+>

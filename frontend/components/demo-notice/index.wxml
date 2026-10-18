@@ -1,0 +1,3 @@
+<view wx:if="{{mode === 'demo'}}" class="demo-notice"
+  >演示内容 · 人物、影像与账号均为虚构占位</view
+>

@@ -1,0 +1,70 @@
+<view class="pkgdetail-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="detail-topbar"
+    ><text bindtap="handleGoBackTap">‹</text><text>服务详情</text
+    ><button open-type="share" class="share-button">分享</button></view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载套餐...</view
+  ><view wx:elif="{{status === 'unavailable'}}" class="state-panel"
+    ><text>内容暂不可用</text
+    ><button bindtap="handleGoBackTap2">返回服务</button></view
+  ><view wx:elif="{{status === 'error'}}" class="state-panel"
+    ><text>服务暂时无法加载</text
+    ><button bindtap="handleLoadPackageTap">重试</button></view
+  ><block wx:else
+    ><image
+      wx:if="{{pkg.coverMedia && !mediaFailed}}"
+      src="{{pkg.coverMedia.src}}"
+      mode="aspectFill"
+      binderror="handleMediaFailedError"
+      class="top-image"
+    ></image
+    ><view wx:else class="media-empty">图片暂不可用</view
+    ><view class="detail-body"
+      ><text wx:if="{{pkg.businessName}}" class="eyebrow"
+        >{{pkg.businessName}}</text
+      ><text class="package-title">{{pkg.name || '未命名套餐'}}</text
+      ><text wx:if="{{pkg.summary}}" class="description">{{pkg.summary}}</text
+      ><text class="price">{{priceLabel}}</text
+      ><view
+        wx:if="{{pkg.suitableFor || pkg.durationMinutes}}"
+        class="detail-section"
+        ><text wx:if="{{pkg.suitableFor}}" class="description"
+          >适合人群 · {{pkg.suitableFor}}</text
+        ><text wx:if="{{pkg.durationMinutes}}" class="description"
+          >参考时长 · {{pkg.durationMinutes}} 分钟</text
+        ></view
+      ><view wx:if="{{pkg.serviceItems.length}}" class="detail-section"
+        ><text class="section-title">套餐内容</text
+        ><view
+          wx:for="{{pkg.serviceRows}}"
+          wx:for-item="item"
+          wx:for-index="index"
+          wx:key="key"
+          class="detail-item"
+          >{{item.text}}</view
+        ></view
+      ><view wx:if="{{pkg.tips.length}}" class="detail-section tip-section"
+        ><text class="section-title">温馨提示</text
+        ><view
+          wx:for="{{pkg.tipRows}}"
+          wx:for-item="item"
+          wx:for-index="index"
+          wx:key="key"
+          class="detail-item"
+          >{{item.text}}</view
+        ></view
+      ><view wx:if="{{pkg.notices.length}}" class="detail-section"
+        ><text class="section-title">拍摄须知</text
+        ><view
+          wx:for="{{pkg.noticeRows}}"
+          wx:for-item="item"
+          wx:for-index="index"
+          wx:key="key"
+          class="detail-item"
+          >{{item.text}}</view
+        ></view
+      ></view
+    ></block
+  ></view
+>

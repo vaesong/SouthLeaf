@@ -1,0 +1,118 @@
+<view class="works-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="page-intro"
+    ><text class="eyebrow">PORTFOLIO</text
+    ><view class="title-row"
+      ><text class="page-title">作品</text
+      ><view class="title-actions"
+        ><button
+          aria-label="{{'作品排序，当前' + sortLabel}}"
+          aria-expanded="{{showSortMenu}}"
+          bindtap="handleShowSortMenuTap"
+          class="sort-toggle"
+        >
+          {{sortLabel}}<text class="chevron">⌄</text></button
+        ><button
+          aria-label="{{'切换作品排版，当前' + layoutLabel}}"
+          bindtap="handleCycleLayoutTap"
+          class="layout-toggle"
+        >
+          <text class="layout-icon">▦</text>{{layoutLabel}}<text class="chevron"
+            >↻</text
+          ></button
+        ><view wx:if="{{showSortMenu}}" class="sort-popover"
+          ><button
+            data-arg0="{{'newest'}}"
+            bindtap="handleSelectSortTap"
+            class="sort-choice {{sort === 'newest' ? 'selected' : ''}}"
+          >
+            最新发布<text>{{sort === 'newest' ? '✓' : ''}}</text></button
+          ><button
+            data-arg0="{{'oldest'}}"
+            bindtap="handleSelectSortTap2"
+            class="sort-choice {{sort === 'oldest' ? 'selected' : ''}}"
+          >
+            最早发布<text>{{sort === 'oldest' ? '✓' : ''}}</text>
+          </button></view
+        ></view
+      ></view
+    ><text class="page-summary">真实、克制地记录每一次相聚。</text></view
+  ><view
+    wx:if="{{showSortMenu}}"
+    bindtap="handleShowSortMenuTap2"
+    class="sort-dismiss"
+  ></view
+  ><scroll-view scroll-x="{{true}}" class="filter-row"
+    ><text
+      data-arg0="{{''}}"
+      bindtap="handleSelectFilterTap"
+      class="filter-chip {{selectedBusinessId === '' ? 'active' : ''}}"
+      >全部</text
+    ><text
+      wx:for="{{businesses}}"
+      wx:for-item="business"
+      wx:for-index="index"
+      data-arg0="{{business.id}}"
+      bindtap="handleSelectFilterTap2"
+      wx:key="id"
+      class="filter-chip {{selectedBusinessId === business.id ? 'active' : ''}}"
+      >{{business.name}}</text
+    ></scroll-view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载公开作品...</view
+  ><view wx:if="{{status === 'unavailable'}}" class="state-panel"
+    ><text>作品暂时不可用</text
+    ><button bindtap="handleGoHomeTap">返回首页</button></view
+  ><view wx:if="{{status === 'error'}}" class="state-panel"
+    ><text>作品暂时无法加载</text
+    ><button bindtap="handleLoadWorksTap">重试</button></view
+  ><view wx:if="{{works.length}}" class="works-list {{'layout-' + layout}}"
+    ><view
+      wx:for="{{works}}"
+      wx:for-item="work"
+      wx:for-index="index"
+      data-arg0="{{work.id}}"
+      bindtap="handleOpenWorkTap"
+      wx:key="id"
+      class="work-item"
+      ><image
+        wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
+        src="{{work.coverMedia.src}}"
+        mode="aspectFill"
+        data-arg0="{{work.id}}"
+        binderror="handleMarkMediaFailedError"
+      ></image
+      ><view wx:else class="media-empty">图片暂不可用</view
+      ><view class="work-copy"
+        ><text wx:if="{{work.businessLabels.length}}" class="work-category"
+          >{{work.businessLabel}}</text
+        ><text class="work-title">{{work.title || '未命名作品'}}</text
+        ><text wx:if="{{work.summary}}" class="work-summary"
+          >{{work.summary}}</text
+        ><text wx:if="{{work.publishedAt}}" class="work-date"
+          >{{work.publishedAt}}</text
+        ></view
+      ></view
+    ></view
+  ><view
+    wx:elif="{{status !== 'loading' && status !== 'unavailable' && status !== 'error'}}"
+    class="state-panel empty-state"
+    ><text
+      >{{selectedBusinessId ? '这一主题还没有展示作品' :
+      '暂时没有可展示的作品'}}</text
+    ><text class="muted">公开作品会在完成发布和资格确认后显示。</text
+    ><button
+      wx:if="{{selectedBusinessId}}"
+      data-arg0="{{''}}"
+      bindtap="handleSelectFilterTap3"
+    >
+      查看全部作品
+    </button></view
+  ><view wx:if="{{nextCursor && works.length}}" class="load-more"
+    ><text wx:if="{{loadMoreError}}" class="load-more-error"
+      >加载失败，请重试</text
+    ><button disabled="{{loadingMore}}" bindtap="handleLoadMoreTap">
+      {{loadingMore ? '正在加载...' : '加载更多'}}
+    </button></view
+  ></view
+>

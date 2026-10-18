@@ -1,0 +1,8 @@
+.demo-notice {
+  padding: 18rpx 28rpx;
+  background: #efe6cf;
+  color: #66502c;
+  font-size: 22rpx;
+  line-height: 1.6;
+  border-bottom: 1rpx solid #d9c99e;
+}

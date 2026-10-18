@@ -1,7 +1,0 @@
-{
-  "usingComponents": {
-    "footer-info": "../../components/FooterInfo/FooterInfo",
-    "toggle-layout-button": "../../components/ToggleLayoutButton/ToggleLayoutButton",
-    "uni-icons": "../../uni_modules/uni-icons/components/uni-icons/uni-icons"
-  }
-}

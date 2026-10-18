@@ -1,0 +1,135 @@
+<view class="about-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载工作室资料...</view
+  ><view wx:if="{{status === 'unavailable'}}" class="state-panel"
+    ><text>工作室资料暂时不可用</text
+    ><button bindtap="handleGoHomeTap">返回首页</button></view
+  ><view wx:if="{{status === 'error'}}" class="state-panel"
+    ><text>工作室资料暂时无法加载</text
+    ><button bindtap="handleLoadBrandTap">重试</button></view
+  ><view class="about-cover"
+    ><image
+      wx:if="{{brand.logoMedia && !brandLogoFailed}}"
+      src="{{brand.logoMedia.src}}"
+      mode="aspectFit"
+      binderror="handleBrandLogoFailedError"
+      class="cover-logo"
+    ></image
+    ><view wx:else class="cover-logo-placeholder"
+      >{{brand.name ? brand.initial : ''}}</view
+    ><view class="cover-copy"
+      ><text class="eyebrow">ABOUT US</text
+      ><text class="about-title">{{brand.name || '工作室资料'}}</text
+      ><text wx:if="{{brand.tagline}}" class="tagline"
+        >{{brand.tagline}}</text
+      ></view
+    ></view
+  ><view wx:if="{{brand.description}}" class="about-copy"
+    ><text>{{brand.description}}</text></view
+  ><view wx:else class="about-copy"
+    ><text>这里将展示经工作室确认的品牌故事、拍摄理念与公开信息。</text></view
+  ><view wx:if="{{status === 'success' && team.length}}" class="team-section"
+    ><view class="section-heading"
+      ><text class="eyebrow">THE PEOPLE BEHIND</text
+      ><text class="section-title">一起记录的人</text></view
+    ><view class="team-list"
+      ><view
+        wx:for="{{team}}"
+        wx:for-item="member"
+        wx:for-index="index"
+        wx:key="id"
+        class="team-row"
+        ><view class="team-visual"
+          ><image
+            wx:if="{{member.portraitMedia && !failedMedia[member.id]}}"
+            src="{{member.portraitMedia.src}}"
+            mode="aspectFill"
+            data-arg0="{{member.id}}"
+            binderror="handleMarkMediaFailedError"
+            class="team-portrait"
+          ></image
+          ><view wx:else class="team-initial">{{member.initial}}</view></view
+        ><view class="team-copy"
+          ><view class="team-identity"
+            ><text class="team-name">{{member.name}}</text
+            ><text class="team-role">{{member.role}}</text></view
+          ><text wx:if="{{member.bio}}" class="team-bio"
+            >{{member.bio}}</text
+          ></view
+        ></view
+      ></view
+    ></view
+  ><view wx:if="{{status === 'success'}}" class="find-us"
+    ><view class="contact-heading"
+      ><text class="eyebrow">FIND US</text
+      ><text class="section-title">找到我们</text
+      ><text class="contact-hint">关注日常，或与工作室聊一聊。</text></view
+    ><view
+      wx:for="{{channels}}"
+      wx:for-item="channel"
+      wx:for-index="index"
+      wx:key="id"
+      class="channel-row"
+      ><view class="channel-qr"
+        ><image
+          wx:if="{{channel.qrCodeMedia && !failedMedia['qr-' + channel.id]}}"
+          src="{{channel.qrCodeMedia.src}}"
+          mode="aspectFit"
+          show-menu-by-longpress="{{channel.qrCodeStatus === 'CONFIRMED'}}"
+          data-arg0="{{channel}}"
+          bindtap="handlePreviewQrTap"
+          data-error-key="{{'qr-' + channel.id}}"
+          binderror="handleMarkMediaFailedError2"
+        ></image
+        ><view wx:else class="qr-unavailable"
+          ><text>二维码</text
+          ><text>{{channel.qrCodeMedia ? '暂不可用' : '待配置'}}</text></view
+        ></view
+      ><view class="channel-copy"
+        ><text class="channel-label">{{channel.label}}</text
+        ><text selectable="{{true}}" class="channel-account"
+          >{{channel.account}}</text
+        ><text class="qr-caption"
+          >{{channel.qrCodeStatus === 'PLACEHOLDER' ? '演示占位 · 不可扫码' :
+          channel.qrCodeStatus === 'CONFIRMED' && channel.qrCodeMedia &&
+          !failedMedia['qr-' + channel.id] ? '轻触查看二维码' :
+          '账号可复制'}}</text
+        ><button
+          aria-label="{{'复制' + channel.label + '账号'}}"
+          data-arg0="{{channel}}"
+          bindtap="handleCopyChannelTap"
+          class="inline-action copy-account"
+        >
+          复制账号
+        </button></view
+      ></view
+    ><view wx:if="{{brand.phone}}" class="channel-row"
+      ><view class="channel-mark">电</view
+      ><view class="channel-copy"
+        ><text class="channel-label">电话</text
+        ><text class="channel-account">{{brand.phone}}</text></view
+      ><button bindtap="handleCallPhoneTap" class="inline-action">
+        拨打
+      </button></view
+    ><view wx:if="{{brand.address}}" class="studio-info"
+      ><text class="info-label">工作室地址</text
+      ><text selectable="{{true}}">{{brand.address}}</text
+      ><button
+        bindtap="handleCopyAddressTap"
+        class="inline-action address-action"
+      >
+        复制地址
+      </button></view
+    ><view wx:if="{{brand.workingHours}}" class="studio-info"
+      ><text class="info-label">工作时间</text
+      ><text>{{brand.workingHours}}</text></view
+    ><view
+      wx:if="{{!channels.length && !brand.phone && !brand.address && !brand.workingHours}}"
+      class="empty-panel"
+      >公开联系方式暂未配置</view
+    ></view
+  ><text class="boundary-note"
+    >联系动作不会自动创建预约、订单或支付事实。</text
+  ></view
+>

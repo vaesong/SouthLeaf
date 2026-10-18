@@ -1,0 +1,138 @@
+.package-page {
+  min-height: 100vh;
+  padding: 0 32rpx 64rpx;
+  background: #fbfaf6;
+  color: #23231f;
+}
+.page-intro {
+  padding: 44rpx 0 38rpx;
+  border-bottom: 1rpx solid #dedbd2;
+}
+.eyebrow {
+  display: block;
+  font-size: 19rpx;
+  letter-spacing: 3rpx;
+  color: #315849;
+}
+.page-title {
+  display: block;
+  font-family: serif;
+  font-size: 48rpx;
+  margin-top: 12rpx;
+}
+.page-summary {
+  display: block;
+  color: #77756d;
+  font-size: 23rpx;
+  line-height: 1.7;
+  margin-top: 12rpx;
+}
+.service-group {
+  padding: 36rpx 0 42rpx;
+  border-bottom: 1rpx solid #dedbd2;
+  scroll-margin-top: 24rpx;
+}
+.service-heading {
+  display: flex;
+  gap: 22rpx;
+  margin-bottom: 24rpx;
+}
+.service-number {
+  font-family: serif;
+  color: #a79d88;
+  font-size: 29rpx;
+  line-height: 1.4;
+}
+.service-title {
+  display: block;
+  font-size: 32rpx;
+  font-family: serif;
+}
+.service-summary {
+  display: block;
+  color: #77756d;
+  font-size: 22rpx;
+  line-height: 1.7;
+  margin-top: 10rpx;
+}
+.service-image {
+  display: block;
+  width: 100%;
+  height: 300rpx;
+  border-radius: 6rpx;
+}
+.media-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee9df;
+  color: #9d978d;
+  font-size: 22rpx;
+}
+.service-package {
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+  padding: 26rpx 0 0;
+}
+.service-package + .service-package {
+  border-top: 1rpx solid #e6e3db;
+  margin-top: 24rpx;
+}
+.package-copy {
+  flex: 1;
+  min-width: 0;
+}
+.package-name {
+  display: block;
+  font-size: 27rpx;
+  line-height: 1.6;
+}
+.package-summary {
+  display: block;
+  color: #77756d;
+  font-size: 22rpx;
+  line-height: 1.7;
+  margin-top: 8rpx;
+}
+.package-price {
+  display: block;
+  color: #827661;
+  font-size: 21rpx;
+  margin-top: 12rpx;
+}
+.package-arrow {
+  font-size: 32rpx;
+  color: #315849;
+  padding: 18rpx 8rpx;
+}
+.group-empty {
+  display: block;
+  margin-top: 24rpx;
+  color: #99958a;
+  font-size: 22rpx;
+}
+.state-panel {
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  color: #77756d;
+  font-size: 24rpx;
+}
+.state-panel button,
+.load-more button {
+  border: 1rpx solid #b5b9ac;
+  background: transparent;
+  color: #315849;
+  font-size: 22rpx;
+  border-radius: 4rpx;
+}
+.load-more {
+  padding-top: 30rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #a54435;
+}

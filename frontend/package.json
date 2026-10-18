@@ -1,0 +1,21 @@
+{
+  "name": "southleaf-native-wechat",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:demo": "node scripts/build-native.mjs demo",
+    "build:release": "node scripts/build-native.mjs release",
+    "test": "node --test tests/*.test.mjs",
+    "test:contract": "node scripts/check-public-contract.mjs",
+    "test:docs": "node ../tools/check-docs.mjs",
+    "format": "prettier --write \"**/*.{js,mjs,json,wxss,wxml}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,mjs,json,wxss,wxml}\" --ignore-path .prettierignore",
+    "verify": "npm run format:check && npm test && npm run test:docs"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}

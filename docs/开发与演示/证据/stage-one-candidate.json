@@ -1,0 +1,1048 @@
+{
+  "format": 2,
+  "hashing": "sha256-utf8-lf-binary-exact",
+  "scope": "stage-one-demo-source-not-production",
+  "candidateId": "7b36fde2eb88b9f46f7866af28063e91fac9e68fcfe60e98baebca476f908b4b",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "0291585dfdd79a54262696861b665b5392f0410e8cda08eaa363ee5c93575bd2"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "6aa866d4eb9a99d984c903853528bf4666a958780e012479c70af9c3a571a154"
+    },
+    {
+      "path": ".trellis/spec/backend/database-guidelines.md",
+      "sha256": "b6bf08295afadaa313eb6cbeecd6a90e3d8065f8549a9de699698f28f19d066a"
+    },
+    {
+      "path": ".trellis/spec/backend/directory-structure.md",
+      "sha256": "703ada2fb52bb2eaefebbb207fd2a6922c42fb62720314cddefe964e71b126cb"
+    },
+    {
+      "path": ".trellis/spec/backend/error-handling.md",
+      "sha256": "9d2383a62d311bbd064a7f1c380842012f8e40c91249edeab1fec04a4d4f0e77"
+    },
+    {
+      "path": ".trellis/spec/backend/index.md",
+      "sha256": "7abb7518bb103c3b3d4f4192eb15db4515ba5a2425f4a443b2deacbf8657729d"
+    },
+    {
+      "path": ".trellis/spec/backend/logging-guidelines.md",
+      "sha256": "b58a5e31aacb1e379a851bb059a0dc28fe47ed71106398980cd97042902a359e"
+    },
+    {
+      "path": ".trellis/spec/backend/quality-guidelines.md",
+      "sha256": "58bbbd12ba6f0c3cd7863174fc7788ff7fd2e7eff3040d76cfafba56ea612a76"
+    },
+    {
+      "path": ".trellis/spec/frontend/component-guidelines.md",
+      "sha256": "2e5a090676f0f3c1616fee73b55273c3342672c34872f5d43f5083468c22f460"
+    },
+    {
+      "path": ".trellis/spec/frontend/directory-structure.md",
+      "sha256": "136f9ca3727f0fcb74cc7ca32536d9c6173d797cf218b233a52017ca2f4bb892"
+    },
+    {
+      "path": ".trellis/spec/frontend/hook-guidelines.md",
+      "sha256": "338e315c7e9ba170ab922131abaf3161c3ebfdcf18eafab4eb522ca8cf43643d"
+    },
+    {
+      "path": ".trellis/spec/frontend/index.md",
+      "sha256": "aebb4eb62974b969b70b53bea7e16e31abd38fc3b35a92ee2da647d73ada4964"
+    },
+    {
+      "path": ".trellis/spec/frontend/quality-guidelines.md",
+      "sha256": "fd82b9d8c443b767cb1ffa2be37c4ac899e27647a85324ab043aa1acb35735f4"
+    },
+    {
+      "path": ".trellis/spec/frontend/state-management.md",
+      "sha256": "d55adfec9f6b65c9daafeab4e64911c35a0c00226709067b8154f2277ea60464"
+    },
+    {
+      "path": ".trellis/spec/frontend/type-safety.md",
+      "sha256": "6f55bb8ca3d236f06af2c744c6d1278a26fc77d3cc586acc58ecc8ec83c643e1"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "4c54130c02a7b8bc43f9a012e0837f798f43e2d137d6bc6d7498d2adb0bac3f4"
+    },
+    {
+      "path": ".trellis/spec/guides/index.md",
+      "sha256": "aa45e5d0f245aae0b34677b121f7d083620308b4b87cda929bd134c77d1f61fd"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "6cacfe99748b435d0660c2463c697bc323d53798aecf3492283ca8eac1b29682"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "README.md",
+      "sha256": "cf20312349f6fbd42589e916076cd9f3abe4fe6833ac4b31b9ec700ebcd586c5"
+    },
+    {
+      "path": "backend/.gitattributes",
+      "sha256": "5775a77ad2f6d12dde053a3fb0cca4309189163f0888f4e7e984cd0ab327028b"
+    },
+    {
+      "path": "backend/.gitignore",
+      "sha256": "c30fae20ab37a0355836267e19149e383e0a73a9bebb032bed13c0845f7ca0a6"
+    },
+    {
+      "path": "backend/.mvn/wrapper/maven-wrapper.properties",
+      "sha256": "90da0b8373999aed95eb5626f3bf7afa54aa9268db0bae81b0f0bebf1db0a13c"
+    },
+    {
+      "path": "backend/mvnw",
+      "sha256": "7e6e5d26712efd78140f2f63dafe8d17028f6c5c97ac1f746a043110b7a1d9ad"
+    },
+    {
+      "path": "backend/mvnw.cmd",
+      "sha256": "1ea18e87640c404d8602406b639eaa3e33def63f064fd8a8099aa52d173076a6"
+    },
+    {
+      "path": "backend/pom.xml",
+      "sha256": "af9600bccb34740cd4c026044e5a5801353f8871005b8646e0c21ea398abe330"
+    },
+    {
+      "path": "backend/scripts/Initialize-PublicDatabase.ps1",
+      "sha256": "fa30f969c512c8c49618b8e3888ce9a857dd6ba1a40062ab48c8e8898cd2ce2c"
+    },
+    {
+      "path": "backend/scripts/Invoke-DatabaseMigration.ps1",
+      "sha256": "83db393b0dfd7f0786822856419320110cffe8ca2c6d793d49e955674d125ee6"
+    },
+    {
+      "path": "backend/scripts/Local-Credentials.ps1",
+      "sha256": "a141a87d696f5d17c463d16543cecdf8ff294a37b6468da7bb75d38422209676"
+    },
+    {
+      "path": "backend/scripts/Start-PublicApi.ps1",
+      "sha256": "6d4ee38542f74e3abe1e784bd6e47898ef8cdb2a379b71a0e7bef0058e7e1982"
+    },
+    {
+      "path": "backend/scripts/Test-BackupRestore.ps1",
+      "sha256": "e13ef91874079a41c7b494b89e131d15ed8df6c60c9240a82687b75625372d3d"
+    },
+    {
+      "path": "backend/scripts/Test-DatabaseIntegration.ps1",
+      "sha256": "49e9d5960bbfc8a01f5c8c1d36a197ebbf7e87df747aa5f278f82358bb70d829"
+    },
+    {
+      "path": "backend/scripts/Test-StartupGuards.ps1",
+      "sha256": "fb8150fece25e53ea0e04252c34815d7f7b20e37c703a0984531e64260059a87"
+    },
+    {
+      "path": "backend/scripts/check-runtime-advisories.mjs",
+      "sha256": "160af63fa6c1adc2a1bbc2b9e5b0c26b73bfdb6d62d925f7bf3cc9dc96c43039"
+    },
+    {
+      "path": "backend/scripts/render-wechat.cjs",
+      "sha256": "d048a30602facf735f1cee9156c8d065040123e74ebf9cc27334dd03643a63db"
+    },
+    {
+      "path": "backend/scripts/smoke-public.ps1",
+      "sha256": "40cea0881458eed4aac75df6ee3e73cc378720d8ca3275de42c235a2ad56bfa1"
+    },
+    {
+      "path": "backend/scripts/smoke-safety.ps1",
+      "sha256": "52f32f74956de696a5b4ae88fcfa11aabb9f4bdf81fc2892fba625f904963dc7"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/UniappApiApplication.java",
+      "sha256": "0f5fa709f9c52e573d355bde758fb34910459d85ad02b4894b039ebfb74dae2e"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/authorization/adapter/jdbc/JdbcPublicAuthorizationEvaluator.java",
+      "sha256": "5eb42ead3bfbcd96784f4851b036a92df0aec480472e270ec05afc1a2fcf3c6e"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/AuthorizationReadResult.java",
+      "sha256": "c281e2161758a81437eb2431b6d5ed095e3bdc60b3951f3a484e38e1e2928344"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/PublicAuthorizationEvaluator.java",
+      "sha256": "8231351cc6b229812055576f483dc1f10843ca3c66094c5f10b8301759b54a31"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/PublicUseContext.java",
+      "sha256": "9ce9e966973812366c6e3a600f41b5fb9384b6336cecf46c0b49bb00e4911cac"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/common/GlobalExceptionHandler.java",
+      "sha256": "495e9706779c41a43d6cc49ae04c802d5838575cade83b97444938aa17eaf2d5"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/config/PublicRuntimeConfiguration.java",
+      "sha256": "b805f138e7b46521e0017ac31cd3c63f369687e3343ade5e6dbe55cf77b7ed2f"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/config/PublishedSchemaVerifier.java",
+      "sha256": "a20ea9d6d983ba4426ad99bd6a21e5a06dbeebed286ed02b9ecc7a0cf28b9207"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/config/RuntimeAccountVerifier.java",
+      "sha256": "24bdb2766b963c05ee6ae2361027eea6713a7d8fbbb84dff8ffc9326573c70fd"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/controller/PublicMediaContentController.java",
+      "sha256": "53633dd463554a007629dd47f209c99c14e0802a7c518aeba73fd57e32e4a8b5"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/controller/PublicQueryController.java",
+      "sha256": "8458db78e2a07ad4bd1b7018edf249f0ab0e36966b81f2a5fbd2b78c8b310d15"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/dto/PublicDtos.java",
+      "sha256": "39e1ef9db7f113a5597ffdb2a95478988abc83949dedbffe9996ec3c99fdf7e1"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStore.java",
+      "sha256": "83ce2e41459917c02824604023c92cdf089b5ec329823a34c5d5b93339653113"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/media/application/PublicMediaService.java",
+      "sha256": "616f8aa75737731a19025d8b28a0a076f700b06cd175038bbded39f3127f84ca"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/media/port/MediaObjectStore.java",
+      "sha256": "5e298103cacffc116162cab0ade5f10fd97848389dc8d42ce6edc140bc7594ed"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/PublicQueryException.java",
+      "sha256": "855df382adb0e304641a83edb6ccc640b40f5aae7db08932e2f7c00f687c6f9e"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/adapter/jdbc/JdbcPublishedCatalogRepository.java",
+      "sha256": "e9821ebc47f67f83a8dfb392dd6370b0b2331d86d4842d18dbf77e7110d57dc8"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogProjection.java",
+      "sha256": "b3d146fa1f2a0aabbf697d77fb66246818800552c386e3a495eca5d82c2e7754"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogReadService.java",
+      "sha256": "f7399827dbf5930ef44782dec577a53ef69b5b6ad8ab0131e393d2d719a24951"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/PublicQueryService.java",
+      "sha256": "a0689058249c3d7d316d40bb59194698edb57d8a5f70ef41aeffab3ab7d35f59"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/VersionedCursor.java",
+      "sha256": "cdcdf48fc7d480429e8fffb10d92b26cf4242da177e42c7efd4adc14a720bc26"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicApiResponse.java",
+      "sha256": "f6c2f97892d19afd5503cceb20b3a796ca0f45595d622c3a4f2c73fea2e10bc5"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicPage.java",
+      "sha256": "5143c564c87ca38b3ddc51ceb0faed819221e3b0c8ab558aa1ba626b07372ca8"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicRequestRules.java",
+      "sha256": "c34481dcc0f529ca21a22b26f78e0a67e539e485fa173e7384a2e76251afd7c1"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/domain/CatalogSnapshot.java",
+      "sha256": "fa19c284e88aa1de3e80f8d166b7999f92f247e6b85a68e61cf8ac89c1ef7bb2"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/port/CatalogStorageException.java",
+      "sha256": "0e9556bba537beb8f08034df9565bfb4b3ef05670167a1956c652131fdb9753d"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/publicquery/port/PublishedCatalogRepository.java",
+      "sha256": "1154de9a4dee480c47a7cc29613ed0bff2818e280e1984b0393396bf224a0212"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/tooling/DatabaseMigrationMain.java",
+      "sha256": "2e4d3524952c2cf38e801acc14f0d37af87bc8cfbf4706a2520d5c68421614b7"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/tooling/DemoArtRenderer.java",
+      "sha256": "504053736764d8bc6434a246983f757124937e27714de764739b13943d2cf51d"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/works/application/PublicVisibilityPolicy.java",
+      "sha256": "17462c51bc43f10801b39c29e409237e20bd3d3f0bfcb6127bd189c704213bb2"
+    },
+    {
+      "path": "backend/src/main/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorization.java",
+      "sha256": "87d3c0eae270eeaa149166be0f6da3762b8cbd18cd795da98f01158b25ba5dfd"
+    },
+    {
+      "path": "backend/src/main/resources/application-production.properties",
+      "sha256": "3ed024b03eec9e3c9a5684a62c42b2f76d3df599b1018fa87272c94d642c87c4"
+    },
+    {
+      "path": "backend/src/main/resources/application.properties",
+      "sha256": "5db1a23a7d44cff6eed8f5e6b344280645f4497a3b947abc030aee4d8d52b4ff"
+    },
+    {
+      "path": "backend/src/main/resources/db/demo/assets.csv",
+      "sha256": "637fcd635406797925996cdd6ac7b08a5a176ec8f13c5ab74407022a66089a0b"
+    },
+    {
+      "path": "backend/src/main/resources/db/demo/seed.sql",
+      "sha256": "0b27b1640053d4593d5abbfa28060b26cbc87a5a1aabdf50ab6a26d7425b81b2"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V1__public_catalog.sql",
+      "sha256": "d2c2eb1848ba8a1f8217c560506f35afade88dc966139b449ae772b9f302fb88"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/architecture/ArchitectureTest.java",
+      "sha256": "bea13fece86a4d071f024acdb5162620cd0395424c311b6fb508d9804a4855e5"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/config/RuntimeAccountVerifierTest.java",
+      "sha256": "90db18bf6f6086c956a6f5ee387fb02f816e028130b27ff156acecb7839c6fe4"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/integration/DatabasePublicApiIT.java",
+      "sha256": "66cab21c684b4ed934c09e4a5cc6579b5363099fc3b04a5b27d81a3622487fbf"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStoreTest.java",
+      "sha256": "21a7fd0ebe3f93a17cb41839763ed882ef03cf41d25ec46a64606ed0ad609e47"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/media/application/PublicMediaServiceTest.java",
+      "sha256": "a4899e0c5ead762bd4d35e8563ee6929781fdbc773bf7e30c77441ae63968fd6"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/publicquery/application/PublicQueryServiceTest.java",
+      "sha256": "95805213d64d271893f7a38a62f80840f5ec6bb51eab33fd3fe00d2331b9f7ea"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/publicquery/application/VersionedCursorTest.java",
+      "sha256": "bd51e72d1028374bf7374c5047874b6b66064e187e38c305217818911279c527"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/support/CatalogFixture.java",
+      "sha256": "4898f17e87639fcc3ccf70c2aa2f65eeddf208c40e1ed05db23b973c6100f66b"
+    },
+    {
+      "path": "backend/src/test/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorizationTest.java",
+      "sha256": "6a908bd283f362e6f72577b51a9872ecee1dbec68bea28d4e8c1a6ba2eec356e"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "bb5f8dc50e0182c51fee5827105a4f37f48da60013646ba199dec33991f05941"
+    },
+    {
+      "path": "docs/开发与演示/依赖风险分拣与升级计划.md",
+      "sha256": "7830fcdecd90648abb1e347ce1a8a787df994a42ad182b16aea52f240d53d2fb"
+    },
+    {
+      "path": "docs/开发与演示/证据/java-runtime-osv-after.json",
+      "sha256": "77bd98e876746e289ec0693facda9639bc458fc99054d84984ee1bdd1d66609e"
+    },
+    {
+      "path": "docs/开发与演示/证据/java-runtime-osv-before.json",
+      "sha256": "b32d8f8d52db6bcb0601e3cd77fad23ee5bb54abc1925e95c15c3b916969396b"
+    },
+    {
+      "path": "docs/开发与演示/证据/java-runtime-osv-native-final.json",
+      "sha256": "fe25fe5713e2655910b4a661545003b713ef7fd62644572f27e97c7a6afd3a9f"
+    },
+    {
+      "path": "docs/开发与演示/证据/npm-audit-2026-10-17.json",
+      "sha256": "cdc7dd29a05d93e57386520687998ccbee2faa068a945d8b3fb99b7679e9b4ce"
+    },
+    {
+      "path": "docs/开发与演示/证据/npm-audit-final.json",
+      "sha256": "6b30385755728b755a27bc5e7ee378f057a20350878f5e6cb216ca4320d4098d"
+    },
+    {
+      "path": "docs/开发与演示/证据/npm-audit-native-final.json",
+      "sha256": "06c18d6ae5bb95560b3aaf924119c2ecbd29a69e9f4f8a67dc2bb1d7bc726c5e"
+    },
+    {
+      "path": "docs/开发与演示/证据/stage-one-validation.json",
+      "sha256": "9dddf74d7a7f381d57856ef213d70166c88ec3d1ce1f14b084b403737afc977e"
+    },
+    {
+      "path": "docs/开发与演示/阶段一严格复核与未关闭门禁.md",
+      "sha256": "93c5052cd909416b26a80563c93e2c2a7f10e393c27c0342adc606d40dc54a68"
+    },
+    {
+      "path": "docs/开发与演示/阶段一全面审查报告.md",
+      "sha256": "216b5f9849efaa50553ce4f6fb32bffba618382c2c2558acb4cf245d07e238f9"
+    },
+    {
+      "path": "docs/开发与演示/阶段一安全与工程收尾记录.md",
+      "sha256": "323d96bf26e6626a2f1024b3b9de354de53f471c560a7d4bf1eaadf9f7a974a5"
+    },
+    {
+      "path": "docs/开发与演示/阶段一收敛交付记录.md",
+      "sha256": "ac609302f2eb4bcaee974564ba2549433fd42fff1a510acde2c1a683ddf7828f"
+    },
+    {
+      "path": "docs/开发与演示/阶段一收敛审查与验收边界.md",
+      "sha256": "ed69466c23197e33edf938abdc257ad03c62e7b515c13fb23819fa4ede5bc363"
+    },
+    {
+      "path": "docs/开发与演示/阶段一新版架构与数据库交付记录.md",
+      "sha256": "e1c5f79518c39cb1ffab6d85868ada8a4af3b89fb5b26fa9fa5412f237a0c78d"
+    },
+    {
+      "path": "docs/开发与演示/阶段一演示运行指南.md",
+      "sha256": "f079875a6c0bed3a247537afc4667f0422f03d80d9361b40e2c6b4bd482407fb"
+    },
+    {
+      "path": "docs/开发与演示/阶段一演示验证记录.md",
+      "sha256": "ebf2c48e0031a74af8249ce6eb8c3ad7d0a192fa4b8c06fd0d3bc145f03e9d88"
+    },
+    {
+      "path": "docs/接口/public-api.openapi.json",
+      "sha256": "ad6ff05bf0bfd8700e0c27876f21ad9c486b2b137586200d7ac1f2553ff433af"
+    },
+    {
+      "path": "docs/架构与技术选型/AT01_整体模块与架构边界.md",
+      "sha256": "3ea6883a36a80d786516289c87f235864b7ced3c40cbee52b1bfdb8a02a43882"
+    },
+    {
+      "path": "docs/架构与技术选型/AT02_总体技术选型基线.md",
+      "sha256": "198e4bc4267f45541468ce2e1d995cc5c1e9be2c54d56a85389ab9312afdf883"
+    },
+    {
+      "path": "docs/架构与技术选型/AT03_关键业务链路技术验证.md",
+      "sha256": "7bde7b1e74e30c6f257719859009eaa706831bbbfefee72ee5aeef98795f5255"
+    },
+    {
+      "path": "docs/架构与技术选型/AT04_总体架构设计草案.md",
+      "sha256": "2ff6549997882b53f1efe01e5738b303be91d3e1573aa232b50da9f5c5bfb512"
+    },
+    {
+      "path": "docs/架构与技术选型/AT05_高风险业务决策矩阵.md",
+      "sha256": "c7fe02c7583dd10d9b7bebf7219d95a3dcc1f47f7d95dea0c8c48f0c2b5e0255"
+    },
+    {
+      "path": "docs/架构与技术选型/AT06_状态转换矩阵.md",
+      "sha256": "a50737e711de255d92d3a3194457c876cd8c4b770302a3218ba62746c185bb99"
+    },
+    {
+      "path": "docs/架构与技术选型/AT07_角色与资源权限矩阵.md",
+      "sha256": "b5144355a1371038eddc563c949bf042a4dd47c928ce0e4f1de2f025a9a797b2"
+    },
+    {
+      "path": "docs/架构与技术选型/AT08_事务并发幂等与补偿矩阵.md",
+      "sha256": "ad1754cea5dfc40a7a6c583a15ee980879a016f08f3d090d3f5e85e7cf86bd69"
+    },
+    {
+      "path": "docs/架构与技术选型/AT09_错误码与外部服务契约.md",
+      "sha256": "c520a80b5d01fc85d100b12e6d14d176180795c09058cf5b41ffba882a4801fd"
+    },
+    {
+      "path": "docs/架构与技术选型/AT10_阶段一数据库公开读模型.md",
+      "sha256": "e2e077a870e19b29dbbb972bb0499cae8522061db2223ccef3156601cbad61a3"
+    },
+    {
+      "path": "docs/计划/01_重构.md",
+      "sha256": "7343ef94c00aabdd120a84096e5c55f0d93baf22428558700ad754c17d5158a9"
+    },
+    {
+      "path": "docs/计划/P01_三阶段实施计划.md",
+      "sha256": "ff9781473dff8a1169574843dbc6fa4ce7342c79c70cc3b5865838d3dad45826"
+    },
+    {
+      "path": "docs/计划/阶段一收尾任务计划.md",
+      "sha256": "7c1decb38b6731a5323b40cfa3544c92e5dc77908b065d2c727c409f2bf12309"
+    },
+    {
+      "path": "docs/设计笔记集/00_设计总则/00_设计状态与文档规范.md",
+      "sha256": "da3fd8509b870546f46da9db6058cc0979d4c620113bfd52b271831761d8f241"
+    },
+    {
+      "path": "docs/设计笔记集/00_设计总则/01_领域术语与规则归属.md",
+      "sha256": "f5e851b1f149ce62204810c34e6a1e725972dd3f92eb6f2659ced1d9625fbeb1"
+    },
+    {
+      "path": "docs/设计笔记集/00_设计总则/02_阶段一MVP编码设计清单.md",
+      "sha256": "f22a7ac2f19ab3d40d0e63b905cac3617832053ccea86a1024185cae7232d600"
+    },
+    {
+      "path": "docs/设计笔记集/01_总体设计/01_总体模块与依赖设计.md",
+      "sha256": "dca8ff2df72d2b27456cab2cf31b16d5d5623b93432c701bc7d02032a1c21984"
+    },
+    {
+      "path": "docs/设计笔记集/01_总体设计/02_阶段开放与能力矩阵.md",
+      "sha256": "f81c7301e870d7a8110da2a18ea54fe6c5366feda2b0ad4929702754c13da921"
+    },
+    {
+      "path": "docs/设计笔记集/01_总体设计/03_跨模块用例与事务边界.md",
+      "sha256": "293f09682774d116f620b3614cf2919f0e834a31fe459fd6c18368c6cdd616b7"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/01_认证与会话设计.md",
+      "sha256": "3fb1b03524cd2ba9d905fd89b6977cb074f63be704cf86b3f6bafa00bfd2786a"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/02_权限与资源访问设计.md",
+      "sha256": "1321e77ee7b72052fdc0f0cc06cb9aba7147d09ebbabbc96678f82268b780d57"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/03_错误处理与错误码设计.md",
+      "sha256": "ecbbbc73e8651996a025d0d329d0d316a147802df5d0e3bf529d31ecc29715ea"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/04_日志审计与可观测性设计.md",
+      "sha256": "5ac6e418d278769bd0f8b89012a5622c013659f557423d7eefdc58ccafcf3b03"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/05_文件与对象存储设计.md",
+      "sha256": "ef6025f466f068678d82635e74ca59af27c7658b7de1f906f5bd285d8dc572d1"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/06_通知与任务补偿设计.md",
+      "sha256": "210df158341454bd755293f63724df849104f755b7514fd2f2b4589bb0a27f29"
+    },
+    {
+      "path": "docs/设计笔记集/02_通用后端/07_配置与密钥设计.md",
+      "sha256": "f0eaf3b6fa40b57bea4a1dbf6092426d454a0d00713b3aad22ce14aa30af8e51"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/00_业务模块详细设计模板.md",
+      "sha256": "b9062ddb94efaf5c563b9dce9db67511d877c04f791f748d6aedf58d962dc360"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/01_内容与品牌设计.md",
+      "sha256": "11ba7addde408579a2ed89a07a5de3bf98d08fcda2e74ecf36afa8d18cb230eb"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/02_作品与案例设计.md",
+      "sha256": "52831960fa2c90354d71533378349142273696294faf689c9ac7e4c1a58d4bb7"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/03_摄影业务与套餐设计.md",
+      "sha256": "5a1728547e7ea299e6263257b37cd5d338ff9fa1836e9135e622c35a8c7e08cd"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/04_客户与身份设计.md",
+      "sha256": "b49a7ae4eb1cd1c64b3a13cb124c7d02a8e4415431609f60248f84a69b85b02a"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/05_预约与档期设计.md",
+      "sha256": "9693a0364a578d47ae0268c243697056ef190e86bbe35880d9f01e8a2ef5cba0"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/06_订单与履约设计.md",
+      "sha256": "086edcab277d3305bd77f78c08fd3a66804a3ccc44cd094b4eb946a2011f394c"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/07_支付与退款设计.md",
+      "sha256": "19be6fe1fc167d7af8a4241603de22cfc9a8c1bd015194f491adf4fe00e6eae1"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/08_成片交付与授权设计.md",
+      "sha256": "807ade91925720a5783acdd4ec372b67d5e54ce783b428773acc9f2b3acbc69e"
+    },
+    {
+      "path": "docs/设计笔记集/03_业务模块/09_售后设计.md",
+      "sha256": "58cf8ec3c0c2aa2596090fd834bb8c3f443fce0ac9cf8ba7d800bbd4b59ceafc"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/01_公开查询接口.md",
+      "sha256": "74a6ed8daa9540bb64fd56fcb17c3f8d963d8bb175319967f51106547bc1b22b"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/02_客户业务接口.md",
+      "sha256": "06d265d034a70d32dc7d4d67f309a8171789122a87e40afc66d99218477222c1"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/03_后台管理接口.md",
+      "sha256": "bdb5f59291020ca8a7051ccc40ae7f6675d9b53e29a1c3f696e8e8e537201f07"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/04_支付回调与查单接口.md",
+      "sha256": "09f79e18b709a9fed7f08f0f886dd19528cf3d6dfade304e9b99176af745d96a"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/05_对象存储与网盘契约.md",
+      "sha256": "b67e068577a70356ca4df0d34b48b143c59f7519ad49e8a6d564de3b713724ed"
+    },
+    {
+      "path": "docs/设计笔记集/04_接口与外部契约/06_通知渠道契约.md",
+      "sha256": "1227add15f5f7bc402d6c6fbef91c81ce0f9038f1e3bca8f60edd3615abca83f"
+    },
+    {
+      "path": "docs/设计笔记集/05_数据与存储/01_领域对象与数据归属.md",
+      "sha256": "c1f9b468abd0508c94ab30a2f05114e5d4ae6c9d1d56161f904d7177b884acb2"
+    },
+    {
+      "path": "docs/设计笔记集/05_数据与存储/02_关系数据模型草案.md",
+      "sha256": "e8c42db207ed46543820472dc5d25803df225d9a4e07368cd3317110acf22c97"
+    },
+    {
+      "path": "docs/设计笔记集/05_数据与存储/03_文件与媒体数据模型.md",
+      "sha256": "978acb4662181377a19773bc8034a73d41d9870f2ed7b486e8dc6dc9d16053a0"
+    },
+    {
+      "path": "docs/设计笔记集/05_数据与存储/04_数据迁移、备份与保留.md",
+      "sha256": "8363bf7cf8ee6e61fb8944a6530b464153e1f66100db298f5309f6000c7b7551"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/品牌官网/01_公开内容与深层入口.md",
+      "sha256": "1115b03f56090412540ccfa10b8f1d9398d37816a7c5e5c8d887a74008070133"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/品牌官网/02_预约引导与跨端上下文.md",
+      "sha256": "dcba3faf7f3f945d46461fe56a32f435af76a51c7570c4305bad0e56e01b741a"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/小程序/01_客户任务与路由.md",
+      "sha256": "a4a910532db4b73572268168dbf31b9ec48a51b0257db09d6ca966ee71a3b1b1"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/小程序/02_状态反馈与接口消费.md",
+      "sha256": "029ce10c8f950ea32250657274cb778f966b023e54e7e2365835ab8706ccc6db"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/小程序/03_身份、支付与交付体验.md",
+      "sha256": "a77a16dffe022008426c532cff4f11b79dadab686859a9de451a732263367f3f"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/管理后台/01_工作台与待办.md",
+      "sha256": "b35992a7f2ba5ba691f9edc780f848171c823f25c3b9296b9563f9e2b58824e6"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/管理后台/02_内容预约订单运营.md",
+      "sha256": "8b86ab13d3e1238656803dff09b7611ce190bcfa7af53477ab63eb88dd0d5960"
+    },
+    {
+      "path": "docs/设计笔记集/06_客户端/管理后台/03_支付交付授权与补偿.md",
+      "sha256": "ffa24bcc9da49c43bcdec12589743257493226b0fcb94b69fbc56aae7b438e3f"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/01_设计级测试策略.md",
+      "sha256": "b7f829d42c2262519cbd85c478521ce076ed43e26c9a9738653e4676c1b313a1"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/02_模块验收场景.md",
+      "sha256": "4a0a626b371e2c29348d396e96a2eb44fc74762759c2c034b6e5a57dcfc0594d"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md",
+      "sha256": "379f027693727c5ccdffb3a1e5c6ab38539dc9c85646adeed6fcb6b2d04d8969"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/04_外部服务故障与补偿测试.md",
+      "sha256": "e4cce7fd9b26e17f9496e5813c6ddbf8da47def8e2fd58b609732edbb41b2e89"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/05_测试用例规范与设计方法.md",
+      "sha256": "ea783e765d4f49572f237dc455cde132837634b24bd46acddb2b64420297518e"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/06_测试数据与环境目录.md",
+      "sha256": "f4e945e0ecee48648d88ba800132877677b4dd58fbb28af6c9ba0ad1cf9b20e6"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/07_测试执行证据与质量门禁.md",
+      "sha256": "4eaab234954b3d2a7cfebf15bd68c93a84c3825860061c3fd81191424da2181e"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/08_需求追踪与测试待决项.md",
+      "sha256": "a4392cb8bf8299b088084def205bf1482aeeced12895579eb11ad3473109ff72"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/README.md",
+      "sha256": "cad08084ef852297a851a0e5be07f275901020bab32c851cb1ddeef4220e4542"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/01_导航与品牌联系用例.md",
+      "sha256": "8b11ace0375049f955c417d5c511f85d1abafcde4f1c9402a537c58b56523d14"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/02_摄影业务与套餐用例.md",
+      "sha256": "70074c0ddf657f5d097300317351f9529ff12ce9103baf24f3976acca9be5258"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/03_作品与公开资格用例.md",
+      "sha256": "1479f5ac6870ef31ebf228a1aaabb7f5c5e6c48298983ace79689d4a65cd9544"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/04_公开查询与安全用例.md",
+      "sha256": "86378ac4f5965e4a0cc4f54d794998c38cac09dd89209b06c4c159a5108090de"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/05_页面状态与缓存用例.md",
+      "sha256": "c4b61e51b8080d0bda42c86618e5036690127e03c4bd6b5278dee10f5deee476"
+    },
+    {
+      "path": "docs/设计笔记集/07_测试与验证/用例/阶段一/06_公开依赖故障与恢复用例.md",
+      "sha256": "b91945c4acde2a17c95993a900658a5ff0e78f50895e7e1103a870f81af1d30d"
+    },
+    {
+      "path": "docs/设计笔记集/08_决策记录/ADR-001_阶段一占位公开数据与公开资格.md",
+      "sha256": "61211c5a669b6b72f7cf5360b9a686510079c5b95db87a9f2d4b88b7e4b1e469"
+    },
+    {
+      "path": "docs/设计笔记集/08_决策记录/ADR-002_阶段一原生微信与演示验收范围.md",
+      "sha256": "768a7bd2fe472ea2880adc8645428875b23fea2317eae883f768f905ef4dbfc6"
+    },
+    {
+      "path": "docs/设计笔记集/README.md",
+      "sha256": "07eebca5153653711fcc5d2d26551d56f11bcf5b7af0e3942cc0b9c1387991b0"
+    },
+    {
+      "path": "docs/需求分析论证/A01_需求全景分析论证.md",
+      "sha256": "fe998f0c9202f9ce77ed6f80852ed095d52f558934622aa82d8a4ebb1b7b27ea"
+    },
+    {
+      "path": "docs/需求分析论证/A02_深入需求分析框架.md",
+      "sha256": "23c8a455d1a16f86ff0e22ac9ea10ac5e85b000051bf372136740ee269adf35c"
+    },
+    {
+      "path": "docs/需求分析论证/A03_摄影业务与目标用户.md",
+      "sha256": "4968bbdc714c6171efcfe18b1d1ce7b4d8eccfb13103e033797b026971d3a1c3"
+    },
+    {
+      "path": "docs/需求分析论证/A04_全程用户旅程与业务规则.md",
+      "sha256": "740f31c9f60f5b71e16c816775465247087243be185a256b7e490fbcec9b1497"
+    },
+    {
+      "path": "docs/需求分析论证/A05_内容与品牌展示.md",
+      "sha256": "eeeab28c6b0a35f7bdf2dd7e9acea1087f3d6bcc523f6a935aca5f40f6a31737"
+    },
+    {
+      "path": "docs/需求分析论证/A06_作品与案例.md",
+      "sha256": "f49f4f9bce51a9052400892e120abeb88529c0476bea0f0dad377910f88780fd"
+    },
+    {
+      "path": "docs/需求分析论证/A07_摄影业务与套餐.md",
+      "sha256": "8a44ac72fc142d31b272b6136c58ac3fd922b3eab1171cb19d25fb2b04c7fdba"
+    },
+    {
+      "path": "docs/需求分析论证/A08_小程序客户体验.md",
+      "sha256": "0c62e26b51acf46ae6149588437f961e39d06c5c4d68d6d3db43d8fe50e7b16d"
+    },
+    {
+      "path": "docs/需求分析论证/A09_品牌官网体验.md",
+      "sha256": "11dc998834c7f66a7fcd3cff571874fbbdfc77111c7761caffb4bdfd4bd82f49"
+    },
+    {
+      "path": "docs/需求分析论证/A10_工作室后台体验.md",
+      "sha256": "392ac61056ccf3bab46a362a05a4c05a67d8b2289af0089f0c1bb19e2a6e038d"
+    },
+    {
+      "path": "docs/需求分析论证/A11_身份、客户资料与隐私.md",
+      "sha256": "ce08256978fff0355eb8c94f5f167d86ae4ea6417ced7b8230608682f2bccbaf"
+    },
+    {
+      "path": "docs/需求分析论证/A12_预约与档期.md",
+      "sha256": "0d5f197ec606dfd1924d189a3ef4ff87c290fa960b8f89f8900772d937b57859"
+    },
+    {
+      "path": "docs/需求分析论证/A13_订单与履约.md",
+      "sha256": "0d3d5f9a900472c6b0f2dcea51757e757b2ca823c9b9b474fe054f087402d280"
+    },
+    {
+      "path": "docs/需求分析论证/A14_支付、退款与售后.md",
+      "sha256": "6004ffff335f7980664679255dea544f40d06c1bf2fb41e1fead9101e85acffc"
+    },
+    {
+      "path": "docs/需求分析论证/A15_成片交付与公开授权.md",
+      "sha256": "987712e041de072f295cf874385955ce3681da2b59dfe9fcf6e7d34f1cbb2347"
+    },
+    {
+      "path": "docs/需求分析论证/A16_横向体验与衡量.md",
+      "sha256": "b8691a053c81b4fb82c039e13743c753403f51ebe90f73421730f216b3ebf681"
+    },
+    {
+      "path": "frontend/.gitignore",
+      "sha256": "fab5892dfca2641ee746d64d3c58e6e0348363a237a2b8b904914d78d6983a11"
+    },
+    {
+      "path": "frontend/.prettierignore",
+      "sha256": "570dc268dbc5f007276446ebacc56576dda300ed6970c5106c7387d719177a51"
+    },
+    {
+      "path": "frontend/.prettierrc.json",
+      "sha256": "d4f5346195905144f85380e758bf5b13e110f4e635cb94dd8d42786dc147f010"
+    },
+    {
+      "path": "frontend/api/api.js",
+      "sha256": "271716d87b72131427ce768677270833699c9d963793f30b16bb7e71fe94cf8d"
+    },
+    {
+      "path": "frontend/api/public-display.js",
+      "sha256": "ac64a2bb90e5bb43a16b0086ba86fae7436a6982612fac91b124b8d2f7e2894e"
+    },
+    {
+      "path": "frontend/api/public.js",
+      "sha256": "d378c00707613bcba8f3e9c1fe17b00b3e21d2d5e051289da189ffe75ce0a0cd"
+    },
+    {
+      "path": "frontend/app.js",
+      "sha256": "ca7e3ac63c50d983e518c33ed2e4bd3548e36c72787449149e555f7f9e17fe4b"
+    },
+    {
+      "path": "frontend/app.json",
+      "sha256": "5aa0d3d3ffbc2bffcc4d1427b1aac38dd91d22440d99339d44b5f5fa77dc22e3"
+    },
+    {
+      "path": "frontend/app.wxss",
+      "sha256": "f40856f819a1dd56283a61ae070b7d6f2f5c0d91a982d3249be6d333d3cf479f"
+    },
+    {
+      "path": "frontend/components/demo-notice/index.js",
+      "sha256": "f81391ee542dcfc871351c0e2a1618a7da8b055750d33e46db15289be662800e"
+    },
+    {
+      "path": "frontend/components/demo-notice/index.json",
+      "sha256": "e7b657f5a4b032a68e9e084639b3a5564ce552896d269c3f8c4463bf7a7fa3b5"
+    },
+    {
+      "path": "frontend/components/demo-notice/index.wxml",
+      "sha256": "4ee9b3381cfc0af5580a9d3386a9b2d97ea920cf13c9e6be493dc2821e7d12a6"
+    },
+    {
+      "path": "frontend/components/demo-notice/index.wxss",
+      "sha256": "f46d7aa41c66510d2ac0c16992a0bf6f0557b050a2fd5948d714abf0eb72bb72"
+    },
+    {
+      "path": "frontend/config/release.json",
+      "sha256": "2574b97e00f34a05b8f1b78fe9b957f955bc83cd0b0deb1b388fe641b149d204"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-about-active.svg",
+      "sha256": "e95f3c0af4a9d95c47bb0202bd307cd8eee6a23bc9c8d99a69dca9555ee3eff3"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-about.svg",
+      "sha256": "37ffc77ba00c777586c3475800b35244c200244d1f03d70d28fea088615168b8"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-home-active.svg",
+      "sha256": "290ac0aa4af4f270bb52d2ffc0daf34d01905ff37373881c16d171efb1d7e56c"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-home.svg",
+      "sha256": "e9006a0cd4b247dc3e7c71aae6e0cfbd3cd70558526dd680d2065d46aae77280"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-services-active.svg",
+      "sha256": "9c63713419d6a83c388ce68543445a802534ed0e14147bb4ae0d87ecdf9cd358"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-services.svg",
+      "sha256": "019dc52f14ab5d1dcdf1ba94b1fe110ba76e095fa807507dcf36c690d6ce47a6"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-works-active.svg",
+      "sha256": "ff2d99ef3b9d13d9ee2c92b5ac62fce1d84a9853989351db15a203de3c2139a5"
+    },
+    {
+      "path": "frontend/design/tab-icons/tab-works.svg",
+      "sha256": "8363f2b0eb284a55979097804e6c472bec1f3bd5067a60cfc54cd84618f6fbd7"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "910f184a1f82984ceac28c5b2307e6a794531780c2a1d84d5e0c5d97df615844"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "8b5f21f49291473df416335b1495dd76df32594f640711b2c35de7dd693a59fd"
+    },
+    {
+      "path": "frontend/pages/about/about.js",
+      "sha256": "dfd52ee4829f67cb6a0c902bad0621b6f6c766511e99032cdcb7c22d7279bbf2"
+    },
+    {
+      "path": "frontend/pages/about/about.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/about/about.wxml",
+      "sha256": "0cf569e2fd899f75086fe149985c1c6440655f84d04f7fbe1f10105ca34d59ac"
+    },
+    {
+      "path": "frontend/pages/about/about.wxss",
+      "sha256": "73494c858a7454f7b938d170f632d2279486af969cda0a392f5459ef332b506e"
+    },
+    {
+      "path": "frontend/pages/index/index.js",
+      "sha256": "d4c41c82fab8c9ba19380ee29647e6b6ddd6031e4167a2977dc5d2bb798386d4"
+    },
+    {
+      "path": "frontend/pages/index/index.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/index/index.wxml",
+      "sha256": "12bb7d61009cc2011e54964195dcd23a5b65b2cc6973cea6e7634ef0eb4a2853"
+    },
+    {
+      "path": "frontend/pages/index/index.wxss",
+      "sha256": "7466ac187e1da095eaf4d49ab01b7d5ff09920e98c388074bb098bf929d4f42c"
+    },
+    {
+      "path": "frontend/pages/package/package.js",
+      "sha256": "a497c2ab8db323c85eba1e73e0d1c31593b25db7ef5e65ed8110f985e05cfdec"
+    },
+    {
+      "path": "frontend/pages/package/package.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/package/package.wxml",
+      "sha256": "a098c3547a3861c30680e15aa7c5e3c50b449340e5f55b44afbf31073e86be9f"
+    },
+    {
+      "path": "frontend/pages/package/package.wxss",
+      "sha256": "2514aa69e3d8bcce72a1a423fdd80d400931e29575b3274255dac9028a87fd44"
+    },
+    {
+      "path": "frontend/pages/package/pkgdetail.js",
+      "sha256": "c1e31c85728fdf9dd4636ea2fe798c816fcea7ab2c8fddad5b3780e71bab078e"
+    },
+    {
+      "path": "frontend/pages/package/pkgdetail.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/package/pkgdetail.wxml",
+      "sha256": "3343d58328a0e6f5a30330f20e4b12d2b012cabf618019400765e95274667766"
+    },
+    {
+      "path": "frontend/pages/package/pkgdetail.wxss",
+      "sha256": "4648e94ead98a8320bacbb662349392cea46578c8028e812715ea13d6cff7c13"
+    },
+    {
+      "path": "frontend/pages/works/workdetail.js",
+      "sha256": "d73833b4b08545855ed1a572a010b70ca7718ebda0b618d83c4e19a3a51ba91b"
+    },
+    {
+      "path": "frontend/pages/works/workdetail.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/works/workdetail.wxml",
+      "sha256": "ba4d944323713850a0f6080d6d6b6af205d32e0ad180718b5b2d54537ffda100"
+    },
+    {
+      "path": "frontend/pages/works/workdetail.wxss",
+      "sha256": "604c0fc9042f9f9ab7f77224fd2a5f53709a53eecfca2def745a17a71f236063"
+    },
+    {
+      "path": "frontend/pages/works/works.js",
+      "sha256": "6a4466f2a8d1baddaef89fc63e824645de5f02022353043aa48b3696c9c25a90"
+    },
+    {
+      "path": "frontend/pages/works/works.json",
+      "sha256": "747c6556527d27a4ade6f4827144f091622c987275fe04a8f7f4f94ffc1c3eb9"
+    },
+    {
+      "path": "frontend/pages/works/works.wxml",
+      "sha256": "abeffa85ac5cfb24e75ba59c2658ddb4d49fbc69a4ca8c22459bd60271291517"
+    },
+    {
+      "path": "frontend/pages/works/works.wxss",
+      "sha256": "f16915bd60ef92dfd2fc6a8048446337c708f726a7d5d3a2bf356e895d341078"
+    },
+    {
+      "path": "frontend/presentation/page-state.js",
+      "sha256": "c8a08b4633db4dcf579260339f566c50064c014cbeee17780edbb42b9dbcfbd3"
+    },
+    {
+      "path": "frontend/presentation/views.js",
+      "sha256": "2816bb05d7c163d3725b2bf34824ec829d50f44dea0fde9c5c31deb849bf9595"
+    },
+    {
+      "path": "frontend/scripts/build-config.mjs",
+      "sha256": "a833138e3593303d7e69f895d6cfde900b68635767966f92baee2707df90b764"
+    },
+    {
+      "path": "frontend/scripts/build-native.mjs",
+      "sha256": "69e26bb5bbcd9755c1997a9c6d081b2609065c4fea20638bdb8f40d9e2da0fa6"
+    },
+    {
+      "path": "frontend/scripts/check-public-contract.mjs",
+      "sha256": "f7e2499e627037b01bb9906d4264a6cd19fbd09138b483d1883360b966768f0c"
+    },
+    {
+      "path": "frontend/sitemap.json",
+      "sha256": "5af2e5f0b9f956776ee88705692efc9d83aaee070fd7a4cfa1326a70b846667b"
+    },
+    {
+      "path": "frontend/static/icons/tab-about-active.png",
+      "sha256": "2452a38ed32ccf4005b8cfa2a6d32bc7854f744d8e3df7f6c99038de05ce3b9b"
+    },
+    {
+      "path": "frontend/static/icons/tab-about.png",
+      "sha256": "0a67eb9a79b3deb01975dbe0dcf08945b81c63b28d8373aad341a00787f1e5e9"
+    },
+    {
+      "path": "frontend/static/icons/tab-home-active.png",
+      "sha256": "cedbe0751c11c5f3c778e01480cb9847ef81e818c677cf3eefa31c308596dd13"
+    },
+    {
+      "path": "frontend/static/icons/tab-home.png",
+      "sha256": "826767160821bf2f871975b96f419e50193f677d387fa264d6c33036feea7716"
+    },
+    {
+      "path": "frontend/static/icons/tab-services-active.png",
+      "sha256": "7c7ea36ec2930ada8220d35936e0c6513b07e326c697d80d46e67a9debb221af"
+    },
+    {
+      "path": "frontend/static/icons/tab-services.png",
+      "sha256": "064f1c7125ed54bab736db9cb081203084f5ebab84f2b8b46f0271c371d480b8"
+    },
+    {
+      "path": "frontend/static/icons/tab-works-active.png",
+      "sha256": "e60c37168de8a24c3b79538de78330cf8e00728dbaec506c04f06197c22bfefb"
+    },
+    {
+      "path": "frontend/static/icons/tab-works.png",
+      "sha256": "440708bca593a304ceaf71c4edd62e008e5a62a88607246a3daa04b2fa80126a"
+    },
+    {
+      "path": "frontend/tests/build-config.test.mjs",
+      "sha256": "e103cca215e52702fed15511bc56b3aa07d9808d85200f0e5550e623c6a12d17"
+    },
+    {
+      "path": "frontend/tests/native-build.test.mjs",
+      "sha256": "9eaee37b17d85f3269a6f5a0cfbd3b2275b270941a529bbb4077638a412bf86b"
+    },
+    {
+      "path": "frontend/tests/native-pages.test.mjs",
+      "sha256": "299d228617e40f4ec7ca5f485b3cf1911d6f243ce0e6eb884829cc1cec3111d5"
+    },
+    {
+      "path": "frontend/tests/public-api.test.mjs",
+      "sha256": "771c42bdf357c723641607b652aff13adcea2f4e14b771f303d7c7862fcb4c41"
+    },
+    {
+      "path": "frontend/tests/source-boundaries.test.mjs",
+      "sha256": "0d3e4321d947a8a75dd3ef6d2f90236be6aa5c8d6129adb7b0fdff06f725df93"
+    },
+    {
+      "path": "tools/check-docs.mjs",
+      "sha256": "01e9dda74c6395826c0cf98b0daad8088c8994c481a2b3a3f072180cc4c2d6d5"
+    },
+    {
+      "path": "tools/freeze-stage-one.mjs",
+      "sha256": "6d58887cf9c92a4e896f71b70e203458699419be896b2d18e7d7444616ab853b"
+    },
+    {
+      "path": "tools/stage-one-files.mjs",
+      "sha256": "842c62b09446e8835a77a8428d0ea5d26453b5e37d147496c588cc3bf763c14e"
+    },
+    {
+      "path": "tools/verify-source-export.mjs",
+      "sha256": "584721267bd045e62397c612a4914993c326c337aeda2de00c76433f7689da29"
+    }
+  ]
+}
