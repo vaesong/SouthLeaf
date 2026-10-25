@@ -13,6 +13,36 @@ export function createAdminRouter(auth: AuthStore) {
       component: () => import("./views/HomeView.vue"),
       meta: { requiresAuth: true },
     },
+    {
+      path: "/catalog",
+      name: "catalog",
+      component: () => import("./views/CatalogView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/outbox",
+      name: "outbox",
+      component: () => import("./views/OutboxView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/bookings",
+      name: "bookings",
+      component: () => import("./views/BookingsView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/works",
+      name: "works",
+      component: () => import("./views/WorksView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/works/:workId",
+      name: "work-edit",
+      component: () => import("./views/WorkEditView.vue"),
+      meta: { requiresAuth: true },
+    },
     { path: "/forbidden", name: "forbidden", component: () => import("./views/ForbiddenView.vue") },
     {
       path: "/:pathMatch(.*)*",

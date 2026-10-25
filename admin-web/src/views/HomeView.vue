@@ -113,6 +113,18 @@ async function logout() {
         <el-button text @click="retryCsrf">重試初始化</el-button>
       </div>
 
+      <p v-if="identity?.permissions.includes('CONTENT_READ')" class="helper-text">
+        <router-link to="/catalog" data-testid="catalog-link">维护品牌、业务与套餐 →</router-link>
+        <span aria-hidden="true"> · </span>
+        <router-link to="/works" data-testid="works-link">前往作品与图片管理 →</router-link>
+      </p>
+      <p v-if="identity?.permissions.includes('OUTBOX_READ')" class="helper-text">
+        <router-link to="/outbox" data-testid="outbox-link">通知失败待办 →</router-link>
+      </p>
+      <p v-if="identity?.permissions.includes('RESERVATION_READ')" class="helper-text">
+        <router-link to="/bookings" data-testid="bookings-link">预约与订单快照 →</router-link>
+      </p>
+
       <div class="identity-actions">
         <el-button
           type="danger"

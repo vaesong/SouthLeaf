@@ -578,3 +578,55 @@ a {
     padding: 30px 25px;
   }
 }
+
+/* S2-B content management */
+.content-shell {
+  gap: 20px;
+}
+
+.content-card {
+  width: min(960px, 100%);
+}
+
+.content-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.content-table th,
+.content-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.content-form {
+  display: grid;
+  gap: 14px;
+}
+
+.content-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.media-grid li {
+  display: grid;
+  gap: 6px;
+}
+
+.media-grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
