@@ -515,9 +515,11 @@ public final class BookingApplication {
                               () ->
                                   new BookingException(
                                       BookingFailure.NOT_FOUND, "PACKAGE_NOT_FOUND"));
+                  // Locked: an occupancy is about to be written, so a concurrent close must
+                  // either happen strictly before this check or strictly after this commit.
                   ServiceSlot slot =
                       schedule
-                          .findSlot(slotId)
+                          .findSlotForUpdate(slotId)
                           .orElseThrow(
                               () ->
                                   new BookingException(BookingFailure.NOT_FOUND, "SLOT_NOT_FOUND"));
@@ -883,7 +885,7 @@ public final class BookingApplication {
 
           ServiceSlot newSlot =
               schedule
-                  .findSlot(newSlotId)
+                  .findSlotForUpdate(newSlotId)
                   .orElseThrow(
                       () -> new BookingException(BookingFailure.NOT_FOUND, "SLOT_NOT_FOUND"));
           Optional<String> occupiedBy =

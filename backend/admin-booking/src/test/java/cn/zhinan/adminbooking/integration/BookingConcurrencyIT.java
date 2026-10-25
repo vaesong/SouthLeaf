@@ -1,6 +1,7 @@
 package cn.zhinan.adminbooking.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcCommandLedger;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcConnectionProvider;
@@ -63,9 +64,30 @@ class BookingConcurrencyIT {
   }
 
   private static final class SimpleDataSource implements DataSource {
+
+    private final int lockWaitTimeoutSeconds;
+
+    private SimpleDataSource() {
+      this(0);
+    }
+
+    private SimpleDataSource(int lockWaitTimeoutSeconds) {
+      this.lockWaitTimeoutSeconds = lockWaitTimeoutSeconds;
+    }
+
     @Override
     public Connection getConnection() throws SQLException {
-      return DriverManager.getConnection(URL, USER, PASSWORD);
+      Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+      if (lockWaitTimeoutSeconds > 0) {
+        // The wait timeout is a property of the waiting session, so it has to be set here and not
+        // on the gate that holds the row.
+        try (PreparedStatement set =
+            connection.prepareStatement("SET SESSION innodb_lock_wait_timeout = ?")) {
+          set.setInt(1, lockWaitTimeoutSeconds);
+          set.execute();
+        }
+      }
+      return connection;
     }
 
     @Override
@@ -207,7 +229,17 @@ class BookingConcurrencyIT {
    * Builds a booking application on its own connection, so two instances never share a connection.
    */
   private BookingApplication application() {
-    JdbcConnectionProvider connections = new JdbcConnectionProvider(new SimpleDataSource());
+    return application(0);
+  }
+
+  /**
+   * Same wiring, but the session that runs the work waits at most {@code lockWaitTimeoutSeconds}
+   * for a contended row. That turns "did this read take a lock" into an observable outcome instead
+   * of something the suite has to ask an administrative view about.
+   */
+  private BookingApplication application(int lockWaitTimeoutSeconds) {
+    JdbcConnectionProvider connections =
+        new JdbcConnectionProvider(new SimpleDataSource(lockWaitTimeoutSeconds));
     ScheduleRepository schedule = new JdbcScheduleRepository(connections);
     ReservationRepository reservations = new JdbcReservationRepository(connections);
     JdbcOrderRepository orders = new JdbcOrderRepository(connections);
@@ -379,6 +411,17 @@ class BookingConcurrencyIT {
       statement.setObject(4, java.sql.Timestamp.from(NOW));
       statement.setObject(5, java.sql.Timestamp.from(NOW));
       statement.executeUpdate();
+    }
+  }
+
+  private String slotStatus(String slotId) throws SQLException {
+    try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement statement =
+            connection.prepareStatement("SELECT status FROM booking_service_slot WHERE id = ?")) {
+      statement.setString(1, slotId);
+      try (ResultSet resultSet = statement.executeQuery()) {
+        return resultSet.next() ? resultSet.getString(1) : null;
+      }
     }
   }
 
@@ -633,6 +676,102 @@ class BookingConcurrencyIT {
     assertThat(count("booking_order_snapshot")).isZero();
     assertThat(count("booking_slot_occupancy")).isZero();
     assertThat(reservationStatus(reservation)).isEqualTo("PENDING_CONFIRMATION");
+  }
+
+  /**
+   * A confirmation that has to wait on the slot row must not turn into an order.
+   *
+   * <p>The gate connection holds the row and keeps the close uncommitted, so the confirmation is
+   * forced to contend for it. The session that runs the confirmation is allowed to wait only one
+   * second, which makes the contention observable without asking the server for an administrative
+   * view: a locking read runs into {@code Lock wait timeout exceeded}, while a plain snapshot read
+   * would sail through and book the slot. The close then commits and a retry has to be refused with
+   * {@code SLOT_CLOSED} against the committed state.
+   */
+  @Test
+  void aConfirmationThatWaitsOnTheSlotRowNeverBooksIt() throws Exception {
+    String slotId = "00000000-0000-0000-0000-000000000301";
+    String customerId = "00000000-0000-0000-0000-000000000311";
+    String reservationId = "00000000-0000-0000-0000-000000000321";
+    insertSlot(slotId);
+    insertCustomer(customerId);
+    insertReservation(reservationId, customerId, NOW.plusSeconds(172800));
+
+    try (Connection gate = DriverManager.getConnection(URL, USER, PASSWORD)) {
+      gate.setAutoCommit(false);
+      try (PreparedStatement lock =
+          gate.prepareStatement("SELECT id FROM booking_service_slot WHERE id = ? FOR UPDATE")) {
+        lock.setString(1, slotId);
+        lock.executeQuery().close();
+      }
+
+      long startedAt = System.nanoTime();
+      Throwable blocked =
+          catchThrowable(
+              () ->
+                  application(1)
+                      .confirmReservation(
+                          "actor-1", reservationId, slotId, 1, "confirm-key-close-race-000001"));
+      long waitedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
+
+      assertThat(blocked).as("the confirmation had to wait on the held slot row").isNotNull();
+      assertThat(blocked).isInstanceOf(BookingException.class);
+      assertThat(((BookingException) blocked).failure()).isEqualTo(BookingFailure.VERSION_CONFLICT);
+      assertThat(waitedMillis)
+          .as("a locking read waits for the held row instead of reading a stale snapshot")
+          .isGreaterThanOrEqualTo(1000L);
+
+      try (PreparedStatement close =
+          gate.prepareStatement(
+              "UPDATE booking_service_slot SET status = 'CLOSED', revision = revision + 1,"
+                  + " updated_at = ? WHERE id = ? AND status = 'OPEN'")) {
+        close.setObject(1, java.sql.Timestamp.from(NOW));
+        close.setString(2, slotId);
+        assertThat(close.executeUpdate()).isEqualTo(1);
+      }
+      gate.commit();
+    }
+
+    assertThat(count("booking_order")).isZero();
+    assertThat(count("booking_order_snapshot")).isZero();
+    assertThat(count("booking_slot_occupancy")).isZero();
+    assertThat(reservationStatus(reservationId)).isEqualTo("PENDING_CONFIRMATION");
+    assertThat(slotStatus(slotId)).isEqualTo("CLOSED");
+
+    BookingFailure retry = null;
+    try {
+      application()
+          .confirmReservation("actor-1", reservationId, slotId, 1, "confirm-key-close-race-000002");
+    } catch (BookingException refused) {
+      retry = refused.failure();
+    }
+    assertThat(retry).isEqualTo(BookingFailure.SLOT_CLOSED);
+    assertThat(count("booking_order")).isZero();
+  }
+
+  /**
+   * The other ordering: the confirmation owns the slot first. Closing afterwards is allowed, and it
+   * must not touch what the customer already agreed to.
+   */
+  @Test
+  void closingASlotAfterConfirmationKeepsTheOrderIntact() throws Exception {
+    String slotId = "00000000-0000-0000-0000-000000000302";
+    String customerId = "00000000-0000-0000-0000-000000000312";
+    String reservationId = "00000000-0000-0000-0000-000000000322";
+    insertSlot(slotId);
+    insertCustomer(customerId);
+    insertReservation(reservationId, customerId, NOW.plusSeconds(172800));
+
+    application()
+        .confirmReservation("actor-1", reservationId, slotId, 1, "confirm-key-before-close-0001");
+    assertThat(count("booking_order")).isEqualTo(1);
+
+    application().closeSlot("actor-1", slotId);
+
+    assertThat(count("booking_order")).isEqualTo(1);
+    assertThat(count("booking_slot_occupancy")).isEqualTo(1);
+    assertThat(reservationStatus(reservationId)).isEqualTo("CONFIRMED");
+    assertThat(occupantOf(slotId)).isEqualTo(reservationId);
   }
 
   @Test

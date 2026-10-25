@@ -919,6 +919,12 @@ class BookingApplicationTest {
     }
 
     @Override
+    public Optional<ServiceSlot> findSlotForUpdate(String slotId) {
+      // The in-memory fixture has no transactions, so "locked" and "plain" are the same read.
+      return findSlot(slotId);
+    }
+
+    @Override
     public List<ServiceSlot> listOpenSlots(Instant from, Instant to, int limit) {
       return slots.values().stream()
           .filter(slot -> "OPEN".equals(slot.status()))

@@ -33,6 +33,18 @@ public final class JdbcScheduleRepository implements ScheduleRepository {
   }
 
   @Override
+  public Optional<ServiceSlot> findSlotForUpdate(String slotId) {
+    ServiceSlot slot =
+        JdbcSupport.queryOne(
+            connections,
+            "SELECT id, start_at, end_at, business_zone, display_offset, status, capacity,"
+                + " rule_version, revision FROM booking_service_slot WHERE id = ? FOR UPDATE",
+            JdbcScheduleRepository::mapSlot,
+            slotId);
+    return Optional.ofNullable(slot);
+  }
+
+  @Override
   public List<ServiceSlot> listOpenSlots(Instant from, Instant to, int limit) {
     return JdbcSupport.queryList(
         connections,

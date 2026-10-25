@@ -95,6 +95,15 @@ public final class BookingPorts {
   public interface ScheduleRepository {
     Optional<ServiceSlot> findSlot(String slotId);
 
+    /**
+     * The same slot, read with a row lock.
+     *
+     * <p>Any transaction that is about to write an occupancy must go through this method: a plain
+     * read returns the pre-close snapshot, so a slot closed by a concurrent transaction would still
+     * look OPEN and the confirmation would succeed on a slot that no longer exists for booking.
+     */
+    Optional<ServiceSlot> findSlotForUpdate(String slotId);
+
     List<ServiceSlot> listOpenSlots(Instant from, Instant to, int limit);
 
     ServiceSlot createSlot(
