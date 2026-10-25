@@ -1,5 +1,6 @@
 package cn.zhinan.uniapp.common;
 
+import cn.zhinan.uniapp.booking.PublicBookingException;
 import cn.zhinan.uniapp.dto.PublicDtos;
 import cn.zhinan.uniapp.publicquery.PublicQueryException;
 import cn.zhinan.uniapp.publicquery.contract.PublicApiResponse;
@@ -34,6 +35,45 @@ public class GlobalExceptionHandler {
   public ResponseEntity<PublicApiResponse<Object>> storageFailure(CatalogStorageException ex) {
     return error(
         PublicQueryException.ErrorCode.PUBLIC_SERVICE_UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+  }
+
+  /**
+   * The customer booking entry keeps its own vocabulary; a booking failure is never a query error.
+   */
+  @ExceptionHandler(PublicBookingException.class)
+  public ResponseEntity<PublicApiResponse<Object>> bookingFailure(PublicBookingException ex) {
+    HttpStatus status =
+        switch (ex.getErrorCode()) {
+          case REQUEST_INVALID -> HttpStatus.BAD_REQUEST;
+          case SESSION_REQUIRED, IDENTITY_REJECTED -> HttpStatus.UNAUTHORIZED;
+          case RESOURCE_UNAVAILABLE -> HttpStatus.NOT_FOUND;
+          case SLOT_UNAVAILABLE, REQUEST_ALREADY_OPEN -> HttpStatus.CONFLICT;
+          case IDENTITY_PROVIDER_UNCONFIGURED, PACKAGE_CATALOG_UNCONFIGURED, SERVICE_UNAVAILABLE ->
+              HttpStatus.SERVICE_UNAVAILABLE;
+        };
+    String requestId = "req_" + UUID.randomUUID().toString().replace("-", "");
+    return ResponseEntity.status(status)
+        .cacheControl(CacheControl.noStore())
+        .body(
+            PublicApiResponse.error(
+                requestId,
+                "BOOKING_" + ex.getErrorCode().name(),
+                bookingMessage(ex.getErrorCode()),
+                new PublicDtos.Meta(Instant.now(), null, null, null)));
+  }
+
+  private static String bookingMessage(PublicBookingException.ErrorCode code) {
+    return switch (code) {
+      case REQUEST_INVALID -> "预约信息无效";
+      case SESSION_REQUIRED -> "请先完成微信登录";
+      case IDENTITY_REJECTED -> "微信登录失败，请重试";
+      case IDENTITY_PROVIDER_UNCONFIGURED -> "预约尚未开放";
+      case PACKAGE_CATALOG_UNCONFIGURED -> "套餐暂不可预约";
+      case SLOT_UNAVAILABLE -> "该时段已被占用";
+      case REQUEST_ALREADY_OPEN -> "你已有一笔待确认的申请";
+      case RESOURCE_UNAVAILABLE -> "预约记录不存在";
+      case SERVICE_UNAVAILABLE -> "预约服务暂不可用";
+    };
   }
 
   @ExceptionHandler({
