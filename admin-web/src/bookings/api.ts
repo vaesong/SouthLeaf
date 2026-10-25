@@ -74,10 +74,10 @@ export interface OrderDetail {
 }
 
 export interface BookingAction {
-  status: "CANCELLED" | "CONFIRMED";
+  status: "CANCELLED" | "CONFIRMED" | "REJECTED";
   commandId: string;
   reservationId: string;
-  orderId: string;
+  orderId: string | null;
   slotId: string | null;
   orderRevision: number;
   replayed: boolean;
@@ -184,6 +184,18 @@ export class AdminBookingApi {
       key,
       { reasonCode: "STAFF_REQUESTED" },
       "CANCELLED",
+      identifier,
+    );
+  }
+
+  async reject(id: string, etag: string, key: string): Promise<BookingAction> {
+    const identifier = requireId(id);
+    return this.write(
+      `${BASE}/reservations/${encodeURIComponent(identifier)}/reject`,
+      etag,
+      key,
+      { reasonCode: "STAFF_REJECTED" },
+      "REJECTED",
       identifier,
     );
   }
@@ -511,14 +523,18 @@ function validOrder(value: unknown): value is OrderDetail {
 function validAction(value: unknown): value is BookingAction {
   if (!value || typeof value !== "object") return false;
   const item = value as Record<string, unknown>;
+  // A rejection closes a request before any order exists, so it is the only status with no order.
+  const orderIdOk =
+    item.status === "REJECTED"
+      ? item.orderId === null
+      : typeof item.orderId === "string" && UUID.test(item.orderId);
   return (
-    (item.status === "CANCELLED" || item.status === "CONFIRMED") &&
+    (item.status === "CANCELLED" || item.status === "CONFIRMED" || item.status === "REJECTED") &&
     typeof item.commandId === "string" &&
     UUID.test(item.commandId) &&
     typeof item.reservationId === "string" &&
     UUID.test(item.reservationId) &&
-    typeof item.orderId === "string" &&
-    UUID.test(item.orderId) &&
+    orderIdOk &&
     (item.slotId === null || (typeof item.slotId === "string" && UUID.test(item.slotId))) &&
     Number.isInteger(item.orderRevision) &&
     typeof item.replayed === "boolean"

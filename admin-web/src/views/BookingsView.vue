@@ -27,6 +27,9 @@ const canCancel = computed(
 const canReschedule = computed(
   () => auth?.state.identity?.permissions.includes("RESERVATION_RESCHEDULE") ?? false,
 );
+const canReject = computed(
+  () => auth?.state.identity?.permissions.includes("RESERVATION_REJECT") ?? false,
+);
 const canConfirm = computed(
   () => auth?.state.identity?.permissions.includes("RESERVATION_CONFIRM") ?? false,
 );
@@ -164,7 +167,25 @@ async function confirmAndCreateOrder() {
   await runAction("confirm", confirmSlot.value);
 }
 
-async function runAction(kind: "cancel" | "reschedule" | "confirm", slotId?: string) {
+async function rejectReservation() {
+  if (!detail.value || !canReject.value) return;
+  const reservation = detail.value.reservation;
+  const reviewed = [
+    "請核對後拒絕此申請（此動作不佔用時段、不建立訂單）：",
+    "",
+    `預約 ${reservation.id}`,
+    `狀態 ${reservation.status}`,
+    `目前修訂 ${reservation.version}`,
+    `來源 ${reservation.source}`,
+    `失效時間 ${reservation.expiresAt}`,
+    "",
+    "拒絕只關閉申請並留下審計與通知；不會佔用檔期，也不會產生訂單與快照。",
+  ].join("\n");
+  if (!window.confirm(reviewed)) return;
+  await runAction("reject");
+}
+
+async function runAction(kind: "cancel" | "reschedule" | "confirm" | "reject", slotId?: string) {
   if (!detail.value || !etag.value || busy.value) return;
   const target = detail.value.reservation;
   const keyName = `${kind}:${target.id}`;
@@ -172,10 +193,13 @@ async function runAction(kind: "cancel" | "reschedule" | "confirm", slotId?: str
   busy.value = true;
   notice.value = "";
   try {
-    if (!slotId && kind !== "cancel") return;
+    // Cancel and reject close a request without naming a slot; confirm and reschedule must name one.
+    if (!slotId && kind !== "cancel" && kind !== "reject") return;
     let result: BookingAction;
     if (kind === "cancel") {
       result = await api.cancel(target.id, etag.value, key);
+    } else if (kind === "reject") {
+      result = await api.reject(target.id, etag.value, key);
     } else if (kind === "reschedule") {
       result = await api.reschedule(target.id, slotId!, etag.value, key);
     } else {
@@ -186,9 +210,11 @@ async function runAction(kind: "cancel" | "reschedule" | "confirm", slotId?: str
       ? "已核對到同一筆操作記錄；正在重新讀取預約。"
       : kind === "cancel"
         ? "取消已記錄；佔用時段已依交易釋放。沒有退款或支付處理。"
-        : kind === "reschedule"
-          ? "改期已記錄；請核對新的時段及通知待辦。"
-          : "確認已記錄；已建立唯一訂單與不可變快照，請核對訂單區塊。";
+        : kind === "reject"
+          ? "拒絕已記錄；申請已關閉，未佔用任何時段、未建立訂單。"
+          : kind === "reschedule"
+            ? "改期已記錄；請核對新的時段及通知待辦。"
+            : "確認已記錄；已建立唯一訂單與不可變快照，請核對訂單區塊。";
     await lookup(target.id, true);
     await refreshPending(true);
     notice.value = successNotice;
@@ -201,13 +227,17 @@ async function runAction(kind: "cancel" | "reschedule" | "confirm", slotId?: str
           ? detail.value?.reservation.status === "CANCELLED"
           : kind === "confirm"
             ? detail.value?.reservation.status === "CONFIRMED" && !!detail.value?.orderId
-            : !!slotId && detail.value?.reservation.slotId === slotId;
+            : kind === "reject"
+              ? detail.value?.reservation.status === "REJECTED"
+              : !!slotId && detail.value?.reservation.slotId === slotId;
       if (completed) {
         clearActionKey(keyName);
         notice.value =
           kind === "cancel"
             ? "重新讀取後已確認預約處於取消狀態，佔用時段已釋放。"
-            : "重新讀取後已確認預約目前位於所選時段。";
+            : kind === "reject"
+              ? "重新讀取後已確認申請已被拒絕。"
+              : "重新讀取後已確認預約目前位於所選時段。";
         requestId.value = "";
       } else {
         report(error);
@@ -468,6 +498,15 @@ onMounted(() => void refreshPending());
               </button>
             </div>
             <p v-else class="muted">此會話沒有確認成單能力。</p>
+            <button
+              v-if="canReject"
+              class="danger-button"
+              type="button"
+              :disabled="busy"
+              @click="rejectReservation"
+            >
+              {{ busy ? "處理中…" : "拒絕申請" }}
+            </button>
             <p class="muted">
               待確認申請不佔檔期。確認前請核對修訂與所選時段；確認於同一交易內佔用時段、建立唯一訂單與不可變快照，且不產生支付或定金。
             </p>

@@ -14,6 +14,7 @@ const targetSlotId = process.env.S6_E2E_TARGET_SLOT_ID;
 const deadMessageId = process.env.S6_E2E_DEAD_MESSAGE_ID;
 const confirmId = process.env.S6_E2E_CONFIRM_ID;
 const confirmSlotId = process.env.S6_E2E_CONFIRM_SLOT_ID;
+const rejectId = process.env.S6_E2E_REJECT_ID;
 
 assert.ok(baseUrl && /^https:\/\/localhost:[0-9]{5}$/.test(baseUrl));
 assert.ok(accountId && /^s1d\.[a-z0-9]{8}$/.test(accountId));
@@ -26,6 +27,7 @@ assert.match(targetSlotId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(deadMessageId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(confirmId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(confirmSlotId ?? "", /^[0-9a-f-]{36}$/i);
+assert.match(rejectId ?? "", /^[0-9a-f-]{36}$/i);
 
 await mkdir(profileDir);
 console.log("S6_BROWSER_STAGE:launch");
@@ -157,6 +159,34 @@ try {
   assert.match(await page.locator(".detail-section").innerText(), /CONFIRMED/);
   assert.match(await page.locator(".order-section").innerText(), /S6 Synthetic Test Package/);
   assert.match(await page.locator(".order-section").innerText(), /JPY/);
+
+  await lookup(rejectId);
+  console.log("S6_BROWSER_STAGE:reject-loaded");
+  assert.match(await page.locator(".detail-section").innerText(), /PENDING_CONFIRMATION/);
+  await Promise.all([
+    page.waitForEvent("dialog").then(async (dialog) => {
+      assert.match(dialog.message(), /請核對後拒絕/);
+      await dialog.accept();
+    }),
+    page.getByRole("button", { name: "拒絕申請" }).click(),
+  ]);
+  await page.getByRole("alert").first().waitFor({ timeout: 15000 });
+  console.log(
+    "S6_BROWSER_ALERT:" +
+      (await page.getByRole("alert").first().innerText()).replace(/\s+/g, " ").slice(0, 200),
+  );
+  await page
+    .getByRole("alert")
+    .getByText("拒絕已記錄", { exact: false })
+    .waitFor({ timeout: 15000 });
+  console.log("S6_BROWSER_STAGE:rejected");
+  assert.match(await page.locator(".detail-section").innerText(), /REJECTED/);
+  const refusedOrderText =
+    (await page.locator(".order-section").count()) === 0
+      ? ""
+      : await page.locator(".order-section").innerText();
+  assert.doesNotMatch(refusedOrderText, /S6 Synthetic Test Package/);
+  assert.equal(await page.locator(".confirm-block").count(), 0);
 
   await page.goto(`${baseUrl}/outbox`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.getByRole("heading", { name: "通知失败待办" }).waitFor({ timeout: 15000 });
