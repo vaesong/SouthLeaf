@@ -10,17 +10,17 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Rejects browser writes before CSRF/KDF/session work unless Origin exactly matches the local
- * contract.
+ * Rejects browser writes before CSRF/KDF/session work unless the request origin is one the
+ * configured policy accepts.
  */
 final class AdminOriginFilter extends OncePerRequestFilter {
   static final String UPLOAD_PATH = "/api/admin/v1/media/uploads";
   static final long MAX_UPLOAD_REQUEST_BYTES = 4L * 1024 * 1024 + 64 * 1024;
   private static final long MAX_PUT_BYTES = 16 * 1024;
-  private final String expectedOrigin;
+  private final AdminOriginPolicy originPolicy;
 
-  AdminOriginFilter(AdminWebProperties properties) {
-    this.expectedOrigin = properties.origin().toString();
+  AdminOriginFilter(AdminOriginPolicy originPolicy) {
+    this.originPolicy = originPolicy;
   }
 
   @Override
@@ -29,8 +29,7 @@ final class AdminOriginFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     if (!HttpMethod.GET.matches(request.getMethod())
         && !HttpMethod.HEAD.matches(request.getMethod())) {
-      String origin = request.getHeader("Origin");
-      if (!expectedOrigin.equals(origin)) {
+      if (!originPolicy.accepts(request.getHeader("Origin"))) {
         AdminHttpResponses.writeError(
             response,
             HttpServletResponse.SC_FORBIDDEN,

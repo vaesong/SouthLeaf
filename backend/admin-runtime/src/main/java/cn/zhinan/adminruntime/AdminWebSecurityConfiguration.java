@@ -47,7 +47,7 @@ class AdminWebSecurityConfiguration {
       throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
     return http.securityMatcher("/api/admin/v1/**")
         .csrf(csrfConfig -> csrfConfig.csrfTokenRepository(csrf))
-        .addFilterBefore(new AdminOriginFilter(properties), CsrfFilter.class)
+        .addFilterBefore(new AdminOriginFilter(properties.originPolicy()), CsrfFilter.class)
         .cors(AbstractHttpConfigurer::disable)
         .sessionManagement(
             sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

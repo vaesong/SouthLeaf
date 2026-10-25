@@ -24,12 +24,6 @@ final class AdminRuntimeProperties {
           "SOUTHLEAF_ADMIN_DB_PASSWORD",
           "SOUTHLEAF_ADMIN_DB_SCHEMA",
           "SOUTHLEAF_ADMIN_DB_EXPECTED_USER",
-          "SOUTHLEAF_ADMIN_WEB_MODE",
-          "SOUTHLEAF_ADMIN_WEB_ORIGIN",
-          "SOUTHLEAF_ADMIN_WEB_PORT",
-          "SOUTHLEAF_ADMIN_WEB_KEYSTORE_PATH",
-          "SOUTHLEAF_ADMIN_WEB_KEYSTORE_PASSWORD",
-          "SOUTHLEAF_ADMIN_WEB_KEYSTORE_TYPE",
           "SOUTHLEAF_ADMIN_BOOKING_MODE",
           "SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME",
           "SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD",
@@ -73,6 +67,8 @@ final class AdminRuntimeProperties {
           || k.equals("TRACE")
           || (k.startsWith("SOUTHLEAF_ADMIN_")
               && !KEYS.contains(key)
+              // The web listener owns its own vocabulary; read it there so they cannot drift.
+              && !AdminWebProperties.KEYS.contains(key)
               && !AdminContentProperties.KEYS.contains(key)
               && !AdminOutboxProperties.KEYS.contains(key)
               // Read the booking vocabulary from its owner so the two lists cannot drift apart.

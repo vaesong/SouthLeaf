@@ -29,7 +29,7 @@ class AdminOriginFilterTest {
     var response = new MockHttpServletResponse();
     var chain = new MockFilterChain();
 
-    new AdminOriginFilter(properties()).doFilter(request, response, chain);
+    new AdminOriginFilter(properties().originPolicy()).doFilter(request, response, chain);
 
     assertThat(response.getStatus()).isEqualTo(403);
     assertThat(response.getHeader("Cache-Control")).isEqualTo("no-store");
@@ -47,7 +47,7 @@ class AdminOriginFilterTest {
     var response = new MockHttpServletResponse();
     var chain = new MockFilterChain();
 
-    new AdminOriginFilter(properties()).doFilter(request, response, chain);
+    new AdminOriginFilter(properties().originPolicy()).doFilter(request, response, chain);
 
     assertThat(response.getStatus()).isEqualTo(413);
     assertThat(response.getContentAsString()).contains("PAYLOAD_TOO_LARGE");

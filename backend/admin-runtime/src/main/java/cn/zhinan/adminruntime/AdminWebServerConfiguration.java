@@ -2,9 +2,8 @@ package cn.zhinan.adminruntime;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.EnumSet;
+import org.apache.catalina.valves.RemoteIpValve;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
@@ -25,21 +24,35 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebSecurity
 class AdminWebServerConfiguration {
   @Bean
-  ServletWebServerFactory adminServletWebServerFactory(AdminWebProperties properties)
-      throws UnknownHostException {
+  ServletWebServerFactory adminServletWebServerFactory(AdminWebProperties properties) {
     if (!properties.enabled())
       throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
     var factory = new TomcatServletWebServerFactory();
-    factory.setAddress(InetAddress.getByName("localhost"));
+    factory.setAddress(properties.bindAddress());
     factory.setPort(properties.port());
-    var ssl = new Ssl();
-    ssl.setEnabled(true);
-    ssl.setKeyStore(properties.keyStorePath().toUri().toString());
-    ssl.setKeyStorePassword(properties.keyStorePassword());
-    ssl.setKeyStoreType(properties.keyStoreType());
-    ssl.setKeyAlias("localhost");
-    ssl.setEnabledProtocols(new String[] {"TLSv1.2", "TLSv1.3"});
-    factory.setSsl(ssl);
+    // TLS is present only when this profile terminates it; a proxy-terminated deployment has none.
+    properties
+        .tls()
+        .ifPresent(
+            material -> {
+              var ssl = new Ssl();
+              ssl.setEnabled(true);
+              ssl.setKeyStore(material.keyStoreUri().toString());
+              ssl.setKeyStorePassword(material.password());
+              ssl.setKeyStoreType(material.type());
+              if (material.alias() != null) ssl.setKeyAlias(material.alias());
+              ssl.setEnabledProtocols(new String[] {"TLSv1.2", "TLSv1.3"});
+              factory.setSsl(ssl);
+            });
+    if (!properties.trustedProxies().isEmpty()) {
+      // Only the named proxies may rewrite the scheme, so request.isSecure() still means HTTPS.
+      var valve = new RemoteIpValve();
+      valve.setProtocolHeader("X-Forwarded-Proto");
+      valve.setProtocolHeaderHttpsValue("https");
+      valve.setRemoteIpHeader("X-Forwarded-For");
+      valve.setInternalProxies(properties.trustedProxiesPattern());
+      factory.addEngineValves(valve);
+    }
     factory.setRegisterDefaultServlet(false);
     return factory;
   }

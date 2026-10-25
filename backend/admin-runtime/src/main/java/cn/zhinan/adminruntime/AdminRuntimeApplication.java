@@ -95,12 +95,16 @@ public final class AdminRuntimeApplication {
     properties.put("spring.main.banner-mode", "off");
     properties.put("logging.config", "classpath:logback-admin.xml");
     if (web.enabled()) {
-      properties.put("server.address", "localhost");
+      properties.put("server.address", web.bindAddress().getHostAddress());
       properties.put("server.port", web.port());
-      properties.put("server.ssl.enabled", true);
-      properties.put("server.ssl.key-store", web.keyStorePath().toUri().toString());
-      properties.put("server.ssl.key-store-password", web.keyStorePassword());
-      properties.put("server.ssl.key-store-type", web.keyStoreType());
+      web.tls()
+          .ifPresent(
+              material -> {
+                properties.put("server.ssl.enabled", true);
+                properties.put("server.ssl.key-store", material.keyStoreUri().toString());
+                properties.put("server.ssl.key-store-password", material.password());
+                properties.put("server.ssl.key-store-type", material.type());
+              });
     }
     return Map.copyOf(properties);
   }
