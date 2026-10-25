@@ -224,6 +224,20 @@ def verify_business_facts(helpers, state: dict[str, object], ids: dict[str, str]
         f"SELECT slot_id,amount_minor_units,currency_code FROM `{schema}`.booking_order_snapshot WHERE order_id='{ids['reschedule_order']}';"
     ) != f"{old_slot}\t12345\tJPY":
         raise RuntimeError("RESCHEDULE_SNAPSHOT_MUTATED")
+    # A refused reschedule must leave the original assignment, its revision and the ledger intact.
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_slot_assignment_history WHERE reservation_id='{moved}';"
+    ) != "2":
+        raise RuntimeError("RESCHEDULE_ASSIGNMENT_HISTORY_MISMATCH")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_slot_assignment_history "
+        f"WHERE slot_id='{cancel_slot}' AND reservation_id='{moved}';"
+    ) != "0":
+        raise RuntimeError("REFUSED_RESCHEDULE_LEAKED_ASSIGNMENT")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_command WHERE operation='RESCHEDULE_RESERVATION';"
+    ) != "1":
+        raise RuntimeError("REFUSED_RESCHEDULE_RECORDED_COMMAND")
     cancelled_state = query(
         f"SELECT status,version FROM `{schema}`.booking_reservation WHERE id='{cancelled}';"
     ).split("\t")
@@ -502,6 +516,8 @@ def run_browser(helpers, state, tools, account_id, password, ids):
             "S6_E2E_RESCHEDULE_ID": ids["reschedule_reservation"],
             "S6_E2E_CANCEL_ID": ids["cancel_reservation"],
             "S6_E2E_TARGET_SLOT_ID": ids["target_slot"],
+            # The cancel reservation still holds this slot when the refused reschedule runs.
+            "S6_E2E_CONFLICT_SLOT_ID": ids["cancel_slot"],
             "S6_E2E_DEAD_MESSAGE_ID": ids["dead_outbox_message"],
             "S6_E2E_CONFIRM_ID": ids["confirm_reservation"],
             "S6_E2E_CONFIRM_SLOT_ID": ids["confirm_slot"],
@@ -628,7 +644,7 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         seed_dead_letter(helpers, state, ids)
         print("S6_STAGE:runtime_https_booking_and_test_sink_outbox")
         start_runtime(helpers, state, tools, build, passwords)
-        print("S6_STAGE:edge_browser_confirm_reject_reschedule_cancel_and_outbox_recovery")
+        print("S6_STAGE:edge_browser_confirm_reject_reschedule_refused_and_outbox_recovery")
         run_browser(helpers, state, tools, account_id, passwords["account"], ids)
         verify_business_facts(helpers, state, ids)
         status = "PASS"
@@ -647,7 +663,7 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         "kind": FIXTURE_KIND,
         "status": status,
         "runId": run_id,
-        "checkCount": 9,
+        "checkCount": 10,
         "checks": [
             "dedicated_isolated_tls_mysql_and_migrations",
             "verified_booking_writer_and_outbox_grants",
@@ -655,7 +671,8 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
             "runtime_https_same_origin_login_and_csrf",
             "browser_pending_request_confirmed_into_unique_order",
             "browser_pending_request_rejected_without_side_effects",
-            "browser_reschedule_cancel_and_order_revision",
+            "browser_reschedule_and_refused_reschedule_keeps_original",
+          "browser_reschedule_cancel_and_order_revision",
             "browser_outbox_failure_review_and_manual_recovery",
             "database_occupancy_audit_command_and_outbox_facts",
         ],

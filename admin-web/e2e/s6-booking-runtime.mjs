@@ -15,6 +15,7 @@ const deadMessageId = process.env.S6_E2E_DEAD_MESSAGE_ID;
 const confirmId = process.env.S6_E2E_CONFIRM_ID;
 const confirmSlotId = process.env.S6_E2E_CONFIRM_SLOT_ID;
 const rejectId = process.env.S6_E2E_REJECT_ID;
+const conflictSlotId = process.env.S6_E2E_CONFLICT_SLOT_ID;
 
 assert.ok(baseUrl && /^https:\/\/localhost:[0-9]{5}$/.test(baseUrl));
 assert.ok(accountId && /^s1d\.[a-z0-9]{8}$/.test(accountId));
@@ -28,6 +29,7 @@ assert.match(deadMessageId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(confirmId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(confirmSlotId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(rejectId ?? "", /^[0-9a-f-]{36}$/i);
+assert.match(conflictSlotId ?? "", /^[0-9a-f-]{36}$/i);
 
 await mkdir(profileDir);
 console.log("S6_BROWSER_STAGE:launch");
@@ -113,6 +115,48 @@ try {
   console.log("S6_BROWSER_STAGE:rescheduled");
   assert.match(await page.locator(".detail-section").innerText(), new RegExp(targetSlotId));
   assert.match(await page.locator(".revision-list").innerText(), /修訂 2/);
+
+  // A refused reschedule must keep the original assignment: the target slot is already held by
+  // another confirmed reservation, so the runtime answers 409 and the detail stays unchanged.
+  const refused = await page.evaluate(
+    async ({ id, slot }) => {
+      const detail = await fetch(
+        `/api/admin/v1/bookings/reservations/${encodeURIComponent(id)}`,
+        { credentials: "same-origin" },
+      );
+      const etag = detail.headers.get("ETag") ?? "";
+      const csrfEnvelope = await (
+        await fetch("/api/admin/v1/auth/csrf", { credentials: "same-origin" })
+      ).json();
+      const token = csrfEnvelope?.data?.csrfToken ?? "";
+      const response = await fetch(
+        `/api/admin/v1/bookings/reservations/${encodeURIComponent(id)}/reschedule`,
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": token,
+            "If-Match": etag,
+            "Idempotency-Key": "s6-refused-reschedule-0001",
+          },
+          body: JSON.stringify({ slotId: slot, reasonCode: "S6_REFUSED_RESCHEDULE" }),
+        },
+      );
+      const envelope = await response.json();
+      return { status: response.status, code: envelope?.code, etag };
+    },
+    { id: rescheduleId, slot: conflictSlotId },
+  );
+  console.log("S6_BROWSER_REFUSED:" + refused.status + ":" + String(refused.code));
+  assert.equal(refused.status, 409);
+  assert.equal(refused.code, "SLOT_UNAVAILABLE");
+  console.log("S6_BROWSER_STAGE:reschedule-refused");
+  await lookup(rescheduleId);
+  assert.match(await page.locator(".detail-section").innerText(), new RegExp(targetSlotId));
+  assert.match(await page.locator(".revision-list").innerText(), /修訂 2/);
+  assert.doesNotMatch(await page.locator(".revision-list").innerText(), /修訂 3/);
+  console.log("S6_BROWSER_REFUSED_RESCHEDULE:PASS");
 
   await lookup(cancelId);
   console.log("S6_BROWSER_STAGE:cancel-loaded");
