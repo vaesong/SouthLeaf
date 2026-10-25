@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "SouthLeaf Stage-one Public Browsing API",
-    "version": "0.3.0-db",
-    "description": "Database-backed stage-one public query contract. No legacy aliases, anonymous writes or JSON fallback. Demo data is explicit seeded database content, not production authorization proof."
+    "title": "SouthLeaf Public API (browsing + stage-two booking entry)",
+    "version": "0.4.0-booking",
+    "description": "Stage-one public browsing plus the stage-two customer booking entry. The entry opens a request only: it never holds a slot, never creates an order and never models a payment. WeChat login is the identity basis; a phone number is optional and is not collected by this contract."
   },
   "servers": [
     {
@@ -1455,6 +1455,597 @@
           }
         }
       }
+    },
+    "/api/v1/public/booking/packages": {
+      "get": {
+        "operationId": "listBookablePackages",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "当前可预约的套餐版本",
+        "description": "只返回运营方显式发布的可预约版本；未发布即不可预约，不存在默认套餐。",
+        "responses": {
+          "200": {
+            "description": "已发布的可预约套餐版本",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingPackageList"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "BOOKING_SERVICE_UNAVAILABLE / BOOKING_IDENTITY_PROVIDER_UNCONFIGURED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/booking/slots": {
+      "get": {
+        "operationId": "listBookingSlots",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "按营业日区间列出仍开放且未被占用的时段",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "营业时区下的起始日期；不得早于昨天。"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "营业时区下的结束日期；与 from 的跨度不超过 31 天。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "时段列表；时间同时给出 UTC 与本地展示值",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingSlotList"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BOOKING_REQUEST_INVALID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "BOOKING_SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/booking/session": {
+      "post": {
+        "operationId": "startBookingSession",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "用微信登录 code 换取预约会话",
+        "description": "服务端调用 code2session 仅取 openid，落库为不可逆指纹；同手机号/相近姓名永不自动合并。请求体只接受 loginCode 一个字段。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "loginCode"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "loginCode": {
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 512
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "签名令牌；服务端不保存会话",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingSession"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BOOKING_REQUEST_INVALID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "BOOKING_IDENTITY_REJECTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "BOOKING_IDENTITY_PROVIDER_UNCONFIGURED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/booking/requests": {
+      "get": {
+        "operationId": "listMyBookingRequests",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "本人最近的预约申请",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer "
+            },
+            "description": "值来自 /booking/session 返回的 token；只保存在客户端，服务端不存会话。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "仅本人的申请，按提交时间倒序",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingRequestList"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "BOOKING_SESSION_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBookingRequest",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "提交预约申请（不占档、不建单、不收款）",
+        "description": "申请写入与审计、outbox 在同一事务；申请不写入占用表，档期只由运营方人工确认时占用。同一客户同时只允许一笔待确认申请。",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer "
+            },
+            "description": "值来自 /booking/session 返回的 token；只保存在客户端，服务端不存会话。"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{8,64}$"
+            },
+            "description": "同一次提交的重试必须复用同一个键；同一个键配不同请求体会被拒绝。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slotId",
+                  "packageVersionRef"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "slotId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]{8,64}$"
+                  },
+                  "packageVersionRef": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]{1,64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "已受理的申请；order 必为 null",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingRequest"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BOOKING_REQUEST_INVALID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "BOOKING_SESSION_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "BOOKING_SLOT_UNAVAILABLE / BOOKING_REQUEST_ALREADY_OPEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "BOOKING_SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/booking/requests/{reservationId}": {
+      "get": {
+        "operationId": "getMyBookingRequest",
+        "tags": [
+          "Public booking"
+        ],
+        "summary": "本人单笔申请与确认约定",
+        "description": "确认后附带不可变订单快照的只读展示（套餐、时段、参考金额）。金额只作记录，响应中没有任何支付状态或支付入口。",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9-]{8,64}$"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer "
+            },
+            "description": "值来自 /booking/session 返回的 token；只保存在客户端，服务端不存会话。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "本人申请；非本人一律 404",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "code",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingRequest"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "BOOKING_SESSION_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "BOOKING_RESOURCE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2261,6 +2852,261 @@
           "nextCursor",
           "dataMode"
         ]
+      },
+      "BookingPackage": {
+        "type": "object",
+        "required": [
+          "packageVersionRef",
+          "displayName"
+        ],
+        "properties": {
+          "packageVersionRef": {
+            "type": "string",
+            "description": "套餐版本引用，提交申请时原样回传"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "BookingPackageList": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingPackage"
+            }
+          }
+        }
+      },
+      "BookingSlot": {
+        "type": "object",
+        "required": [
+          "slotId",
+          "startAt",
+          "endAt",
+          "localDate",
+          "localStart",
+          "localEnd",
+          "zoneLabel"
+        ],
+        "properties": {
+          "slotId": {
+            "type": "string"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC 瞬时"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "localDate": {
+            "type": "string",
+            "description": "营业时区下的日期"
+          },
+          "localStart": {
+            "type": "string",
+            "description": "营业时区下的开始时间 HH:mm"
+          },
+          "localEnd": {
+            "type": "string"
+          },
+          "zoneLabel": {
+            "type": "string",
+            "description": "展示用偏移，如 +09:00"
+          }
+        }
+      },
+      "BookingSlotList": {
+        "type": "object",
+        "required": [
+          "items",
+          "requestedFrom",
+          "requestedTo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingSlot"
+            }
+          },
+          "requestedFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "requestedTo": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "BookingSession": {
+        "type": "object",
+        "required": [
+          "customerRef",
+          "displayName",
+          "token",
+          "expiresAt",
+          "identity"
+        ],
+        "properties": {
+          "customerRef": {
+            "type": "string",
+            "description": "客户引用；不含 openid 或手机号"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "HMAC 签名令牌，随 Authorization: Bearer 提交"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "identity": {
+            "type": "string",
+            "enum": [
+              "WECHAT"
+            ]
+          }
+        }
+      },
+      "BookingOrderAgreement": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "packageDisplayName",
+          "currency",
+          "amountMinorUnits",
+          "amountLabel",
+          "slotLabel",
+          "capturedAt",
+          "settlementNotice"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "packageDisplayName": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "amountMinorUnits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "amountLabel": {
+            "type": "string",
+            "description": "展示用金额文本"
+          },
+          "slotLabel": {
+            "type": "string",
+            "description": "营业时区下的约定时段"
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settlementNotice": {
+            "type": "string",
+            "description": "明示本阶段不收款；不存在支付状态字段"
+          }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "required": [
+          "reservationId",
+          "status",
+          "displayStatus",
+          "createdAt",
+          "expiresAt",
+          "packageVersionRef"
+        ],
+        "properties": {
+          "reservationId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_CONFIRMATION",
+              "CONFIRMED",
+              "REJECTED",
+              "EXPIRED",
+              "CANCELLED"
+            ],
+            "description": "数据库中的权威状态"
+          },
+          "displayStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING_CONFIRMATION",
+              "CONFIRMED",
+              "REJECTED",
+              "EXPIRED",
+              "CANCELLED"
+            ],
+            "description": "读取时派生的展示状态；超过有效期即显示 EXPIRED，存储状态仍由运营方收敛任务处理"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "packageVersionRef": {
+            "type": "string"
+          },
+          "requestedSlot": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BookingSlot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BookingOrderAgreement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "BookingRequestList": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingRequest"
+            }
+          }
+        }
       }
     }
   }
