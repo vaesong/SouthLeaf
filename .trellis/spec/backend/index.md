@@ -9,3 +9,7 @@ These guides describe the current stage-one implementation, not a production acc
 - [Logging Guidelines](./logging-guidelines.md)
 
 Current acceptance and unresolved gates: [stage-one delivery](../../../docs/开发与演示/阶段一收敛交付记录.md).
+
+## Credential increments
+
+Read [credential guidelines](credential-guidelines.md) before touching login/crypto/event ports or runtime wiring; it defines executable C1 contracts and the C2/C3 boundaries.

@@ -1,0 +1,3 @@
+{"file": "docs/设计笔记集/04_接口与外部契约/03_后台管理接口.md", "reason": "D-403 S1-D API and browser security contract"}
+{"file": "docs/设计笔记集/06_客户端/管理后台/01_工作台与待办.md", "reason": "D-606 S1-D admin web state and accessibility contract"}
+{"file": "docs/设计笔记集/02_通用后端/01_认证与会话设计.md", "reason": "Authentication/session lifecycle boundary"}

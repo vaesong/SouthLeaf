@@ -1,0 +1,970 @@
+{
+  "date": "2026-10-18",
+  "scope": "P03 S1-A only; module/artifact isolation, not usable management runtime or production acceptance",
+  "task": ".trellis/tasks/10-18-s1a-module-isolation",
+  "implementationStatus": "implemented and locally verified; not committed/pushed; Trellis not archived",
+  "backendVerify": {
+    "job": "j468",
+    "exitCode": 0,
+    "unitAndArchitecture": 97,
+    "integration": 39,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "candidateHttp": {
+    "job": "j471",
+    "serverJob": "j470",
+    "artifact": "backend/public-api/target/uniapp-api-0.1.0-SNAPSHOT.jar",
+    "port": 8091,
+    "publicChecks": 230,
+    "safetyChecks": 8,
+    "contractSuccessCalls": 10,
+    "contractUniqueOperations": 9,
+    "temporaryProcessStopped": true
+  },
+  "updatedStartupScript": {
+    "job": "j465",
+    "serverJob": "j464",
+    "port": 8092,
+    "publicChecks": 230,
+    "temporaryProcessStopped": true
+  },
+  "negativeChecks": {
+    "publicStartupGuards": "j455",
+    "adminPackagedEntryRefusal": "j456",
+    "cliPackagedRefusalAndHistoricalFreezeGuard": "j466",
+    "powershellSyntax": "j467"
+  },
+  "dependencyAdvisories": {
+    "job": "j463",
+    "resolvedMavenCoordinates": 52,
+    "matches": 0,
+    "scope": "public runtime; management external jar versions proven subset; excludes plugins/exploitability",
+    "finalRecheckJob": "j473"
+  },
+  "frontendAndDocs": {
+    "job": "j472",
+    "exitCode": 0,
+    "frontendTests": 53,
+    "failures": 0,
+    "skipped": 0,
+    "format": "PASS",
+    "markdownFiles": 127,
+    "links": 524,
+    "linkErrors": 0,
+    "gitDiffCheck": "PASS",
+    "finalDocumentationRecheck": "j474"
+  },
+  "sourceAndTestProof": {
+    "mappedOldSourceFiles": 65,
+    "byteUnchangedPublicAndSqlFiles": 46,
+    "legacyRuntimeFilesUnchanged": 85,
+    "unitAndArchitecture": 97,
+    "mysqlIntegration": 39,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "replacedLegacyArchitectureCases": [
+      [
+        "AdminSecurityArchitectureTest",
+        "existingPublicReadModulesDoNotDependOnAdminSecurity"
+      ],
+      [
+        "AdminSecurityArchitectureTest",
+        "firstBatchDoesNotSilentlyEnableAnUnprotectedRuntime"
+      ]
+    ],
+    "newCases": [
+      [
+        "PublicIsolationTest",
+        "publicClasspathHasNoManagementTypesOrResources"
+      ],
+      [
+        "AdminSecurityArchitectureTest",
+        "coreDoesNotOwnRuntimeResources"
+      ],
+      [
+        "AdminSecurityArchitectureTest",
+        "coreHasNoProductionAdaptersOrFrameworkAnnotations"
+      ],
+      [
+        "AdminMigrationPolicyTest",
+        "exactTargetStillRejectsPublicAndRoot"
+      ],
+      [
+        "AdminMigrationPolicyTest",
+        "extractedPolicyKeepsMigrationTlsStrict"
+      ],
+      [
+        "AdminRuntimeBoundaryTest",
+        "entryAlwaysRefusesBeforeAnyBootstrap"
+      ],
+      [
+        "AdminRuntimeBoundaryTest",
+        "runtimeHasNoPublicOrMigrationClasspath"
+      ]
+    ],
+    "reports": [
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.architecture.ArchitectureTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "noLegacyOrFallbackImplementationsRemain",
+          "applicationDomainAndPortsDoNotDependOnAdaptersOrStorageApis",
+          "runtimeMigrationsAndSecretsAreNotImplicit"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.architecture.PublicIsolationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "publicClasspathHasNoManagementTypesOrResources"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.config.RuntimeAccountVerifierTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "directSchemaReadOnlyAndTlsAreRequired",
+          "rootIsRejected",
+          "unencryptedConnectionsAreRejected",
+          "productionRequiresIdentityCheckingNotEncryptionAlone",
+          "writesGlobalScopeRolesAndGrantOptionAreRejected"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.media.adapter.filesystem.FileMediaObjectStoreTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "missingObjectIsUnavailableNotGenerated",
+          "exactContentAddressAndLengthAreVerified",
+          "modifiedBytesCannotReusePublishedDigest",
+          "pathTraversalAndUnknownKeysAreRejected"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.media.application.PublicMediaServiceTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "malformedInputIsRejectedBeforeStorage",
+          "contentDoesNotExposeMutableBuffer",
+          "unknownMediaDoesNotTouchStorage",
+          "freshAuthorizationIsRecheckedAfterBuffering"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.publicquery.application.PublicQueryServiceTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "productionRefusesDemoPublication",
+          "requestDataAndMetadataUseOneSnapshot",
+          "incompleteFactBatchIsNotTreatedAsUnknownAuthorization",
+          "listEvaluatesScopedFactsOnceAsOneBatch",
+          "authorizationOutageIsNotASuccessfulEmptyList",
+          "invalidIdsLimitsAndSortsAreRejected",
+          "sortAndFilterAreAppliedBeforePaging",
+          "wrongOwnerCannotReadMediaReference",
+          "unknownAuthorizationHidesWorksButNotBusinesses",
+          "packageAndBusinessDetailsUseTheSamePublishedModel",
+          "homePreservesExplicitCurationWithoutDuplicatePackages",
+          "databaseFailureIsNotReplacedByFixtureOrCache",
+          "immutableSnapshotCannotBeChangedByCallers"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.publicquery.application.VersionedCursorTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "cursorCannotCrossFilterOrSort",
+          "emptyPublicationHasNoCursor",
+          "cursorCannotCrossPublication",
+          "malformedAndOversizedCursorsRejected",
+          "removedAnchorIsExplicitlyInvalid",
+          "stablePageAndCompletion"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "surefire",
+        "suite": "cn.zhinan.uniapp.works.domain.ScopedPublicAuthorizationTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "permitsOnlyExactServerContextWithinHalfOpenInterval",
+          "dependencyFailureUnknownAndIncompleteCannotGrant",
+          "replacementMediaCannotReuseOldContext"
+        ]
+      },
+      {
+        "module": "public-api",
+        "kind": "failsafe",
+        "suite": "cn.zhinan.uniapp.integration.DatabasePublicApiIT",
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "anotherPublicationCannotReuseOldScopedGrantEvenWhenAllWorkVersionsAreReused",
+          "wrongProvenanceCannotCrossDemoBoundary",
+          "storageFailureNeverReturnsTheCachedCatalog",
+          "atomicPublicationSwitchInvalidatesCursorAndRefreshesBrand",
+          "databaseConnectionUsesTls",
+          "runtimeReaderHasNoWritePermission",
+          "expiredAuthorizationIsNotPublic",
+          "scopedFactsForSixWorksUseExactlyTwoDatabaseStatements",
+          "onlyTheNewApiIsRegistered",
+          "newRepositoryAndConnectionReadPersistentState",
+          "invalidQueriesAndUnknownRoutesHaveStableErrors",
+          "actualIntegrationWriterCannotBeUsedAsRuntimeIdentity",
+          "incompleteMediaScopeIsNotPublic",
+          "homeAndMetadataComeFromTheSameDatabasePublication",
+          "realDatabaseContainsPublishedEntitiesAndPreparedVariants",
+          "preparedMediaSupportsHeadNoStoreAndRejectsRanges",
+          "revokedGrantImmediatelyBlocksDetailListsGetHeadAndRange",
+          "schemaValidationAndRepeatMigrationAreClean",
+          "candidateBindingMismatchIsNotAuthorized",
+          "schemaRejectsBrokenBusinessRelations",
+          "actualRuntimeReaderPassesAccountGuard"
+        ]
+      },
+      {
+        "module": "admin-security-core",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminsecurity.AdminSecurityArchitectureTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "coreDoesNotOwnRuntimeResources",
+          "coreImportsOnlyJdkAndItsOwnInwardLayers",
+          "coreHasNoProductionAdaptersOrFrameworkAnnotations"
+        ]
+      },
+      {
+        "module": "admin-security-core",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminsecurity.AdminSecurityDomainTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "rejectsNegativeSecurityVersion",
+          "defaultDenyAndNoImplicitPrivilegeEscalation",
+          "permissionsAreImmutableAndDefensivelyCopied",
+          "identifiersAreNotUserInputOrContactDetails(String)[1]",
+          "identifiersAreNotUserInputOrContactDetails(String)[2]",
+          "identifiersAreNotUserInputOrContactDetails(String)[3]",
+          "identifiersAreNotUserInputOrContactDetails(String)[4]",
+          "identifiersAreNotUserInputOrContactDetails(String)[5]",
+          "identifiersAreNotUserInputOrContactDetails(String)[6]",
+          "sessionRejectsInvalidDigestOrLifetime"
+        ]
+      },
+      {
+        "module": "admin-security-core",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminsecurity.AdminSessionServiceTest",
+        "tests": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "clockBeforeIssueFailsClosed",
+          "unknownTokenCannotAuthenticate",
+          "rejectsUnsafeSessionLifetime(long)[1]",
+          "rejectsUnsafeSessionLifetime(long)[2]",
+          "rejectsUnsafeSessionLifetime(long)[3]",
+          "substitutedStoreRowFailsClosed",
+          "deletedOrMismatchedAccountRejectsSession",
+          "digestCollisionDoesNotOverwriteExistingSession",
+          "lifetimeLimitsAreAccepted",
+          "securityVersionInvalidatesAllSessionsAfterReset",
+          "disabledAccountRejectsExistingSession",
+          "storesDigestOnlyAndReturnsRedactedReceipt",
+          "rejectsAccountVersionChangedBetweenCredentialCheckAndCreation",
+          "disabledOrUnknownAccountCannotOpenSession",
+          "malformedTokensNeverReachStore(String)[1]",
+          "malformedTokensNeverReachStore(String)[2]",
+          "malformedTokensNeverReachStore(String)[3]",
+          "malformedTokensNeverReachStore(String)[4]",
+          "malformedTokensNeverReachStore(String)[5]",
+          "malformedTokensNeverReachStore(String)[6]",
+          "storageFailureIsNotAuthenticationSuccessOrSuccessfulLogout",
+          "malformedGeneratedSecretCannotBeStoredOrReturned",
+          "targetedRevokeDoesNotAffectOtherSessionAndIsIdempotent",
+          "expiryBoundaryIsExclusiveAndDoesNotSlide",
+          "permissionsAreReadFreshNotCopiedFromIssuedSession"
+        ]
+      },
+      {
+        "module": "admin-db-policy",
+        "kind": "surefire",
+        "suite": "cn.zhinan.admindbpolicy.AdminMigrationPolicyTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "exactTargetStillRejectsPublicAndRoot",
+          "extractedPolicyKeepsMigrationTlsStrict"
+        ]
+      },
+      {
+        "module": "admin-migration-cli",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminmigration.AdminDatabaseMigrationMainTest",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "requiresExactSchemaDedicatedUserAndTls",
+          "acceptsVerifiedTlsAndExternalCredentialsOnly",
+          "refusesWeakOrCredentialBearingUrls(String)[1]",
+          "refusesWeakOrCredentialBearingUrls(String)[2]",
+          "refusesWeakOrCredentialBearingUrls(String)[3]",
+          "refusesWeakOrCredentialBearingUrls(String)[4]",
+          "refusesWeakOrCredentialBearingUrls(String)[5]",
+          "rejectsEncodedAndAlternateCredentialProperties",
+          "requiresAnExplicitNonDestructiveAction",
+          "refusesPublicAndSystemSchemas(String)[1]",
+          "refusesPublicAndSystemSchemas(String)[2]",
+          "refusesPublicAndSystemSchemas(String)[3]",
+          "refusesPublicAndSystemSchemas(String)[4]",
+          "refusesPublicAndSystemSchemas(String)[5]"
+        ]
+      },
+      {
+        "module": "admin-security-jdbc",
+        "kind": "failsafe",
+        "suite": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "creationHoldingAccountLockCommitsThenResetInvalidatesIt",
+          "databaseConstraintsRejectUnknownPermissionAndInvalidVersion",
+          "concurrentRevokeCreatesExactlyOneRevocationAudit",
+          "createPersistsDigestAndAuditWithoutSecretMaterial",
+          "unknownDigestIsEmptyAndRawTokenRejectedBeforeJdbc",
+          "databaseFailureNeverBecomesMissingOrSuccessfulRevoke",
+          "unknownDisabledAndChangedAccountsDoNotCreateRows",
+          "ambientReadOnlyTransactionDoesNotDowngradeIndependentSecurityWrite",
+          "auditFailureRollsBackCreationInRealDatabase",
+          "duplicateDigestCannotOverwriteOrDuplicateAudit",
+          "disabledAccountInvalidatesPersistentSession",
+          "separateMigrationIsRepeatableAndPublicHistoryRemainsV1",
+          "freshAccountAndPermissionsAreVisibleAcrossStoreInstances",
+          "auditFailureRollsBackRevocationInRealDatabase",
+          "microsecondDeadlineMatchesReceiptAndExactBoundary",
+          "resetHoldingAccountLockRejectsOldVerifiedVersionAfterCommit",
+          "revokeIsTargetedIdempotentAndAuditedOnce",
+          "readingSeveralPermissionsUsesOneConsistentSelect"
+        ]
+      },
+      {
+        "module": "admin-runtime",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminruntime.AdminRuntimeBoundaryTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "entryAlwaysRefusesBeforeAnyBootstrap",
+          "runtimeHasNoPublicOrMigrationClasspath"
+        ]
+      },
+      {
+        "module": "admin-runtime",
+        "kind": "surefire",
+        "suite": "cn.zhinan.adminruntime.crypto.SecureSessionTokenCodecTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "digestUsesKnownSha256VectorAndIsDeterministic",
+          "generatedSecretsAreUrlSafeAndDecodeTo256Bits"
+        ]
+      }
+    ],
+    "publicExternalLibrariesUnchanged": 46,
+    "managementExternalLibrariesSubsetOfPublic": true,
+    "sourceMap": [
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/adapter/crypto/SecureSessionTokenCodec.java",
+        "to": "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodec.java",
+        "sha256": "1f337841508871287d813b8c41eac571649f6af52b9160a0c3f12d6d2bb61aa4",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/adapter/jdbc/JdbcAdminSessionStore.java",
+        "to": "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/JdbcAdminSessionStore.java",
+        "sha256": "4b547a71426d0e4422abba1ab2963e75afc3bf7a3005014bd65628524b4bb527",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/application/AdminSessionService.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/application/AdminSessionService.java",
+        "sha256": "18c64e5826e8bb34e95ed9e583f9296b872a0bc1deb1cac9086b74635456385b",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminAccessPolicy.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccessPolicy.java",
+        "sha256": "3de488fe9cdfa48754ab2625af09f8d0bda0cb293b9dcff5982420117c053d47",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminAccount.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccount.java",
+        "sha256": "146d850c6c705fc87322b1a06d41da82fa334e6fbf8d2cd74c9378103f659437",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminAuthenticationException.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAuthenticationException.java",
+        "sha256": "5fc6ba01d3020c931921dceb6be724d93a12e2a7601623f4e359864c925d6f28",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminPermission.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPermission.java",
+        "sha256": "393148a840802c24db7255a16007efb5c9ba506db64af10e50174a082807d6cc",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminPrincipal.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPrincipal.java",
+        "sha256": "a1ed8ebc948e9de2d1cefc9363122f4a27cceee236737383b2928118edeaca66",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/domain/AdminSession.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminSession.java",
+        "sha256": "bf01ee05a8128c309927f635acd09a228dd59096b28c6c0dcc561d4659669fde",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/port/AdminSecurityStorageException.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSecurityStorageException.java",
+        "sha256": "0db004905549fb43022122d10c89b886f68e7c84e50ed3b0a106558a132e7177",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/port/AdminSessionStore.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSessionStore.java",
+        "sha256": "cb9fbd58c2c857f28549b078f492b86b4c3c6ec4b3e5a0bfd9d3960fce0c1a98",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/port/SessionTokenCodec.java",
+        "to": "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/SessionTokenCodec.java",
+        "sha256": "862f943f5c38459c3717571e383f4cce3412429bc4908e50b320d5f8a4aaf8aa",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/authorization/adapter/jdbc/JdbcPublicAuthorizationEvaluator.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/adapter/jdbc/JdbcPublicAuthorizationEvaluator.java",
+        "sha256": "875e6f116e287b4aa7c5ebd3255880925ad26841431fb01526b6ea6a80baccba",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/AuthorizationReadResult.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/AuthorizationReadResult.java",
+        "sha256": "be90e1b1a0819477cb38b0f12ca8907b1f0e9996f995615701cd944c167adcfe",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/PublicAuthorizationEvaluator.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicAuthorizationEvaluator.java",
+        "sha256": "c9a57d6d06e156b75dac5d7374df89d9c6b3961581fcf0e75e2968b3c626be95",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/authorization/port/PublicUseContext.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicUseContext.java",
+        "sha256": "da61b33a25a19797d2346fad73bcffb6e4cbd0726949c9955022c6bde967afe2",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/common/GlobalExceptionHandler.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/common/GlobalExceptionHandler.java",
+        "sha256": "013f83ebb9b0e409d594692de4069f42aaf71477f32582005271761c2f92f7b9",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/config/PublicRuntimeConfiguration.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublicRuntimeConfiguration.java",
+        "sha256": "497a0711d4e060a9e0908ab26a7b691503e524d8962bd71cbdc3cc705414e979",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/config/PublishedSchemaVerifier.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublishedSchemaVerifier.java",
+        "sha256": "4fd0d3656c0ec83a3d20bcd2a0a8bea56d744e93785d4a585165b5c10cbc0d61",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/config/RuntimeAccountVerifier.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/config/RuntimeAccountVerifier.java",
+        "sha256": "20ef4fd225a9f1e2d5607c6adea897ec4e1b9fead7512581ab4ad8241cc7b679",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/controller/PublicMediaContentController.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicMediaContentController.java",
+        "sha256": "d3e7abb3b857032de53a365dcede8ae950b417fd67aced283d3591693d0ec4b0",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/controller/PublicQueryController.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicQueryController.java",
+        "sha256": "a2331b8e3b784b27dbe17aa5df3222cb09ddfc92825ae6637eff56f1b591d33f",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/dto/PublicDtos.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/dto/PublicDtos.java",
+        "sha256": "f0d0f3ff9a36bb4439fb0d52170204f53a67268dfc3791f30715507c631b394c",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStore.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStore.java",
+        "sha256": "c090c77bdbba2be86e2e6247e55eedefa892929f487cba1ff2ff5236f16056e8",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/media/application/PublicMediaService.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/media/application/PublicMediaService.java",
+        "sha256": "5d4cd699fe10135fd44f854448d8fc894eef3368c0a93e070c27096c75a65c4c",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/media/port/MediaObjectStore.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/media/port/MediaObjectStore.java",
+        "sha256": "5a83ee921bb5816e39b7faf89cb8f26a31b61ace0a85a5e7f20361dc7df8fe33",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/adapter/jdbc/JdbcPublishedCatalogRepository.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/adapter/jdbc/JdbcPublishedCatalogRepository.java",
+        "sha256": "afe3f7a8d02f21e4e943afb54607e3560b99ea8ef2ec6cb4419758f40ba39cc0",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogProjection.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogProjection.java",
+        "sha256": "d4e279a41123e9ab5a46476cd3a4be8bbef9b779f1856808880c10a306fe257d",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogReadService.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogReadService.java",
+        "sha256": "4b070f3d2439b6a4688029e5001a6404a227c8a9fce6279c32aa0a950337fc84",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/PublicQueryService.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/PublicQueryService.java",
+        "sha256": "c60feffb5f745e28ade9e829bc438a243d4d75afce0d4b28f454cd58360a3550",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/application/VersionedCursor.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/VersionedCursor.java",
+        "sha256": "362a07f3614fbaa6dac44666bc21d1525b5e6b47645f385adac563012352bf1c",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicApiResponse.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicApiResponse.java",
+        "sha256": "b69d0f93426c6cb8b26fb100115d02345057322df983d35facf962dd52e9420a",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicPage.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicPage.java",
+        "sha256": "7b11515446430b5c7cd16aceb5d94883af8e839d4571d2c254c2da034c1ea840",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicRequestRules.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicRequestRules.java",
+        "sha256": "e9f94c7fb2b31590d392225380c7c764b244113ae08ce0592e7e645426e648be",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/domain/CatalogSnapshot.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/domain/CatalogSnapshot.java",
+        "sha256": "415f2e23bbccc6bb6d4b0765eabac16cb334b79aa01bb00a2fcdc4e036dbc123",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/port/CatalogStorageException.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/CatalogStorageException.java",
+        "sha256": "e66d86baf40c60f2e2a258f8788a17f9907a17db9d739fe02ef2255d3ea00aef",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/port/PublishedCatalogRepository.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/PublishedCatalogRepository.java",
+        "sha256": "bc9349ff042509f06d5fe789c19f73c8b0d370c13876f1345e80fc703aaad94c",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/publicquery/PublicQueryException.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/PublicQueryException.java",
+        "sha256": "1e31e9dc58d4a5ce9a12d05ae0d62eac943604497b5d26e736fd64d49327a857",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/tooling/AdminDatabaseMigrationMain.java",
+        "to": "backend/admin-migration-cli/src/main/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMain.java",
+        "sha256": "5321604c0cab721a747a2a1b0c59df750649a7899de24272907d1134032b16b5",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/tooling/DatabaseMigrationMain.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DatabaseMigrationMain.java",
+        "sha256": "f5a2fc3ae67b0d08ae214639c8ecee7289dba1b2312799a03c0f2f382bfcddae",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/tooling/DemoArtRenderer.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DemoArtRenderer.java",
+        "sha256": "f9070d3d1b1b02a6264d85ede687f0adb606c75966e1499b5c6ab0bb2f684521",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/UniappApiApplication.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/UniappApiApplication.java",
+        "sha256": "5395edead1a25cce7dbfd452401dd483a0bd8f201ef9972fc6336e3aa8560e8e",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/works/application/PublicVisibilityPolicy.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/works/application/PublicVisibilityPolicy.java",
+        "sha256": "3fb4f2105d2d55fac25b1fd35021e3219575b727057c92711e91501b2f176454",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorization.java",
+        "to": "backend/public-api/src/main/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorization.java",
+        "sha256": "61e8e7b29111daef890d55e96ddcda440ec9e30fbd3fc7a8151364df881dae3b",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/application-production.properties",
+        "to": "backend/public-api/src/main/resources/application-production.properties",
+        "sha256": "3ed024b03eec9e3c9a5684a62c42b2f76d3df599b1018fa87272c94d642c87c4",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/application.properties",
+        "to": "backend/public-api/src/main/resources/application.properties",
+        "sha256": "7469d08eee61097865886c4939b0ee60cafdc2c61368c5092c7d1545726c10b3",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/db/admin-migration/V2__admin_security.sql",
+        "to": "backend/admin-migration-cli/src/main/resources/db/admin-migration/V2__admin_security.sql",
+        "sha256": "938d313206b8d3f8c18fb44214a676486e516c46a465fc459e1fb00164629b53",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/db/demo/assets.csv",
+        "to": "backend/public-api/src/main/resources/db/demo/assets.csv",
+        "sha256": "637fcd635406797925996cdd6ac7b08a5a176ec8f13c5ab74407022a66089a0b",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/db/demo/seed.sql",
+        "to": "backend/public-api/src/main/resources/db/demo/seed.sql",
+        "sha256": "0b27b1640053d4593d5abbfa28060b26cbc87a5a1aabdf50ab6a26d7425b81b2",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/main/resources/db/migration/V1__public_catalog.sql",
+        "to": "backend/public-api/src/main/resources/db/migration/V1__public_catalog.sql",
+        "sha256": "d2c2eb1848ba8a1f8217c560506f35afade88dc966139b449ae772b9f302fb88",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSecurityArchitectureTest.java",
+        "to": "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityArchitectureTest.java",
+        "sha256": "745a43fb389dc399b1dc77a72bb9487c493361d60a2c0cf8942941c88026a505",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSecurityDomainTest.java",
+        "to": "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityDomainTest.java",
+        "sha256": "40888b4cc81a3706da87c53bb496405bde6c91c6c2cc1510b4e0a975871c4603",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSessionServiceTest.java",
+        "to": "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSessionServiceTest.java",
+        "sha256": "9e44deedef3ee92560d9c97e8d921ade4567e85f61739e724415849da339f6b3",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSessionStoreIT.java",
+        "to": "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminSessionStoreIT.java",
+        "sha256": "4286ce0004d45fe555b9651b0f39eafd65c434995385f5ddcc72cedca22dde17",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/SecureSessionTokenCodecTest.java",
+        "to": "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodecTest.java",
+        "sha256": "ec59502dcbcf0ba4b1b6cd08616757f7dcefda857327210b6a07b988979d33d6",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/architecture/ArchitectureTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/architecture/ArchitectureTest.java",
+        "sha256": "b7d00f7946cb022d9c3191bcceb1b1a95471a751357608e80349c9f22fd90436",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/config/RuntimeAccountVerifierTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/config/RuntimeAccountVerifierTest.java",
+        "sha256": "6cb42f3d536fd819f359866ea9faaf6de370f678a93ef56c74ee2c69f3419090",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/integration/DatabasePublicApiIT.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/integration/DatabasePublicApiIT.java",
+        "sha256": "f91401d1634631f08b1f84714b7dc348911f734646a1d2919d6a95a559062a5d",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStoreTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStoreTest.java",
+        "sha256": "3f14a217057438b1317305effcf5d11d4b67eceaadddf7d7363fa69a765a5cf2",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/media/application/PublicMediaServiceTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/media/application/PublicMediaServiceTest.java",
+        "sha256": "f32354c1c72395a08bd9c090b0830cebebf9dadaaa0e3530f80da5df3aad0cfd",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/publicquery/application/PublicQueryServiceTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/PublicQueryServiceTest.java",
+        "sha256": "b98613f7772edaa1796ceb21b8c96f1cbc1a26e2e4540c28c84eb40b4296631d",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/publicquery/application/VersionedCursorTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/VersionedCursorTest.java",
+        "sha256": "ab49fea1e94cbe2a971efef4ad5d3c47e959fae5506dcceb15ce117f03733832",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/support/CatalogFixture.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/support/CatalogFixture.java",
+        "sha256": "0855209bf72be05110bd93a9571279a3c07aeb8d80bb4364f9ba6bd1a4e1a3d9",
+        "unchangedBytes": true
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/tooling/AdminDatabaseMigrationMainTest.java",
+        "to": "backend/admin-migration-cli/src/test/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMainTest.java",
+        "sha256": "43d9e1357708c298a76959def64157f690f23fa3ef959aa6dbfb29f8e621a6f1",
+        "unchangedBytes": false
+      },
+      {
+        "from": "backend/src/test/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorizationTest.java",
+        "to": "backend/public-api/src/test/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorizationTest.java",
+        "sha256": "3522d0c9db0c954cb37d6a6f17f9bd35cae7f9ab33f32c9db86e676b3868580b",
+        "unchangedBytes": true
+      }
+    ],
+    "artifactHashes": {
+      "backend/admin-db-policy/target/admin-db-policy-0.1.0-SNAPSHOT.jar": "a6a9eecbe6994cc162a6b75d150cd48db81c17994b099dbbbb8ac8602c24a771",
+      "backend/admin-migration-cli/target/admin-migration-cli-0.1.0-SNAPSHOT.jar": "6d3a829c2f107846543a2be98c5e1249c482b6edf2ec1f1282d9ab050a4de775",
+      "backend/admin-runtime/target/admin-runtime-0.1.0-SNAPSHOT.jar": "45d28131965503e2b3ad1146c99095796b09c7d5a55607b43f54727b576c081e",
+      "backend/admin-security-core/target/admin-security-core-0.1.0-SNAPSHOT.jar": "35ed26b974735f9e8c9ccec71b39247640e229f7b8788cb997deea676e4488b7",
+      "backend/admin-security-jdbc/target/admin-security-jdbc-0.1.0-SNAPSHOT.jar": "acfa32f8ed866c4a808c47a0f1a36726871c3acf210e234f60224b50ede8069e",
+      "backend/public-api/target/uniapp-api-0.1.0-SNAPSHOT.jar": "ece61cbc3a198aa1de9d78d2215e5017996a04c96792d512f36aeb61f0914b33"
+    }
+  },
+  "limitations": [
+    "S1-B verified DataSource/actual Writer grants not implemented or tested",
+    "Existing southleaf_public_it proves transactions, not independent management schema permissions",
+    "No password verification/account CLI/management HTTP/admin-web yet",
+    "No production database migration, credential/grant deployment, original service restart, commit or push",
+    "No independent sub-agent tool available; implementation and separate checklist review in main session",
+    "Task remains unarchived because no commit/PR workflow was authorized"
+  ],
+  "recoveredFailures": [
+    {
+      "jobs": [
+        "j457",
+        "j458"
+      ],
+      "cause": "Initial candidate process omitted per-process script execution policy; candidate never started and smoke connection failed",
+      "resolution": "Retried only candidate with existing project pattern ExecutionPolicy Bypass; no system policy changes"
+    },
+    {
+      "job": "j459",
+      "cause": "Frontend 53 tests/format passed, docs link still pointed to moved V1 source",
+      "resolution": "Updated D-502 link; final docs verification to be recorded"
+    }
+  ],
+  "moduleBoundaryFinalRecheck": "j473",
+  "finalSourceAndProcessProof": {
+    "job": "j475",
+    "sourceHashes": {
+      "backend/admin-db-policy/pom.xml": "00f3ca1a742e471e38a5075b662d9797e3c131d177169e623c224f95d56dd83a",
+      "backend/admin-db-policy/src/main/java/cn/zhinan/admindbpolicy/AdminMigrationPolicy.java": "953c6b55a3ad74fbc405e69910ec0e84fdd6dc654f9fed45844f5b5c40eace82",
+      "backend/admin-db-policy/src/test/java/cn/zhinan/admindbpolicy/AdminMigrationPolicyTest.java": "a3d98e09abd582e262c9d08f7589fb3171c215f4940a33556d38c4b2edf860e0",
+      "backend/admin-migration-cli/pom.xml": "2af02c0a22aedd1e83aef3d87caa4bdf6b5a5ddcf30e4c7a2c9134c899d141e4",
+      "backend/admin-migration-cli/src/main/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMain.java": "5321604c0cab721a747a2a1b0c59df750649a7899de24272907d1134032b16b5",
+      "backend/admin-migration-cli/src/main/resources/db/admin-migration/V2__admin_security.sql": "938d313206b8d3f8c18fb44214a676486e516c46a465fc459e1fb00164629b53",
+      "backend/admin-migration-cli/src/test/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMainTest.java": "43d9e1357708c298a76959def64157f690f23fa3ef959aa6dbfb29f8e621a6f1",
+      "backend/admin-runtime/pom.xml": "fce9477d4bb1f41aaf8ede9defc6a811fcccde1357a8ed07764ad1ea5ea7e62e",
+      "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminRuntimeApplication.java": "aac9abdcc56aa8ef3f0d92f4457f2fe7fc941a8c10d1d4900e1c1f3bf7450d13",
+      "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodec.java": "1f337841508871287d813b8c41eac571649f6af52b9160a0c3f12d6d2bb61aa4",
+      "backend/admin-runtime/src/main/resources/application-admin.properties": "6a04216edd8a922f53f17bde30bd8df9e0073f0950380caa789945273bbd893e",
+      "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminRuntimeBoundaryTest.java": "2ac9c6e1a5c327f720c3a2da1f547dfb7b272478c7a9f241c9cd0f15b2cfffeb",
+      "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodecTest.java": "ec59502dcbcf0ba4b1b6cd08616757f7dcefda857327210b6a07b988979d33d6",
+      "backend/admin-security-core/pom.xml": "8b5e14a36143aadb5fae35a25bfb835374f88024fb1baae367036c8e5f98f980",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/application/AdminSessionService.java": "18c64e5826e8bb34e95ed9e583f9296b872a0bc1deb1cac9086b74635456385b",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccessPolicy.java": "3de488fe9cdfa48754ab2625af09f8d0bda0cb293b9dcff5982420117c053d47",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccount.java": "146d850c6c705fc87322b1a06d41da82fa334e6fbf8d2cd74c9378103f659437",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAuthenticationException.java": "5fc6ba01d3020c931921dceb6be724d93a12e2a7601623f4e359864c925d6f28",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPermission.java": "393148a840802c24db7255a16007efb5c9ba506db64af10e50174a082807d6cc",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPrincipal.java": "a1ed8ebc948e9de2d1cefc9363122f4a27cceee236737383b2928118edeaca66",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminSession.java": "bf01ee05a8128c309927f635acd09a228dd59096b28c6c0dcc561d4659669fde",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSecurityStorageException.java": "0db004905549fb43022122d10c89b886f68e7c84e50ed3b0a106558a132e7177",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSessionStore.java": "cb9fbd58c2c857f28549b078f492b86b4c3c6ec4b3e5a0bfd9d3960fce0c1a98",
+      "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/SessionTokenCodec.java": "862f943f5c38459c3717571e383f4cce3412429bc4908e50b320d5f8a4aaf8aa",
+      "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityArchitectureTest.java": "745a43fb389dc399b1dc77a72bb9487c493361d60a2c0cf8942941c88026a505",
+      "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityDomainTest.java": "40888b4cc81a3706da87c53bb496405bde6c91c6c2cc1510b4e0a975871c4603",
+      "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSessionServiceTest.java": "9e44deedef3ee92560d9c97e8d921ade4567e85f61739e724415849da339f6b3",
+      "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/TestSessionTokenCodec.java": "88705b8aa2f0204c3719219a98c18bb128b3421a63db8f5eaf0710f591333d23",
+      "backend/admin-security-jdbc/pom.xml": "d621dc41db39bb42a2ba0c7e62110a4dd77ba68dd22cdc0314a20231c36bf679",
+      "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/JdbcAdminSessionStore.java": "4b547a71426d0e4422abba1ab2963e75afc3bf7a3005014bd65628524b4bb527",
+      "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminSessionStoreIT.java": "4286ce0004d45fe555b9651b0f39eafd65c434995385f5ddcc72cedca22dde17",
+      "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/TestSessionTokenCodec.java": "88705b8aa2f0204c3719219a98c18bb128b3421a63db8f5eaf0710f591333d23",
+      "backend/pom.xml": "72f5d748aec4231c58b10451cd7ebdbf93e990b62793e1ba502269c81dc71735",
+      "backend/public-api/pom.xml": "39dc094ec8a3de1887ac9fec65334c004415979f3bfd439264b25c110cfb4471",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/adapter/jdbc/JdbcPublicAuthorizationEvaluator.java": "875e6f116e287b4aa7c5ebd3255880925ad26841431fb01526b6ea6a80baccba",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/AuthorizationReadResult.java": "be90e1b1a0819477cb38b0f12ca8907b1f0e9996f995615701cd944c167adcfe",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicAuthorizationEvaluator.java": "c9a57d6d06e156b75dac5d7374df89d9c6b3961581fcf0e75e2968b3c626be95",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicUseContext.java": "da61b33a25a19797d2346fad73bcffb6e4cbd0726949c9955022c6bde967afe2",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/common/GlobalExceptionHandler.java": "013f83ebb9b0e409d594692de4069f42aaf71477f32582005271761c2f92f7b9",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublicRuntimeConfiguration.java": "497a0711d4e060a9e0908ab26a7b691503e524d8962bd71cbdc3cc705414e979",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublishedSchemaVerifier.java": "4fd0d3656c0ec83a3d20bcd2a0a8bea56d744e93785d4a585165b5c10cbc0d61",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/config/RuntimeAccountVerifier.java": "20ef4fd225a9f1e2d5607c6adea897ec4e1b9fead7512581ab4ad8241cc7b679",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicMediaContentController.java": "d3e7abb3b857032de53a365dcede8ae950b417fd67aced283d3591693d0ec4b0",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicQueryController.java": "a2331b8e3b784b27dbe17aa5df3222cb09ddfc92825ae6637eff56f1b591d33f",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/dto/PublicDtos.java": "f0d0f3ff9a36bb4439fb0d52170204f53a67268dfc3791f30715507c631b394c",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStore.java": "c090c77bdbba2be86e2e6247e55eedefa892929f487cba1ff2ff5236f16056e8",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/media/application/PublicMediaService.java": "5d4cd699fe10135fd44f854448d8fc894eef3368c0a93e070c27096c75a65c4c",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/media/port/MediaObjectStore.java": "5a83ee921bb5816e39b7faf89cb8f26a31b61ace0a85a5e7f20361dc7df8fe33",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/adapter/jdbc/JdbcPublishedCatalogRepository.java": "afe3f7a8d02f21e4e943afb54607e3560b99ea8ef2ec6cb4419758f40ba39cc0",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogProjection.java": "d4e279a41123e9ab5a46476cd3a4be8bbef9b779f1856808880c10a306fe257d",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogReadService.java": "4b070f3d2439b6a4688029e5001a6404a227c8a9fce6279c32aa0a950337fc84",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/PublicQueryService.java": "c60feffb5f745e28ade9e829bc438a243d4d75afce0d4b28f454cd58360a3550",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/VersionedCursor.java": "362a07f3614fbaa6dac44666bc21d1525b5e6b47645f385adac563012352bf1c",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicApiResponse.java": "b69d0f93426c6cb8b26fb100115d02345057322df983d35facf962dd52e9420a",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicPage.java": "7b11515446430b5c7cd16aceb5d94883af8e839d4571d2c254c2da034c1ea840",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicRequestRules.java": "e9f94c7fb2b31590d392225380c7c764b244113ae08ce0592e7e645426e648be",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/domain/CatalogSnapshot.java": "415f2e23bbccc6bb6d4b0765eabac16cb334b79aa01bb00a2fcdc4e036dbc123",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/CatalogStorageException.java": "e66d86baf40c60f2e2a258f8788a17f9907a17db9d739fe02ef2255d3ea00aef",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/PublishedCatalogRepository.java": "bc9349ff042509f06d5fe789c19f73c8b0d370c13876f1345e80fc703aaad94c",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/PublicQueryException.java": "1e31e9dc58d4a5ce9a12d05ae0d62eac943604497b5d26e736fd64d49327a857",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DatabaseMigrationMain.java": "f5a2fc3ae67b0d08ae214639c8ecee7289dba1b2312799a03c0f2f382bfcddae",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DemoArtRenderer.java": "f9070d3d1b1b02a6264d85ede687f0adb606c75966e1499b5c6ab0bb2f684521",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/UniappApiApplication.java": "5395edead1a25cce7dbfd452401dd483a0bd8f201ef9972fc6336e3aa8560e8e",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/works/application/PublicVisibilityPolicy.java": "3fb4f2105d2d55fac25b1fd35021e3219575b727057c92711e91501b2f176454",
+      "backend/public-api/src/main/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorization.java": "61e8e7b29111daef890d55e96ddcda440ec9e30fbd3fc7a8151364df881dae3b",
+      "backend/public-api/src/main/resources/application-production.properties": "3ed024b03eec9e3c9a5684a62c42b2f76d3df599b1018fa87272c94d642c87c4",
+      "backend/public-api/src/main/resources/application.properties": "7469d08eee61097865886c4939b0ee60cafdc2c61368c5092c7d1545726c10b3",
+      "backend/public-api/src/main/resources/db/demo/assets.csv": "637fcd635406797925996cdd6ac7b08a5a176ec8f13c5ab74407022a66089a0b",
+      "backend/public-api/src/main/resources/db/demo/seed.sql": "0b27b1640053d4593d5abbfa28060b26cbc87a5a1aabdf50ab6a26d7425b81b2",
+      "backend/public-api/src/main/resources/db/migration/V1__public_catalog.sql": "d2c2eb1848ba8a1f8217c560506f35afade88dc966139b449ae772b9f302fb88",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/architecture/ArchitectureTest.java": "b7d00f7946cb022d9c3191bcceb1b1a95471a751357608e80349c9f22fd90436",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/architecture/PublicIsolationTest.java": "aa7781dbd6e3e4f5b73cfecb9edef9e8ebfae3346cfeb9449db8e8820a3901ec",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/config/RuntimeAccountVerifierTest.java": "6cb42f3d536fd819f359866ea9faaf6de370f678a93ef56c74ee2c69f3419090",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/integration/DatabasePublicApiIT.java": "f91401d1634631f08b1f84714b7dc348911f734646a1d2919d6a95a559062a5d",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStoreTest.java": "3f14a217057438b1317305effcf5d11d4b67eceaadddf7d7363fa69a765a5cf2",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/media/application/PublicMediaServiceTest.java": "f32354c1c72395a08bd9c090b0830cebebf9dadaaa0e3530f80da5df3aad0cfd",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/PublicQueryServiceTest.java": "b98613f7772edaa1796ceb21b8c96f1cbc1a26e2e4540c28c84eb40b4296631d",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/VersionedCursorTest.java": "ab49fea1e94cbe2a971efef4ad5d3c47e959fae5506dcceb15ce117f03733832",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/support/CatalogFixture.java": "0855209bf72be05110bd93a9571279a3c07aeb8d80bb4364f9ba6bd1a4e1a3d9",
+      "backend/public-api/src/test/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorizationTest.java": "3522d0c9db0c954cb37d6a6f17f9bd35cae7f9ab33f32c9db86e676b3868580b",
+      "backend/scripts/check-module-boundaries.py": "ff91f154671247063029bc45b14acb6f82eec68a970c9672ea903f1750d7ceb7",
+      "backend/scripts/check-runtime-advisories.mjs": "6658cf77cf305e3adce3e7a16f88f39fad7120ba072226ad3078b8ee62447c29",
+      "backend/scripts/Initialize-PublicDatabase.ps1": "fa30f969c512c8c49618b8e3888ce9a857dd6ba1a40062ab48c8e8898cd2ce2c",
+      "backend/scripts/Invoke-AdminDatabaseMigration.ps1": "fc1adddcc44b746ecfaabebda1dffd0bb62ee620e9d49709f559603352f056b2",
+      "backend/scripts/Invoke-DatabaseMigration.ps1": "810af0805b38a3ca41276ce10787d254e369333ddbb45a4c249f2bdb7aac8aca",
+      "backend/scripts/render-wechat.cjs": "d048a30602facf735f1cee9156c8d065040123e74ebf9cc27334dd03643a63db",
+      "backend/scripts/smoke-public.ps1": "40cea0881458eed4aac75df6ee3e73cc378720d8ca3275de42c235a2ad56bfa1",
+      "backend/scripts/smoke-safety.ps1": "52f32f74956de696a5b4ae88fcfa11aabb9f4bdf81fc2892fba625f904963dc7",
+      "backend/scripts/Start-PublicApi.ps1": "0fd949b4cd546001662e6a284134a07bb8f2f5e4ed5c96d70aaa079aab632bd2",
+      "backend/scripts/Test-BackupRestore.ps1": "e13ef91874079a41c7b494b89e131d15ed8df6c60c9240a82687b75625372d3d",
+      "backend/scripts/Test-DatabaseIntegration.ps1": "f1a73c4149f347f668b76786f924cd86f9d7166f7b118ebb056ee955c2337354",
+      "backend/scripts/Test-StartupGuards.ps1": "289816f1c89ee673d35dad86ef212aa4b3d06349d10acb75304d1e13443bb62b",
+      "tools/stage-one-files.mjs": "637d40921ebbbc95197462e0d984940f24f4bb399ff2a72ff7644fc781ad2a3f"
+    },
+    "legacyPublicStillResponds": true,
+    "candidatePortsClosed": [
+      8091,
+      8092
+    ],
+    "legacyRuntimeUnchanged": 85
+  },
+  "editorDiagnostics": {
+    "errors": 0,
+    "warnings": 0,
+    "scope": "editor-analyzed files only; actual Java compilation/verification is j468"
+  },
+  "sourceHashSemantics": "Raw SHA-256 of reviewed source/build/script files and packaged artifacts at this checkpoint; not a release freeze. Historical SQL bytes and runtime classes are separately compared to pre-edit baselines."
+}

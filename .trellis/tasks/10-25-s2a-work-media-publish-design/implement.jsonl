@@ -1,0 +1,11 @@
+{"file":"docs/计划/P03_阶段二分批交付与编码执行计划.md","reason":"S2 scope, G1/G2A ordering, boundaries and current status"}
+{"file":"docs/设计笔记集/02_通用后端/05_文件与对象存储设计.md","reason":"S2 private upload, validation, variants, object failure boundary"}
+{"file":"docs/设计笔记集/03_业务模块/02_作品与案例设计.md","reason":"work revisions, authorization gate, publish/withdraw semantics"}
+{"file":"docs/设计笔记集/04_接口与外部契约/03_后台管理接口.md","reason":"S2 endpoint, capability, idempotency, version and error contract"}
+{"file":"docs/设计笔记集/05_数据与存储/07_阶段二业务写模型与公开投影隔离设计.md","reason":"admin schema V5/public V2 ownership, exact grants, lock order and fail-closed rules"}
+{"file":"docs/设计笔记集/01_总体设计/06_阶段二2A关键用例与事务边界设计.md","reason":"S2 end-to-end sequence, transaction boundaries and failure recovery"}
+{"file":"docs/设计笔记集/06_客户端/管理后台/02_内容预约订单运营.md","reason":"S2 admin workflow and explicit future S4-S6 boundaries"}
+{"file":"docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md","reason":"S2 real MySQL, grants, media, authorization and E2E acceptance matrix"}
+{"file":"docs/设计笔记集/08_决策记录/ADR-005_S2单作品发布采用按作品V2公开投影.md","reason":"S2-only public V2 storage decision and alternatives"}
+{"file":"docs/开发与演示/阶段二实施跟踪.md","reason":"Current evidenced progress and design/implementation distinction"}
+{"file":"docs/设计笔记集/README.md","reason":"Design index and ADR navigation/status"}

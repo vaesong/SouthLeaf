@@ -1,0 +1,48 @@
+{
+  "scope": "metadata/TLS preflight only",
+  "atUtc": "2026-10-24T03:46:50.491015+00:00",
+  "userAuthorization": "controlled C2 integration validation approved",
+  "databaseProcessesStarted": false,
+  "migrationsExecuted": false,
+  "grantsChanged": false,
+  "credentialStoreDecrypted": false,
+  "blockers": [],
+  "toolsAvailable": {
+    "mysql": true,
+    "mysqld": true,
+    "openssl": true,
+    "java": true,
+    "keytool": true
+  },
+  "existingManifestCount": 1,
+  "ownedMetadataChecks": {
+    "location": true,
+    "kind": true,
+    "root": true,
+    "state": true,
+    "port": true,
+    "configDigest": true,
+    "caDigest": true,
+    "truststoreDigest": true,
+    "dataUuid": true
+  },
+  "certificates": {
+    "ca": {
+      "present": true,
+      "validForNextHour": true,
+      "notBefore": "Oct 24 03:46:49 2026 GMT",
+      "notAfter": "Nov 23 03:46:49 2026 GMT"
+    },
+    "server": {
+      "present": true,
+      "validForNextHour": true,
+      "notBefore": "Oct 24 03:46:49 2026 GMT",
+      "notAfter": "Nov 23 03:46:49 2026 GMT"
+    }
+  },
+  "tlsChainAndHostnameValidNow": true,
+  "sourceHashesStillMatch": true,
+  "preparedArtifactHashesStillMatch": true,
+  "migrationDependencyJarCount": 13,
+  "status": "READY_FOR_AUTHORIZED_RUN"
+}

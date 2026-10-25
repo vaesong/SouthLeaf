@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-18",
+  "scope": "stage-two S1 persistence increment; not full stage-two completion",
+  "baselineCommit": "77facb9be94b082b1e37bf94c87e3ea1d67d9fa0",
+  "backend": {
+    "job": "j417",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File backend/scripts/Test-DatabaseIntegration.ps1",
+    "unitAndArchitecture": 92,
+    "integration": 39,
+    "adminSessionStoreIT": 18,
+    "publicApiIT": 21,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS"
+  },
+  "frontend": {
+    "job": "j418",
+    "command": "npm run verify",
+    "tests": 53,
+    "failures": 0,
+    "format": "PASS"
+  },
+  "databaseScope": "Existing explicitly guarded southleaf_public_it only; independent admin migration history, public V1 unchanged",
+  "limitations": [
+    "Production management schema and Writer grants are not provisioned or verified",
+    "No password verification, account initialization, management HTTP/Cookie/CSRF or admin UI yet",
+    "Audit failure injection at JDBC preparation boundary; real MySQL rollback, not an outage drill",
+    "Single-host migration tool policy unit-tested; not executed against a formal production management environment",
+    "Source-level boundary checks are not a complete formal dependency proof"
+  ],
+  "sourceHashSemantics": "SHA-256 of listed UTF-8 source with CRLF normalized to LF; selected files only, not a release freeze or signature",
+  "sourceHashes": {
+    "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/application/AdminSessionService.java": "46bc38ed77bbc5aa49f2b371009ed9e28e2c908b9bff74eb4628d1abf58ff108",
+    "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/adapter/jdbc/JdbcAdminSessionStore.java": "30f023c04868b80607e8f4034d5cace9e2ccd53d4ced55caf7547824bdfcb1a2",
+    "backend/src/main/java/cn/zhinan/uniapp/adminsecurity/port/AdminSecurityStorageException.java": "d9c21bb967fcf153189500120a17038bf55b4324159899d913c4e23310bcb9fe",
+    "backend/src/main/resources/db/admin-migration/V2__admin_security.sql": "938d313206b8d3f8c18fb44214a676486e516c46a465fc459e1fb00164629b53",
+    "backend/src/main/java/cn/zhinan/uniapp/tooling/AdminDatabaseMigrationMain.java": "b621f662c1c71a614b99b32f4648f6455f19c837e4ac3109f8e2a28d11e611a7",
+    "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSessionStoreIT.java": "f905c37474157e44086eba39f4a3b4c9dbf9b0f8a616004ca7abc83cb0aab39b",
+    "backend/src/test/java/cn/zhinan/uniapp/adminsecurity/AdminSecurityArchitectureTest.java": "09a283e270c79134b10e050a83ebb011d43e904e6c6893cecbd200be8c10af5b",
+    "backend/src/test/java/cn/zhinan/uniapp/tooling/AdminDatabaseMigrationMainTest.java": "2eba70acfd7e80e773b9c7300dcd6cdd1bcd1ed633e6984a4fbf2f2d1e397e5e"
+  }
+}

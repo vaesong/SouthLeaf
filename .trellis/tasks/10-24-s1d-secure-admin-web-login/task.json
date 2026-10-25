@@ -1,0 +1,32 @@
+{
+  "id": "s1d-secure-admin-web-login",
+  "name": "s1d-secure-admin-web-login",
+  "title": "S1-D secure admin web login",
+  "description": "Implement the explicitly authorized non-production S1-D minimum admin HTTP and admin-web login/session slice with secure browser controls; no production, real data/notifications, default administrator, commit, or push.",
+  "status": "completed",
+  "dev_type": "fullstack",
+  "scope": "secure-admin-http-and-web-login",
+  "package": null,
+  "priority": "P2",
+  "creator": "vaesong",
+  "assignee": "vaesong",
+  "createdAt": "2026-10-24",
+  "completedAt": "2026-10-25",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "2026-10-25：S1-D 本地、非生产认证与 admin-web 登录切片已完成。专用隔离 L5 attempt 27 / runId 6fa82949 为 PASS：35 项检查、27 项浏览器检查，cleanup.complete=true；证据 docs/开发与演示/证据/stage-two-s1d-isolated-l5-attempt-27-20261025.json。npm test 10/10、格式检查、前端构建、模块边界检查通过；此前 admin-runtime Maven package 66 项测试通过。mvnw.cmd verify 仍因缺少 SOUTHLEAF_TEST_DB_URL 受阻，不计为通过。未使用生产/真实数据、C2 fixture 或默认管理员，未记录秘密，未提交/推送。此任务完成不代表阶段二或 S2–S7 完成；后续按 P03 顺序推进。",
+  "meta": {
+    "authorization": "explicit_local_s1d_http_admin_web_only",
+    "c2_status": "PASS_OWNED_PUBLIC_DB_AND_NATIVE_REGRESSION; C2 fixture not used by S1-D",
+    "production": "out_of_scope",
+    "commit_push": "not_authorized",
+    "acceptance": "S1D_L1_L2_and_authorized_disposable_L5_only"
+  }
+}

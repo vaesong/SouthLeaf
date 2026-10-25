@@ -1,0 +1,143 @@
+{
+  "status": "IN_PROGRESS_REAL_MYSQL_NOT_RUN",
+  "date": "2026-10-24",
+  "scope": "C2 no-database checks only; not complete C2 acceptance",
+  "authorization": {
+    "ordinaryImplementation": true,
+    "realMysqlOperationsExecuted": false,
+    "realMysqlAuthorization": "pending_explicit_confirmation",
+    "existingServicesChanged": false,
+    "commitOrPush": false
+  },
+  "pythonHarness": {
+    "job": "j7",
+    "tests": 28,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "realMysql": false,
+    "windowsPowerShellPreflightCases": 7
+  },
+  "mavenUnit": {
+    "job": "j7",
+    "command": "mvnw.cmd -pl admin-runtime -am test",
+    "scope": "admin dependency reactor only, not public-api or Failsafe IT",
+    "tests": 199,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 14,
+    "freshReports": true,
+    "reportMtimesUtc": [
+      "2026-10-24T03:09:15.801406+00:00",
+      "2026-10-24T03:09:24.790135+00:00"
+    ],
+    "freshnessFloor": "2026-10-24T11:09:00+08:00"
+  },
+  "candidatePreparation": {
+    "job": "j7",
+    "command": "mvnw.cmd -pl admin-runtime -am package -DskipTests",
+    "result": "PASS",
+    "testsIntentionallyNotRepeated": true,
+    "countedAsTestEvidence": false
+  },
+  "artifactBoundaries": {
+    "job": "j7",
+    "result": "PASS",
+    "negativeSelfTests": 2,
+    "nestedEntriesChecked": {
+      "public-api": 16035,
+      "admin-runtime": 14448,
+      "admin-credential-crypto": 12,
+      "admin-migration-cli": 15
+    },
+    "realGrantsOrLoginAcceptance": false
+  },
+  "jdbcCombinationIT": {
+    "path": "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminCredentialLoginIT.java",
+    "methods": 10,
+    "compiled": true,
+    "executed": false
+  },
+  "protection": {
+    "collectionJob": "j9",
+    "legacyRuntime": {
+      "files": 85,
+      "mismatches": 0
+    },
+    "appliedMigrationSources": {
+      "files": 2,
+      "mismatches": 0
+    }
+  },
+  "sourceSha256": {
+    "backend/scripts/verify-admin-isolated.py": "10fbe8fab491af7f5af850b8d9de9edd2e5ca27319d67812fbeca6ba0b45b0c9",
+    "backend/scripts/test-verify-admin-isolated.py": "dcf578bb6384aa861adf5cc18675633906a9c177f23fb88078bde213c4926112",
+    "backend/scripts/Test-DatabaseIntegration.ps1": "cd7edc0a52119b6b36f938cc38e11b18602979da62cd38458bcd54aafddc95db",
+    "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminCredentialLoginIT.java": "7e79022d9fafcb7abca95e179501b9613c7a764376b73fa583ac018f12802f77"
+  },
+  "preparedArtifactSha256": {
+    "backend/admin-runtime/target/admin-runtime-0.1.0-SNAPSHOT.jar": "b97bb404affd3333e7de681e62b100ce5eb0aa3bc31ce2426a1835b46da62ac4",
+    "backend/admin-migration-cli/target/admin-migration-cli-0.1.0-SNAPSHOT.jar": "1fa77ab8cc3814d2e2a309c303cf2edc2010bcbe9421ca7f0213fc4746f3aead",
+    "backend/public-api/target/uniapp-api-0.1.0-SNAPSHOT.jar": "ece61cbc3a198aa1de9d78d2215e5017996a04c96792d512f36aeb61f0914b33"
+  },
+  "planningDocumentCheck": {
+    "job": "j3",
+    "files": 130,
+    "links": 566,
+    "errors": 0,
+    "scope": "before final guide/spec/evidence additions; final check recorded separately"
+  },
+  "recoveries": [
+    {
+      "job": "j5",
+      "result": "FAILED_NOT_COUNTED",
+      "reason": "spotlessFiles accepts regex, not glob; corrected targeted regex in j6/j7"
+    },
+    {
+      "job": "j8",
+      "result": "FAILED_NOT_COUNTED",
+      "reason": "Surefire XML had no timestamp attribute; j9 uses report filesystem mtimes bound to j7 window"
+    },
+    {
+      "operation": "multi-file apply_patch dry_run",
+      "result": "HUNK_MISMATCH_NO_WRITE",
+      "reason": "task.json had no trailing newline; fresh version unchanged, regenerate exact diff record terminators, dry-run and atomic apply succeeded"
+    },
+    {
+      "job": "j10",
+      "result": "VALIDATION_WITH_WARNINGS",
+      "reason": "removed source-code entries from injected context; nine docs remain, avoiding 32KB truncation"
+    }
+  ],
+  "remainingGates": [
+    "owned-instance V3/grants and real JDBC IT",
+    "real runtime/credential and table-shape negative probes",
+    "full reactor verify with authorized public IT fixture available",
+    "candidate public HTTP/native contract regression",
+    "fresh resolved runtime advisories",
+    "real database/permission evidence and C2 closeout"
+  ],
+  "review": "same-session implementation/check; no independent subagent audit claimed",
+  "finalDocumentCheck": {
+    "job": "j11",
+    "files": 131,
+    "links": 573,
+    "errors": 0,
+    "changedFilesWhitespaceChecked": 19,
+    "whitespaceErrors": 0,
+    "sourceAndCandidateHashMismatches": 0
+  },
+  "contextManifests": {
+    "entriesEach": 9,
+    "result": "PASS",
+    "validationJob": "j11",
+    "sourceInjectionOrTruncationWarnings": 0,
+    "content": "spec/design/review docs; code read separately"
+  },
+  "editorDiagnostics": {
+    "errors": 0,
+    "warnings": 0,
+    "scope": "editor analyzed files only; not a compilation substitute"
+  }
+}

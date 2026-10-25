@@ -1,0 +1,145 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "SouthLeaf Admin API",
+    "version": "1.0.0-s1d",
+    "description": "S1-D same-origin administrative login/session contract. This is not a production deployment contract and exposes no account lifecycle or business-management API."
+  },
+  "servers": [
+    {
+      "url": "/api/admin/v1",
+      "description": "Same-origin HTTPS deployment only; the host and scheme are not client supplied."
+    }
+  ],
+  "paths": {
+    "/auth/csrf": {
+      "get": {
+        "operationId": "getAdminCsrf",
+        "summary": "Obtain the current same-origin CSRF token",
+        "responses": {
+          "200": {
+            "description": "CSRF token issued or returned; Cache-Control is no-store.",
+            "headers": {
+              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
+              "Set-Cookie": { "description": "Secure __Host-sl_admin_csrf cookie; not an authentication cookie.", "schema": { "type": "string" } }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CsrfEnvelope" } } }
+          },
+          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "loginAdmin",
+        "summary": "Authenticate a staff account and issue a secure session cookie",
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated current identity. The raw session token is only in Set-Cookie; the JSON body never contains it.",
+            "headers": {
+              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
+              "Set-Cookie": { "description": "New __Host-sl_admin_session cookie with Secure, HttpOnly, SameSite=Strict and Path=/; CSRF state is rotated.", "schema": { "type": "string" } }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IdentityEnvelope" } } }
+          },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "401": { "$ref": "#/components/responses/InvalidCredentials" },
+          "403": { "$ref": "#/components/responses/OriginOrCsrfRejected" },
+          "409": { "$ref": "#/components/responses/AlreadyAuthenticated" },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" },
+          "415": { "$ref": "#/components/responses/UnsupportedMediaType" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+        }
+      }
+    },
+    "/auth/session": {
+      "get": {
+        "operationId": "getAdminSession",
+        "summary": "Read the current staff identity from its authoritative server session",
+        "responses": {
+          "200": {
+            "description": "Current identity; Cache-Control is no-store.",
+            "headers": {
+              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IdentityEnvelope" } } }
+          },
+          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
+          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logoutAdmin",
+        "summary": "Revoke the current staff session before clearing cookies",
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "maxProperties": 0 } } }
+        },
+        "responses": {
+          "204": {
+            "description": "Session revocation completed or no valid session existed; secure session and CSRF cookies are cleared.",
+            "headers": {
+              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
+              "Set-Cookie": { "description": "Clears the same cookie names/path/security attributes using Max-Age=0.", "schema": { "type": "string" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "403": { "$ref": "#/components/responses/OriginOrCsrfRejected" },
+          "415": { "$ref": "#/components/responses/UnsupportedMediaType" },
+          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Origin": { "name": "Origin", "in": "header", "required": true, "schema": { "type": "string", "format": "uri" }, "description": "Must exactly equal the server-configured public admin origin." },
+      "CsrfHeader": { "name": "X-CSRF-TOKEN", "in": "header", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 4096 }, "description": "Value obtained from GET /auth/csrf; never persist it." }
+    },
+    "headers": {
+      "RequestId": { "description": "Server-generated request correlation identifier; not an authentication or business identifier.", "schema": { "type": "string", "format": "uuid" } }
+    },
+    "schemas": {
+      "LoginRequest": { "type": "object", "additionalProperties": false, "required": ["accountId", "password"], "properties": { "accountId": { "type": "string", "minLength": 1, "maxLength": 64 }, "password": { "type": "string", "minLength": 1, "maxLength": 512, "writeOnly": true } } },
+      "Identity": { "type": "object", "additionalProperties": false, "required": ["accountId", "permissions", "expiresAt"], "properties": { "accountId": { "type": "string" }, "permissions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,63}$" } }, "expiresAt": { "type": "string", "format": "date-time" } } },
+      "EnvelopeBase": { "type": "object", "additionalProperties": false, "required": ["code", "requestId"], "properties": { "code": { "type": "string" }, "requestId": { "type": "string", "format": "uuid" } } },
+      "CsrfEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["data"], "properties": { "code": { "const": "OK" }, "data": { "type": "object", "additionalProperties": false, "required": ["csrfToken", "headerName"], "properties": { "csrfToken": { "type": "string", "minLength": 1, "maxLength": 4096 }, "headerName": { "const": "X-CSRF-TOKEN" } } } } } ] },
+      "IdentityEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["data"], "properties": { "code": { "const": "OK" }, "data": { "$ref": "#/components/schemas/Identity" } } } ] },
+      "ErrorEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["message"], "properties": { "message": { "type": "string", "maxLength": 200 } } } ] }
+    },
+    "responses": {
+      "InvalidRequest": { "description": "Malformed or disallowed request; no credential verification ran.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "InvalidCredentials": { "description": "Uniform credential/account-state failure; never reveals account existence.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "AuthenticationRequired": { "description": "No valid current session.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "OriginOrCsrfRejected": { "description": "Same-origin browser safeguard rejected before protected work.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "AlreadyAuthenticated": { "description": "A valid session cookie already exists; callers must not silently switch identities.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "PayloadTooLarge": { "description": "Request exceeds the S1 4KiB bound.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "UnsupportedMediaType": { "description": "Only application/json is accepted for writes.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "RateLimited": { "description": "Bounded local rate/KDF budget exhausted.", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
+      "AuthUnavailable": { "description": "Authentication dependency, audit, database or KDF service unavailable; it is not represented as a credential error or confirmed logout.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } }
+    }
+  }
+}

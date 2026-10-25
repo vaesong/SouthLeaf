@@ -10,7 +10,7 @@ $env:SOUTHLEAF_MIGRATION_PASSWORD=$credential.GetNetworkCredential().Password
 $env:SOUTHLEAF_MEDIA_ROOT=(Get-SouthLeafLocalMediaRoot)
 Push-Location "$PSScriptRoot/.."
 try {
-    $arguments=@('-q','-DskipTests','compile','org.codehaus.mojo:exec-maven-plugin:3.5.0:java','-Dexec.mainClass=cn.zhinan.uniapp.tooling.DatabaseMigrationMain')
+    $arguments=@('-f','public-api/pom.xml','-q','-DskipTests','compile','org.codehaus.mojo:exec-maven-plugin:3.5.0:java','-Dexec.mainClass=cn.zhinan.uniapp.tooling.DatabaseMigrationMain')
     if($SeedDemo){$arguments+='-Dexec.args=--seed-demo'}
     & .\mvnw.cmd @arguments
     if($LASTEXITCODE -ne 0){throw "Migration tool exit $LASTEXITCODE"}

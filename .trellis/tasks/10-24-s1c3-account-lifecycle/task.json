@@ -1,0 +1,41 @@
+{
+  "id": "s1c3-account-lifecycle",
+  "name": "s1c3-account-lifecycle",
+  "title": "S1-C3 controlled account lifecycle CLI",
+  "description": "Implement a dedicated non-Web account lifecycle CLI: initialization, password change, disable and permission replacement, with versioning, idempotency, minimum privilege design and no HTTP surface.",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "account-lifecycle-cli-and-v4-design",
+  "package": "backend",
+  "priority": "P2",
+  "creator": "vaesong",
+  "assignee": "vaesong",
+  "createdAt": "2026-10-24",
+  "completedAt": "2026-10-24",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/计划/P03_阶段二分批交付与编码执行计划.md",
+    "docs/设计笔记集/02_通用后端/01_认证与会话设计.md",
+    "docs/设计笔记集/05_数据与存储/06_后台管理运行隔离与Writer最小权限设计.md",
+    "docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md",
+    ".trellis/tasks/10-24-s1c3-account-lifecycle/research/baseline.md",
+    ".trellis/tasks/10-24-s1c3-account-lifecycle/research/isolated-mysql-authorization-plan.md"
+  ],
+  "notes": "C3 non-Web account-lifecycle CLI implementation and explicitly authorized isolated L3/L4 real-MySQL acceptance completed on 2026-10-24. j78: AccountLifecycleRealIT 1 completed, 0 failures/errors/skips; owned fixture removed. C2 public regression remains BLOCKED and is not completed by this task. No original public-service control, production access, HTTP/admin-web opening, commit or push.",
+  "meta": {
+    "c2_dependency": "public_regression_blocked_parallel_development_allowed",
+    "database_operations": "authorized_disposable_c3_fixture_only_executed",
+    "http_admin_web": "out_of_scope",
+    "milestone": "S1-C3",
+    "c3_isolated_l3l4": "PASS_j78_AccountLifecycleRealIT_1_completed_0_failures_0_errors_0_skipped",
+    "fixture_cleanup": "owned_fixture_removed_no_c2_original_or_production_change",
+    "c2_status": "BLOCKED_PUBLIC_REGRESSION_unaffected"
+  }
+}

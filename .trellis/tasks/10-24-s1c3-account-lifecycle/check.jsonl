@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/credential-guidelines.md","reason":"Credential/KDF secret-handling and persistence boundaries"}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Artifact, test and no-false-acceptance quality rules"}
+{"file":"docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md","reason":"C3 acceptance and real-MySQL boundary"}
+{"file":".trellis/tasks/10-24-s1c3-account-lifecycle/research/baseline.md","reason":"Baseline and environment restrictions"}
+{"file":".trellis/tasks/10-24-s1c3-account-lifecycle/research/isolated-mysql-authorization-plan.md","reason":"Draft-only minimal authorization and D-703 L3/L4 execution boundary"}

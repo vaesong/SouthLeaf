@@ -1,0 +1,33 @@
+{
+  "browserCheckCount": 27,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": "da91decdf559d92069b8446d30673fc784b708c0614f720be0447c6aeb4b0567",
+  "candidateSourceSha256": "d13bd982fb6d6a210a9e181e530f51590e9511147cd4bcbd8386e4c2d54c8364",
+  "checkCount": 35,
+  "checkedAtUtc": "2026-10-24T18:50:17Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback",
+    "disposable-schema-and-dedicated-migrator-created",
+    "explicit-migrate-and-validate-over-verified-tls",
+    "schema-users-exactly-scoped-to-disposable-fixture",
+    "test-only-secretreader-c3-cli-bootstrap",
+    "https-servlet-startup-same-origin-ui-and-csrf",
+    "edge-csrf-origin-login-session-cookie-logout",
+    "mysql-account-denial-and-session-audit-facts"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": null,
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "6fa82949",
+  "secretsRecorded": false,
+  "status": "PASS"
+}

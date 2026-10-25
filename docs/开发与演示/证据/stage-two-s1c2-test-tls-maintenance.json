@@ -1,0 +1,46 @@
+{
+  "scope": "existing private TEST public certificates/JKS/manifest only",
+  "authorizedValidityDays": 30,
+  "atUtc": "2026-10-24T03:46:48.703859+00:00",
+  "newPrivateKeysWritten": false,
+  "plaintextPasswordsWritten": false,
+  "systemOrProductionTrustChanged": false,
+  "originalServicesChanged": false,
+  "databaseProcessesStarted": false,
+  "migrationOrGrantsExecuted": false,
+  "existingKeyBindingsValidated": true,
+  "previousCertificateDates": {
+    "ca": {
+      "notBefore": "2026-10-18T13:41:35+00:00",
+      "notAfter": "2026-10-20T13:41:35+00:00"
+    },
+    "server": {
+      "notBefore": "2026-10-18T13:41:35+00:00",
+      "notAfter": "2026-10-20T13:41:35+00:00"
+    }
+  },
+  "newCertificateDates": {
+    "ca": {
+      "notBefore": "2026-10-24T03:46:49+00:00",
+      "notAfter": "2026-11-23T03:46:49+00:00"
+    },
+    "server": {
+      "notBefore": "2026-10-24T03:46:49+00:00",
+      "notAfter": "2026-11-23T03:46:49+00:00"
+    }
+  },
+  "status": "RENEWED",
+  "existingPrivateKeysUnchanged": true,
+  "encryptedCredentialFileUnchanged": true,
+  "databaseConfigurationUnchanged": true,
+  "credentialStoreDecrypted": true,
+  "publicFixtureBackupCreated": true,
+  "caFingerprintBefore": "905e3e789d0c5901eeb4beadcca3b034d80a9dd0eb01d6d64a94a9f43055f0c3",
+  "caFingerprintAfter": "ddea14db176128e76af77fad5d65bff3358e1e5a14feb1672e7959b20265c3ea",
+  "truststoreFingerprintBefore": "7c7c005075c73f00f762d77a92e478d7164535ef0b15957856d758c2f1bea4a9",
+  "truststoreFingerprintAfter": "53b3147b61adf61b5ca5efee8ef2ceeb6da050f34a2ae8861e45bc367980d134",
+  "strictChainAndLocalhostValid": true,
+  "hostnameMismatchStillRejected": true,
+  "manifestFingerprintsUpdated": true,
+  "legacyPassArchived": true
+}

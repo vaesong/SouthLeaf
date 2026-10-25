@@ -1,7 +1,7 @@
 $ErrorActionPreference='Stop'
 . "$PSScriptRoot/Local-Credentials.ps1"
 $credential=Get-SouthLeafLocalCredential Reader
-$jar=Join-Path $PSScriptRoot '../target/uniapp-api-0.1.0-SNAPSHOT.jar'
+$jar=Join-Path $PSScriptRoot '../public-api/target/uniapp-api-0.1.0-SNAPSHOT.jar'
 if(-not (Test-Path $jar)){throw 'Run the verified Maven package before startup guard tests'}
 function Assert-StartupRefused([string]$Url,[string]$Arguments,[string]$Expected) {
     $start=New-Object System.Diagnostics.ProcessStartInfo

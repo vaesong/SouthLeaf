@@ -1,0 +1,515 @@
+{
+  "scope": "management dependency reactor only; NOT full public reactor/C2 acceptance",
+  "authorized": true,
+  "atUtc": "2026-10-24T03:54:36.237554+00:00",
+  "publicReactorExecuted": false,
+  "originalServicesChanged": false,
+  "plaintextSecretsWrittenByCoordinator": false,
+  "mavenOutputPersisted": false,
+  "mavenExitCode": 0,
+  "mavenOutputSha256": "d1ecc27d22fb5f75a4ca44d065024daeba6eda0fb64256e2d86d3ef14618eb00",
+  "reports": {
+    "unit": {
+      "suites": [
+        {
+          "module": "admin-security-core",
+          "suite": "cn.zhinan.adminsecurity.AdminLoginServiceTest",
+          "tests": 22,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-security-core",
+          "suite": "cn.zhinan.adminsecurity.AdminSecurityArchitectureTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-security-core",
+          "suite": "cn.zhinan.adminsecurity.AdminSecurityDomainTest",
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-security-core",
+          "suite": "cn.zhinan.adminsecurity.AdminSessionServiceTest",
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-credential-crypto",
+          "suite": "cn.zhinan.admincredentialcrypto.Argon2PasswordServiceTest",
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-db-policy",
+          "suite": "cn.zhinan.admindbpolicy.AdminMigrationPolicyTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-db-policy",
+          "suite": "cn.zhinan.admindbpolicy.AdminRuntimeGrantPolicyTest",
+          "tests": 27,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-db-policy",
+          "suite": "cn.zhinan.admindbpolicy.AdminRuntimePolicyTest",
+          "tests": 40,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-migration-cli",
+          "suite": "cn.zhinan.adminmigration.AdminDatabaseMigrationMainTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-runtime",
+          "suite": "cn.zhinan.adminruntime.AdminRuntimeBoundaryTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-runtime",
+          "suite": "cn.zhinan.adminruntime.AdminRuntimeContextTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-runtime",
+          "suite": "cn.zhinan.adminruntime.AdminRuntimePropertiesTest",
+          "tests": 27,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-runtime",
+          "suite": "cn.zhinan.adminruntime.crypto.SecureSessionTokenCodecTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        },
+        {
+          "module": "admin-runtime",
+          "suite": "cn.zhinan.adminruntime.VerifiedAdminDataSourceTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": []
+        }
+      ],
+      "tests": 199,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "mysqlIT": {
+      "suites": [
+        {
+          "module": "admin-security-jdbc",
+          "suite": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": [
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "resetBetweenRealKdfAndIssuanceDeniesWithoutHoldingCredentialLocks",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "wrongAbsentAndDisabledAccountsDenyWithoutIssuanceAndRecordDurableEvents",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "credentialReadSuspendsTheOuterSnapshotAndRemainsCaseSensitive",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "currentRealKdfPreservesWhitespaceAndPersistsOneSessionWithAtomicAudit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "successAuditSqlFailureRollsBackTheRealSessionTransaction",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "invalidStoredHashIsDependencyFailureNotDenialOrIssuance",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "oldProfileEventIsCommittedBeforeTheSessionInsertAndDoesNotRewriteCredential",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "upgradeEventFailurePreventsAnySessionInsert",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "disableBetweenRealKdfAndIssuanceDeniesWithoutHoldingCredentialLocks",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminCredentialLoginIT",
+              "method": "authenticationEventIsUtcMicrosecondAndSurvivesOuterRollback",
+              "failureTypes": []
+            }
+          ]
+        },
+        {
+          "module": "admin-security-jdbc",
+          "suite": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "cases": [
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "creationHoldingSharedLockBlocksDisableUntilAuditCommit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "creationHoldingAccountLockCommitsThenResetInvalidatesIt",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "databaseConstraintsRejectUnknownPermissionAndInvalidVersion",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "concurrentRevokeCreatesExactlyOneRevocationAudit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "disableHoldingAccountLockRejectsIssueAfterCommit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "createPersistsDigestAndAuditWithoutSecretMaterial",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "unknownDigestIsEmptyAndRawTokenRejectedBeforeJdbc",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "databaseFailureNeverBecomesMissingOrSuccessfulRevoke",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "unknownDisabledAndChangedAccountsDoNotCreateRows",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "isolatedV3AuthEventSchemaExistsWithoutPublicMigrationHistory",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "credentialLookupIsFreshBoundedAndNeverTreatsDatabaseFailureAsAbsence",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "ambientReadOnlyTransactionDoesNotDowngradeIndependentSecurityWrite",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "auditFailureRollsBackCreationInRealDatabase",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "eventTableRejectsUnknownTypesAndUpgradeWithoutKnownActor",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "duplicateDigestCannotOverwriteOrDuplicateAudit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "disabledAccountInvalidatesPersistentSession",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "concurrentIssuanceSharesAccountLockAndCommitsIndependentAudits",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "freshAccountAndPermissionsAreVisibleAcrossStoreInstances",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "auditFailureRollsBackRevocationInRealDatabase",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "microsecondDeadlineMatchesReceiptAndExactBoundary",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "resetHoldingAccountLockRejectsOldVerifiedVersionAfterCommit",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "authEventAppendIsRestrictedAndIndependentOfAmbientRollback",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "revokeIsTargetedIdempotentAndAuditedOnce",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "readingSeveralPermissionsUsesOneConsistentSelect",
+              "failureTypes": []
+            },
+            {
+              "class": "cn.zhinan.adminsecurity.AdminSessionStoreIT",
+              "method": "credentialReadAndEventWriteFailuresRemainInfrastructureFailures",
+              "failureTypes": []
+            }
+          ]
+        }
+      ],
+      "tests": 35,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "artifactBoundaries": {
+    "result": "PASS",
+    "scope": "declared compile/runtime/test module graph + jdeps pure jars + nested artifacts",
+    "modules": [
+      "public-api",
+      "admin-security-core",
+      "admin-db-policy",
+      "admin-migration-cli",
+      "admin-security-jdbc",
+      "admin-runtime",
+      "admin-credential-crypto"
+    ],
+    "nestedEntriesChecked": {
+      "public-api": 16035,
+      "admin-runtime": 14448,
+      "admin-credential-crypto": 12,
+      "admin-migration-cli": 15
+    },
+    "negativeSelfTests": 2,
+    "limitations": [
+      "Not a Writer grants, management login, or production security acceptance"
+    ]
+  },
+  "sourceSha256": {
+    "backend/admin-credential-crypto/pom.xml": "dc3fde16e05456ec1a9ae016bf19a0205f21c5bb47a77039cab8df3e8fb3f194",
+    "backend/admin-credential-crypto/src/main/java/cn/zhinan/admincredentialcrypto/Argon2PasswordService.java": "54cc2ecc85b12285dca1ee05743e80aad3bc9d3a99c18cec55d41a7d0852e24c",
+    "backend/admin-credential-crypto/src/main/java/cn/zhinan/admincredentialcrypto/KdfWorkBudget.java": "df3d4b7cab25350aef8be3822d4891dbaff3ac447c93148391b3411a3805a729",
+    "backend/admin-credential-crypto/src/test/java/cn/zhinan/admincredentialcrypto/Argon2PasswordServiceTest.java": "db1b5f9185396e3ff9405b5e8b547c1848bd627f4767a97c1c15e5b96c4068e0",
+    "backend/admin-credential-crypto/src/test/java/cn/zhinan/admincredentialcrypto/CredentialKdfBenchmark.java": "279d27676ed7d503578db3f912483368cca4b2204de475ee25e103bf01e3279b",
+    "backend/admin-db-policy/pom.xml": "00f3ca1a742e471e38a5075b662d9797e3c131d177169e623c224f95d56dd83a",
+    "backend/admin-db-policy/src/main/java/cn/zhinan/admindbpolicy/AdminJdbcUrl.java": "457d6105c86dbcd5b6caab3ff49fcc8ed09566dcfc62a206bb7a7fce7ca166e7",
+    "backend/admin-db-policy/src/main/java/cn/zhinan/admindbpolicy/AdminMigrationPolicy.java": "4341c01a3930a9dcba5a6036839238d2b533c9b6fdd740cd00492a71f1f5d270",
+    "backend/admin-db-policy/src/main/java/cn/zhinan/admindbpolicy/AdminRuntimeGrantPolicy.java": "21285fdfd3d2772d666e6f86431a04649ffa76e8ad0ca8e59db75d373f785a62",
+    "backend/admin-db-policy/src/main/java/cn/zhinan/admindbpolicy/AdminRuntimePolicy.java": "546b483bafca1912a2b7ec6a155db90bf701ac95fd8a6edde5f8bf80dc715b68",
+    "backend/admin-db-policy/src/test/java/cn/zhinan/admindbpolicy/AdminMigrationPolicyTest.java": "a3d98e09abd582e262c9d08f7589fb3171c215f4940a33556d38c4b2edf860e0",
+    "backend/admin-db-policy/src/test/java/cn/zhinan/admindbpolicy/AdminRuntimeGrantPolicyTest.java": "b1839e02592304871a28c961063d78dce37cbb09d7250bd5ba54ea76ed07be66",
+    "backend/admin-db-policy/src/test/java/cn/zhinan/admindbpolicy/AdminRuntimePolicyTest.java": "a0c2be19df6bdc8b536e5bdf47524faa76dba468452b1901dd57754f28a01cfb",
+    "backend/admin-migration-cli/pom.xml": "2af02c0a22aedd1e83aef3d87caa4bdf6b5a5ddcf30e4c7a2c9134c899d141e4",
+    "backend/admin-migration-cli/src/main/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMain.java": "5321604c0cab721a747a2a1b0c59df750649a7899de24272907d1134032b16b5",
+    "backend/admin-migration-cli/src/main/resources/db/admin-migration/V2__admin_security.sql": "938d313206b8d3f8c18fb44214a676486e516c46a465fc459e1fb00164629b53",
+    "backend/admin-migration-cli/src/main/resources/db/admin-migration/V3__admin_auth_events.sql": "6047aa7fc162724485e4f723e7356f3b08cfef00d54f9b18e03d571c1ba09c42",
+    "backend/admin-migration-cli/src/test/java/cn/zhinan/adminmigration/AdminDatabaseMigrationMainTest.java": "43d9e1357708c298a76959def64157f690f23fa3ef959aa6dbfb29f8e621a6f1",
+    "backend/admin-runtime/pom.xml": "10669d3a7600f73e07d0029901b361486e26306b7336c40a701cc47782e75145",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminDatabaseVerifier.java": "abc8f15d1c9dcc2e5566997cda7d88e55b1b0d238612e4a9380b4bd1c6e7b827",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminRuntimeApplication.java": "668b77238dcaa45d28ef4412cceeba3fec7c9be9c82e26137fdc998803d1d2f6",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminRuntimeConfiguration.java": "088fef4493a05dec0ad3ea64f67e331f2721228b7d840210e7229ceda24b0d7f",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminRuntimeProperties.java": "c183b0bcc2656c800a8698cc772a9a171d9016634814cc9ee0a188e9eeedc87f",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/AdminStartupException.java": "3e2381447337e6966c84e71ab3b8ed0d4adb746396756b5f0310fa6c58b0871b",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodec.java": "1f337841508871287d813b8c41eac571649f6af52b9160a0c3f12d6d2bb61aa4",
+    "backend/admin-runtime/src/main/java/cn/zhinan/adminruntime/VerifiedAdminDataSource.java": "58018904346a9b77bc99eeba1920c43a3e2a2ae16de8f0275a1d3e031e0c84fd",
+    "backend/admin-runtime/src/main/resources/application-admin.properties": "421e8b3689942f9ba7cbf446d0fe4dd854f6002a36d3aeee633e166f43159fae",
+    "backend/admin-runtime/src/main/resources/logback-admin.xml": "48993941d25558299d993dafcf5a1eecd7b203a789331cd20777afb49ef24753",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminCredentialFixtureHash.java": "e032e842fa41fd7ba4d64eb2716ab83c21a9163a87435e264a89349f78725ae4",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminRuntimeBoundaryTest.java": "900dd061d31a2d5dc194903b720f8f57f42f2482ff7eb79596357c47de562224",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminRuntimeContextTest.java": "1cffe1928e03d2e85d2ac98c10b9dab67d6a12376463f6c6f4fd3e5410f0dfe5",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminRuntimeIsolatedProbe.java": "3478cf9c46c152a8000b91a3072e340e54bc7f1388fce666f3fc9e3636edb99e",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/AdminRuntimePropertiesTest.java": "dfe34e73eff74c9b7efdd0d408ffe87b95d3dc05f5ad1c3945bba49046898155",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/crypto/SecureSessionTokenCodecTest.java": "ec59502dcbcf0ba4b1b6cd08616757f7dcefda857327210b6a07b988979d33d6",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/MetadataPoolFixture.java": "1b5e5db11187935a274494b06576a56a9a87066f1e836f59cf7e9b0ad7d84d94",
+    "backend/admin-runtime/src/test/java/cn/zhinan/adminruntime/VerifiedAdminDataSourceTest.java": "89d0516f2033c3a07954975d2a85ba86ba694dba2a98a4013bb2c530e525a1f1",
+    "backend/admin-security-core/pom.xml": "8b5e14a36143aadb5fae35a25bfb835374f88024fb1baae367036c8e5f98f980",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/application/AdminLoginService.java": "03bd8c90ed854c7e59f5b8fafe5284e6f4de4e12329adf7f230d5c3d214b4551",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/application/AdminSessionService.java": "18c64e5826e8bb34e95ed9e583f9296b872a0bc1deb1cac9086b74635456385b",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccessPolicy.java": "3de488fe9cdfa48754ab2625af09f8d0bda0cb293b9dcff5982420117c053d47",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAccount.java": "d33ec76df4f14723e7406f1de369c3a2c24c4a7f442e49adb33835c7825ee21a",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminAuthenticationException.java": "5fc6ba01d3020c931921dceb6be724d93a12e2a7601623f4e359864c925d6f28",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPermission.java": "393148a840802c24db7255a16007efb5c9ba506db64af10e50174a082807d6cc",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminPrincipal.java": "a1ed8ebc948e9de2d1cefc9363122f4a27cceee236737383b2928118edeaca66",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AdminSession.java": "bf01ee05a8128c309927f635acd09a228dd59096b28c6c0dcc561d4659669fde",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/AuthenticationEvent.java": "add6d429bc78e26693f7ab6fae2161ce1fc8d51a8c97901504867c91931284c3",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/CredentialDependencyException.java": "2cf431646dfa01c5b0afbacc108acef14effce8058ddaf6836a1ccfb995e0307",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/CredentialSnapshot.java": "5658d86ea0b61cdf75ba9f2153953dcaeb3b7a000f21dd8b361a13775d4d744c",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/PasswordInput.java": "ddd4491b4d31e5de8deec4ab76213e030e315ff9e8211fd77b3c329a33ce82c8",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/domain/PasswordMatch.java": "0e597119be305479faa16d7c5b779674efcb457087e6785b27750f63cd77d7d9",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSecurityStorageException.java": "0db004905549fb43022122d10c89b886f68e7c84e50ed3b0a106558a132e7177",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AdminSessionStore.java": "cb9fbd58c2c857f28549b078f492b86b4c3c6ec4b3e5a0bfd9d3960fce0c1a98",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/AuthenticationEventSink.java": "35839549f3c9e599ca98d99b8bb0263ed82dd689b5612b3d1a950d71afc81c82",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/CredentialLookup.java": "6045ee9979dcc5336fa3de12f06d85d676a5f61ac9b931e672dbc8f0666acf8d",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/PasswordHasher.java": "56ad9fd982f3f03b9f7c8dfa753b879ffa54a626985b863fd5aa6c2b99e3f106",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/PasswordVerifier.java": "6474f962fe271dbf1e291ac72607dcc9722ce7e9e68e649455b4304ea93e4c7c",
+    "backend/admin-security-core/src/main/java/cn/zhinan/adminsecurity/port/SessionTokenCodec.java": "862f943f5c38459c3717571e383f4cce3412429bc4908e50b320d5f8a4aaf8aa",
+    "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminLoginServiceTest.java": "1b6f534d3e9e95b52d52a8a08925befbb6db5a02c7ab07d1f4e6bd86d41f9800",
+    "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityArchitectureTest.java": "745a43fb389dc399b1dc77a72bb9487c493361d60a2c0cf8942941c88026a505",
+    "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSecurityDomainTest.java": "40888b4cc81a3706da87c53bb496405bde6c91c6c2cc1510b4e0a975871c4603",
+    "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/AdminSessionServiceTest.java": "9e44deedef3ee92560d9c97e8d921ade4567e85f61739e724415849da339f6b3",
+    "backend/admin-security-core/src/test/java/cn/zhinan/adminsecurity/TestSessionTokenCodec.java": "88705b8aa2f0204c3719219a98c18bb128b3421a63db8f5eaf0710f591333d23",
+    "backend/admin-security-jdbc/pom.xml": "dba1deed7cadcddf047fd2ca40bdda5e7c264bb38171d8e0a6e13db647342047",
+    "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/AdminJdbcTransactions.java": "fbf7ac42662afe1ac60586d55ab43c9c963424cd6a2384567e22821daf4ac0d1",
+    "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/JdbcAdminSessionStore.java": "0ad666019cf7b4f664455d87ee1fe67b7966a44507c378ed5325dcd0dfa885ff",
+    "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/JdbcAuthenticationEventSink.java": "f5ea3ea9a4dc3512e355bb210708cff4b12564a2251fd272ba8f5c69fbd25ce9",
+    "backend/admin-security-jdbc/src/main/java/cn/zhinan/adminsecurity/adapter/jdbc/JdbcCredentialLookup.java": "57a2149a1678e6f4fa95099a1b6c5ace9e7675154e1169be83cd69f82189d7ab",
+    "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminCredentialLoginIT.java": "7e79022d9fafcb7abca95e179501b9613c7a764376b73fa583ac018f12802f77",
+    "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminDatabaseTestSupport.java": "add1ca1b338c4fbc0537320c3dcd42819d4ef4f2eeca8246ef7650f9772ddd69",
+    "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/AdminSessionStoreIT.java": "8fea954b80a4a88510cf287d65b6df31c441a50afc22f6bf45dd702bf904bcd0",
+    "backend/admin-security-jdbc/src/test/java/cn/zhinan/adminsecurity/TestSessionTokenCodec.java": "88705b8aa2f0204c3719219a98c18bb128b3421a63db8f5eaf0710f591333d23",
+    "backend/pom.xml": "9a49bdbb4c02a86a93d517d25b33deb331a0039690d8e81ed85ac600e16dc1ad",
+    "backend/public-api/pom.xml": "39dc094ec8a3de1887ac9fec65334c004415979f3bfd439264b25c110cfb4471",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/adapter/jdbc/JdbcPublicAuthorizationEvaluator.java": "875e6f116e287b4aa7c5ebd3255880925ad26841431fb01526b6ea6a80baccba",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/AuthorizationReadResult.java": "be90e1b1a0819477cb38b0f12ca8907b1f0e9996f995615701cd944c167adcfe",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicAuthorizationEvaluator.java": "c9a57d6d06e156b75dac5d7374df89d9c6b3961581fcf0e75e2968b3c626be95",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/authorization/port/PublicUseContext.java": "da61b33a25a19797d2346fad73bcffb6e4cbd0726949c9955022c6bde967afe2",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/common/GlobalExceptionHandler.java": "013f83ebb9b0e409d594692de4069f42aaf71477f32582005271761c2f92f7b9",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublicRuntimeConfiguration.java": "497a0711d4e060a9e0908ab26a7b691503e524d8962bd71cbdc3cc705414e979",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/config/PublishedSchemaVerifier.java": "4fd0d3656c0ec83a3d20bcd2a0a8bea56d744e93785d4a585165b5c10cbc0d61",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/config/RuntimeAccountVerifier.java": "20ef4fd225a9f1e2d5607c6adea897ec4e1b9fead7512581ab4ad8241cc7b679",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicMediaContentController.java": "d3e7abb3b857032de53a365dcede8ae950b417fd67aced283d3591693d0ec4b0",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/controller/PublicQueryController.java": "a2331b8e3b784b27dbe17aa5df3222cb09ddfc92825ae6637eff56f1b591d33f",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/dto/PublicDtos.java": "f0d0f3ff9a36bb4439fb0d52170204f53a67268dfc3791f30715507c631b394c",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStore.java": "c090c77bdbba2be86e2e6247e55eedefa892929f487cba1ff2ff5236f16056e8",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/media/application/PublicMediaService.java": "5d4cd699fe10135fd44f854448d8fc894eef3368c0a93e070c27096c75a65c4c",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/media/port/MediaObjectStore.java": "5a83ee921bb5816e39b7faf89cb8f26a31b61ace0a85a5e7f20361dc7df8fe33",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/adapter/jdbc/JdbcPublishedCatalogRepository.java": "afe3f7a8d02f21e4e943afb54607e3560b99ea8ef2ec6cb4419758f40ba39cc0",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogProjection.java": "d4e279a41123e9ab5a46476cd3a4be8bbef9b779f1856808880c10a306fe257d",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/CatalogReadService.java": "4b070f3d2439b6a4688029e5001a6404a227c8a9fce6279c32aa0a950337fc84",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/PublicQueryService.java": "c60feffb5f745e28ade9e829bc438a243d4d75afce0d4b28f454cd58360a3550",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/application/VersionedCursor.java": "362a07f3614fbaa6dac44666bc21d1525b5e6b47645f385adac563012352bf1c",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicApiResponse.java": "b69d0f93426c6cb8b26fb100115d02345057322df983d35facf962dd52e9420a",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicPage.java": "7b11515446430b5c7cd16aceb5d94883af8e839d4571d2c254c2da034c1ea840",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/contract/PublicRequestRules.java": "e9f94c7fb2b31590d392225380c7c764b244113ae08ce0592e7e645426e648be",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/domain/CatalogSnapshot.java": "415f2e23bbccc6bb6d4b0765eabac16cb334b79aa01bb00a2fcdc4e036dbc123",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/CatalogStorageException.java": "e66d86baf40c60f2e2a258f8788a17f9907a17db9d739fe02ef2255d3ea00aef",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/port/PublishedCatalogRepository.java": "bc9349ff042509f06d5fe789c19f73c8b0d370c13876f1345e80fc703aaad94c",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/publicquery/PublicQueryException.java": "1e31e9dc58d4a5ce9a12d05ae0d62eac943604497b5d26e736fd64d49327a857",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DatabaseMigrationMain.java": "f5a2fc3ae67b0d08ae214639c8ecee7289dba1b2312799a03c0f2f382bfcddae",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/tooling/DemoArtRenderer.java": "f9070d3d1b1b02a6264d85ede687f0adb606c75966e1499b5c6ab0bb2f684521",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/UniappApiApplication.java": "5395edead1a25cce7dbfd452401dd483a0bd8f201ef9972fc6336e3aa8560e8e",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/works/application/PublicVisibilityPolicy.java": "3fb4f2105d2d55fac25b1fd35021e3219575b727057c92711e91501b2f176454",
+    "backend/public-api/src/main/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorization.java": "61e8e7b29111daef890d55e96ddcda440ec9e30fbd3fc7a8151364df881dae3b",
+    "backend/public-api/src/main/resources/application-production.properties": "3ed024b03eec9e3c9a5684a62c42b2f76d3df599b1018fa87272c94d642c87c4",
+    "backend/public-api/src/main/resources/application.properties": "7469d08eee61097865886c4939b0ee60cafdc2c61368c5092c7d1545726c10b3",
+    "backend/public-api/src/main/resources/db/demo/assets.csv": "637fcd635406797925996cdd6ac7b08a5a176ec8f13c5ab74407022a66089a0b",
+    "backend/public-api/src/main/resources/db/demo/seed.sql": "0b27b1640053d4593d5abbfa28060b26cbc87a5a1aabdf50ab6a26d7425b81b2",
+    "backend/public-api/src/main/resources/db/migration/V1__public_catalog.sql": "d2c2eb1848ba8a1f8217c560506f35afade88dc966139b449ae772b9f302fb88",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/architecture/ArchitectureTest.java": "b7d00f7946cb022d9c3191bcceb1b1a95471a751357608e80349c9f22fd90436",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/architecture/PublicIsolationTest.java": "aa7781dbd6e3e4f5b73cfecb9edef9e8ebfae3346cfeb9449db8e8820a3901ec",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/config/RuntimeAccountVerifierTest.java": "6cb42f3d536fd819f359866ea9faaf6de370f678a93ef56c74ee2c69f3419090",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/integration/DatabasePublicApiIT.java": "f91401d1634631f08b1f84714b7dc348911f734646a1d2919d6a95a559062a5d",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/media/adapter/filesystem/FileMediaObjectStoreTest.java": "3f14a217057438b1317305effcf5d11d4b67eceaadddf7d7363fa69a765a5cf2",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/media/application/PublicMediaServiceTest.java": "f32354c1c72395a08bd9c090b0830cebebf9dadaaa0e3530f80da5df3aad0cfd",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/PublicQueryServiceTest.java": "b98613f7772edaa1796ceb21b8c96f1cbc1a26e2e4540c28c84eb40b4296631d",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/publicquery/application/VersionedCursorTest.java": "ab49fea1e94cbe2a971efef4ad5d3c47e959fae5506dcceb15ce117f03733832",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/support/CatalogFixture.java": "0855209bf72be05110bd93a9571279a3c07aeb8d80bb4364f9ba6bd1a4e1a3d9",
+    "backend/public-api/src/test/java/cn/zhinan/uniapp/works/domain/ScopedPublicAuthorizationTest.java": "3522d0c9db0c954cb37d6a6f17f9bd35cae7f9ab33f32c9db86e676b3868580b",
+    "backend/scripts/check-module-boundaries.py": "fe25b2bd0dcd29f6979e40c1d6298eca563201ce4d9be18a77ef88c31af0043c",
+    "backend/scripts/check-runtime-advisories.mjs": "5f14ce8219eb5f60014899e2dc3b084408c97cb03b235ac514e92bba5a364d18",
+    "backend/scripts/Initialize-PublicDatabase.ps1": "fa30f969c512c8c49618b8e3888ce9a857dd6ba1a40062ab48c8e8898cd2ce2c",
+    "backend/scripts/Invoke-AdminDatabaseMigration.ps1": "fc1adddcc44b746ecfaabebda1dffd0bb62ee620e9d49709f559603352f056b2",
+    "backend/scripts/Invoke-DatabaseMigration.ps1": "810af0805b38a3ca41276ce10787d254e369333ddbb45a4c249f2bdb7aac8aca",
+    "backend/scripts/Local-Credentials.ps1": "a141a87d696f5d17c463d16543cecdf8ff294a37b6468da7bb75d38422209676",
+    "backend/scripts/smoke-public.ps1": "40cea0881458eed4aac75df6ee3e73cc378720d8ca3275de42c235a2ad56bfa1",
+    "backend/scripts/smoke-safety.ps1": "52f32f74956de696a5b4ae88fcfa11aabb9f4bdf81fc2892fba625f904963dc7",
+    "backend/scripts/Start-PublicApi.ps1": "0fd949b4cd546001662e6a284134a07bb8f2f5e4ed5c96d70aaa079aab632bd2",
+    "backend/scripts/test-admin-runtime-guards.py": "fd34e727748b7b8ec938c1f3ec2c8c8b457a0aa99dad2f143ab95069f5b1529c",
+    "backend/scripts/Test-BackupRestore.ps1": "e13ef91874079a41c7b494b89e131d15ed8df6c60c9240a82687b75625372d3d",
+    "backend/scripts/Test-DatabaseIntegration.ps1": "cd7edc0a52119b6b36f938cc38e11b18602979da62cd38458bcd54aafddc95db",
+    "backend/scripts/test-runtime-advisories.mjs": "39e85163853fc33944d507a0748729d28a5c9eee88d50956c9adad3b2fbc8052",
+    "backend/scripts/Test-StartupGuards.ps1": "289816f1c89ee673d35dad86ef212aa4b3d06349d10acb75304d1e13443bb62b",
+    "backend/scripts/test-verify-admin-isolated.py": "dcf578bb6384aa861adf5cc18675633906a9c177f23fb88078bde213c4926112",
+    "backend/scripts/verify-admin-isolated.py": "10fbe8fab491af7f5af850b8d9de9edd2e5ca27319d67812fbeca6ba0b45b0c9"
+  },
+  "preparedRuntimeJarSha256": "b97bb404affd3333e7de681e62b100ce5eb0aa3bc31ce2426a1835b46da62ac4",
+  "migrationJarSha256": "1fa77ab8cc3814d2e2a309c303cf2edc2010bcbe9421ca7f0213fc4746f3aead",
+  "ownedInstanceShutdown": "COMPLETE",
+  "status": "PASS_MANAGEMENT_SCOPE_ONLY",
+  "fullC2Acceptance": "NOT_CLOSED_BY_THIS_REPORT"
+}

@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/backend/credential-guidelines.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": "docs/设计笔记集/02_通用后端/01_认证与会话设计.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": ".trellis/tasks/10-18-s1c2-credential-persistence/design.md", "reason": "C2 credential persistence and isolated identity contract"}
+{"file": "docs/开发与演示/阶段二S1-C2凭据持久化与接线验证指南.md", "reason": "C2 current results and remaining authorized gates"}
+{"file": ".trellis/tasks/10-18-s1c2-credential-persistence/check.md", "reason": "C2 safe-check scope, observed recoveries and remaining real-DB gates"}

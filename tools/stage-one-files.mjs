@@ -35,6 +35,10 @@ const excluded = new Set([
   ".hbuilderx",
 ]);
 export function candidateFiles() {
+  if (!fs.existsSync(path.join(root, "backend/src")))
+    throw new Error(
+      "Stage-one layout is frozen: use its historical checkout; do not refreeze the stage-two reactor as stage one",
+    );
   const files = [];
   function walk(relative) {
     if (relative === manifestPath) return;

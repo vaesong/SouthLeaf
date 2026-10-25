@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-18",
+  "scope": "Stage-two planning and design only; no product implementation or database operations",
+  "documentFiles": 18,
+  "productCodeFilesChangedByThisBatch": 0,
+  "checks": {
+    "initialCheck": {
+      "job": "j439",
+      "exitCode": 2,
+      "links": 511,
+      "linkErrors": 0,
+      "failure": "Existing metadata trailing whitespace in D-304/D-305/D-306; corrected while aligning their work-package references"
+    },
+    "scopedDiffCheck": {
+      "job": "j440",
+      "exitCode": 0
+    },
+    "documentationCheck": {
+      "job": "j441",
+      "exitCode": 0,
+      "markdownFiles": 126,
+      "localLinks": 511,
+      "linkErrors": 0,
+      "gitDiffCheck": "PASS"
+    },
+    "readback": {
+      "files": 18,
+      "result": "PASS: actual MCP readbacks match planned content"
+    },
+    "addedLineWhitespace": {
+      "files": 18,
+      "includesUntracked": true,
+      "result": "PASS: per-batch inserted/replaced lines compared with pre-edit reads"
+    },
+    "semanticSpotCheck": {
+      "result": "PASS",
+      "areas": [
+        "P02/D-003 S3-S6 mapping",
+        "D-106 D-507 reference and 2B timing",
+        "S1-A JDBC test/runtime cycle avoidance",
+        "S1 safety Writer vs S2 publication Writer boundaries"
+      ]
+    },
+    "editorDiagnostics": {
+      "errors": 0,
+      "warnings": 0,
+      "limitation": "Only editor-analyzed files; not Java compilation"
+    },
+    "diffReview": "MCP get_changes for 18 documents plus per-batch local diff; MCP totals include earlier window changes",
+    "finalDocumentationCheck": {
+      "job": "j442",
+      "exitCode": 0,
+      "markdownFiles": 126,
+      "localLinks": 512,
+      "linkErrors": 0,
+      "gitDiffCheck": "PASS",
+      "evidenceJsonParse": "PASS"
+    }
+  },
+  "limitations": [
+    "No Maven/build/database/HTTP/browser tests were run in this documentation batch",
+    "New S1A-D test cases remain NOT_RUN",
+    "S1-C migration/CLI recovery/grants/dependency and KDF benchmark gates remain open",
+    "Q02/Q04/Q05/Q06 remain business decisions; no production identity or grants deployed",
+    "Git emitted existing LF-to-CRLF checkout warnings; global Git configuration was not changed",
+    "No Trellis implementation task created/activated; S1-A requires repository task/review gate before coding"
+  ],
+  "sourceVersionSemantics": "MCP read_file version at post-edit review; selected documentation only. Tracker and this evidence excluded to avoid self-referential hashes; not a release freeze.",
+  "sourceVersions": {
+    "docs/计划/P02_阶段二目标与实施计划.md": "sha256:66c8f4e7fb25173603b0dc4f0938fecb0413738fe0de01592d5a4d357548291b",
+    "docs/设计笔记集/README.md": "sha256:bec69a133d7e877200700fadd90f954816fba010b06f75cd696de975e332f3bc",
+    "docs/设计笔记集/00_设计总则/03_阶段二设计与编码门禁清单.md": "sha256:76dd96a9c8321804bda04b7a231afc2e1096157605f06af0b4d777b36716cd89",
+    "docs/设计笔记集/01_总体设计/04_阶段二后台运行时模块边界与组合根设计.md": "sha256:e6e4de4fabfdb68f4f3a790c1549a955dbb8f2b4eadfabf3001afe6403f78f64",
+    "docs/设计笔记集/01_总体设计/05_阶段二S1模块拆分与构建迁移设计.md": "sha256:6e561c46f514dee10a5de6375f70dae66caeeebeb0652a7b5715567cef422a75",
+    "docs/设计笔记集/01_总体设计/06_阶段二2A关键用例与事务边界设计.md": "sha256:b69e23faface5f67d3a42e0dbbe96a9e8c1f55790db865814ec6f8682753c0a3",
+    "docs/设计笔记集/02_通用后端/01_认证与会话设计.md": "sha256:ff08bb6dedc7dd6a0517a55a209c4b0a91c6d6a841944ff85deecb5c7bf879d9",
+    "docs/设计笔记集/04_接口与外部契约/03_后台管理接口.md": "sha256:fa3e79f4a7520a09e862a8986788f0aae625cd38c89f2a302685aa4b1a9e7139",
+    "docs/设计笔记集/05_数据与存储/06_后台管理运行隔离与Writer最小权限设计.md": "sha256:0d9da5032bf55819f3668442f0f2ef0cf268a95c256a9b095fc8239345dc8b82",
+    "docs/设计笔记集/05_数据与存储/07_阶段二业务写模型与公开投影隔离设计.md": "sha256:cbcb86c78e12e08b5e42007976217b64750f991570b2720d7648abcb22740a34",
+    "docs/设计笔记集/06_客户端/管理后台/01_工作台与待办.md": "sha256:f0b9bb14928c322653b046c90ec835448017adc47bb70c9eac635da28704597a",
+    "docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md": "sha256:f2f766380472c8ff720edcbfaa89ff0d3c482652570f103194d51978829ac317",
+    "docs/计划/P03_阶段二分批交付与编码执行计划.md": "sha256:0acb1428faf07be36f3e0f450fdb5becb92bf9a75589825019ef2bed4a5f6592",
+    "docs/设计笔记集/08_决策记录/ADR-004_阶段二分批交付与后台安全闭环.md": "sha256:cc0a88f929a3025ebc0b9dfba474e01a7292e1c442303fc293e7c9580e1ff4b8",
+    "docs/设计笔记集/03_业务模块/04_客户与身份设计.md": "sha256:e4b66b46af26214b889a9c2dfe522508f1a37fd6fafcc6f745d4af3c75e1019b",
+    "docs/设计笔记集/03_业务模块/05_预约与档期设计.md": "sha256:240503540ccf5c8fbc325d82de989c081f5af1a0b1f7edc02b621f9ba390c0f1",
+    "docs/设计笔记集/03_业务模块/06_订单与履约设计.md": "sha256:967944b59149bdd4e595eca581db5b9bd0b79e6b9c982f26f71296db75c9419a"
+  }
+}

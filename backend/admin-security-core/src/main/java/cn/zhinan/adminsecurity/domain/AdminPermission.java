@@ -1,0 +1,17 @@
+package cn.zhinan.adminsecurity.domain;
+
+/** Technical capability vocabulary, not an approved assignment to business roles. */
+public enum AdminPermission {
+  CONTENT_READ,
+  CONTENT_EDIT,
+  CONTENT_PUBLISH,
+  PUBLIC_AUTHORIZATION_REVIEW,
+  PUBLIC_AUTHORIZATION_REVOKE,
+  RESERVATION_READ,
+  RESERVATION_CONFIRM,
+  RESERVATION_CANCEL,
+  RESERVATION_RESCHEDULE,
+  ORDER_READ,
+  AUDIT_READ,
+  STAFF_ACCESS_MANAGE
+}

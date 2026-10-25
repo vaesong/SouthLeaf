@@ -1,0 +1,30 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": "fe4298be4e33b9af6e93ea5df5e2f6a6847a41d7471fda923e5693d8097ae79d",
+  "candidateSourceSha256": "ed14c8b8685246f8caeae5fd25df5a5f1dfc929bad69d65e9fe979c8ffd3cdf9",
+  "checkCount": 5,
+  "checkedAtUtc": "2026-10-24T18:01:27Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback",
+    "disposable-schema-and-dedicated-migrator-created",
+    "explicit-migrate-and-validate-over-verified-tls",
+    "schema-users-exactly-scoped-to-disposable-fixture",
+    "test-only-secretreader-c3-cli-bootstrap"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "HTTPS_RUNTIME_REFUSED_INTERNAL_APPLICATIONCONTEXTEXCEPTION_CAUSE_WEBSERVEREXCEPTION_CAUSE_ILLEGALSTATEEXCEPTION_AT_DYNAMICREGISTRATIONBEAN",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "e29da06a",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

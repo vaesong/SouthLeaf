@@ -1,0 +1,31 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": "20db22757c013b9694249c3f8eb64697852e6946a3c43a7a21180725a8742fad",
+  "candidateSourceSha256": "cde86b0e6ffa77ebd68d3b48c58c55a4817a4c6c882810e3b1a8c5ff557ec4c0",
+  "checkCount": 6,
+  "checkedAtUtc": "2026-10-24T18:45:57Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback",
+    "disposable-schema-and-dedicated-migrator-created",
+    "explicit-migrate-and-validate-over-verified-tls",
+    "schema-users-exactly-scoped-to-disposable-fixture",
+    "test-only-secretreader-c3-cli-bootstrap",
+    "https-servlet-startup-same-origin-ui-and-csrf"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "BROWSER_CHECK_FAILED_CSRF_NO_REQ_CSRF_LOGIN_SAME_SN_R4",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "04854919",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "层级和验证门禁"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "现有结构边界"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "迁移与测试隔离"}
+{"file": "docs/设计笔记集/01_总体设计/05_阶段二S1模块拆分与构建迁移设计.md", "reason": "已确认 S1-A 映射及测试图"}
+{"file": "docs/计划/P03_阶段二分批交付与编码执行计划.md", "reason": "用户确认范围"}

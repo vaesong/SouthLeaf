@@ -1,0 +1,42 @@
+{
+  "id": "s2a-work-media-publish-design",
+  "name": "s2a-work-media-publish-design",
+  "title": "S2-A 单作品媒体发布闭环设计",
+  "description": "按 P03 完成 S2 首个纵向切片的 G1 可编码设计；仅设计文档与技术决策，不含 S2-B 产品代码、数据库变更或运行验收。",
+  "status": "completed",
+  "dev_type": "fullstack",
+  "scope": "s2a-single-work-media-publication-design",
+  "package": "S2-A",
+  "priority": "P2",
+  "creator": "vaesong",
+  "assignee": "vaesong",
+  "createdAt": "2026-10-25",
+  "completedAt": "2026-10-25",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/设计笔记集/02_通用后端/05_文件与对象存储设计.md",
+    "docs/设计笔记集/03_业务模块/02_作品与案例设计.md",
+    "docs/设计笔记集/04_接口与外部契约/03_后台管理接口.md",
+    "docs/设计笔记集/05_数据与存储/07_阶段二业务写模型与公开投影隔离设计.md",
+    "docs/设计笔记集/01_总体设计/06_阶段二2A关键用例与事务边界设计.md",
+    "docs/设计笔记集/06_客户端/管理后台/02_内容预约订单运营.md",
+    "docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md",
+    "docs/设计笔记集/08_决策记录/ADR-005_S2单作品发布采用按作品V2公开投影.md",
+    "docs/设计笔记集/README.md"
+  ],
+  "notes": "2026-10-25：S2-A G1 设计任务完成。node tools/check-docs.mjs exit 0（133 Markdown/604 links/0 errors）；git diff --check exit 0（仅 LF→CRLF advisory）；8 个新增设计/任务文件 trailing whitespace 0；目标文件 get_problems errors 0/warnings 0。S2-A 不包含产品构建、数据库/HTTP/媒体/E2E；S2-B 仍 pending。仅合成资料设计；production/真实资料/通知/默认管理员/commit/push 均不在范围。",
+  "meta": {
+    "authorization": "design_only_nonproduction_s2a_no_database_or_real_media",
+    "public_projection_decision": "ADR-005 per-work public V2 overlay for S2 only",
+    "production": "out_of_scope",
+    "commit_push": "not_authorized",
+    "acceptance": "S2A_G1_design_only_completed; S2B_implementation_and_runtime_evidence_pending"
+  }
+}

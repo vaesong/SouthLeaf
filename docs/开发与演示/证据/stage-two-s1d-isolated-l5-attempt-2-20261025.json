@@ -1,0 +1,26 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": null,
+  "candidateSourceSha256": "99cd5698444831e7e390733540f44275979b38e7f357e5a1d55a5386a0cbb7a9",
+  "checkCount": 1,
+  "checkedAtUtc": "2026-10-24T16:58:28Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "MYSQL_CONTROL_QUERY",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "64daa297",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

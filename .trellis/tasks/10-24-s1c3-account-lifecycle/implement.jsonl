@@ -1,0 +1,4 @@
+{"file":"docs/设计笔记集/02_通用后端/01_认证与会话设计.md","reason":"C3 lifecycle, secret, locking and grant contract"}
+{"file":"docs/设计笔记集/05_数据与存储/06_后台管理运行隔离与Writer最小权限设计.md","reason":"Identity/TLS/exact-grant isolation constraints"}
+{"file":"docs/设计笔记集/07_测试与验证/03_跨模块并发幂等测试.md","reason":"S1C-03 through S1C-07 acceptance matrix"}
+{"file":".trellis/tasks/10-24-s1c3-account-lifecycle/research/baseline.md","reason":"Local module/schema baseline for implementation"}

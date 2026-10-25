@@ -1,0 +1,15 @@
+{
+  "scope": "disposable C3 private MySQL L3/L4 fixture only",
+  "atUtc": "2026-10-24T05:53:17.939959+00:00",
+  "originalServicesChanged": false,
+  "publicFixtureChanged": false,
+  "productionAccessed": false,
+  "newPrivateKeysWritten": false,
+  "plaintextSecretsWritten": false,
+  "c2FixtureModified": false,
+  "mavenOutputSha256": "095129c5ee8d84005846de84c068efff043290d7717400fe4edcee21b4d9efcd",
+  "completedAfterEpoch": true,
+  "status": "PASS",
+  "c3Tests": "AccountLifecycleRealIT",
+  "ownedFixtureRemoved": true
+}

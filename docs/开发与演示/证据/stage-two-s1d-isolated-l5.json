@@ -1,0 +1,24 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": null,
+  "candidateSourceSha256": "99cd5698444831e7e390733540f44275979b38e7f357e5a1d55a5386a0cbb7a9",
+  "checkCount": 0,
+  "checkedAtUtc": "2026-10-24T16:43:16Z",
+  "checks": [],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": false,
+    "fixtureRemoved": false,
+    "mysqlGraceful": false,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "CLEANUP",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "8d39839f",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

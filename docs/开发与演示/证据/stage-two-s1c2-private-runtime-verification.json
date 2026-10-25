@@ -1,0 +1,319 @@
+{
+  "runId": "0e25af8dd8664ff79424d22f7daf31ac",
+  "startedAtEpoch": 1792814226.6823123,
+  "finishedAtEpoch": 1792814341.4128916,
+  "runtimeJarSha256": "b97bb404affd3333e7de681e62b100ce5eb0aa3bc31ce2426a1835b46da62ac4",
+  "shutdown": {
+    "status": "COMPLETE",
+    "serverStarted": true
+  },
+  "reactor": {
+    "requested": false,
+    "status": "NOT_RUN"
+  },
+  "scope": "owned-instance runtime/credential probes",
+  "cases": [
+    {
+      "case": "exact-demo-writer",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    },
+    {
+      "case": "exact-production-mode-on-test-instance",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    },
+    {
+      "case": "explicit-demo-tls-REQUIRED",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    },
+    {
+      "case": "explicit-demo-tls-VERIFY_CA",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    },
+    {
+      "case": "untrusted-test-certificate",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "DATABASE_CHECK",
+      "realMysql": true
+    },
+    {
+      "case": "certificate-hostname-mismatch",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "DATABASE_CHECK",
+      "realMysql": true
+    },
+    {
+      "case": "current-user-host-mismatch",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "IDENTITY",
+      "realMysql": true
+    },
+    {
+      "case": "public-only-reader-cannot-open-admin-db",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "DATABASE_CHECK",
+      "realMysql": true
+    },
+    {
+      "case": "missing-session-update",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "missing-auth-event-insert",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-global-select",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-schema-select",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-public-schema-select",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-history-table-select",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-account-column-update",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-session-delete",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-auth-event-select",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-auth-event-update",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-auth-event-delete",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "extra-account-table-update",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "grant-option",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "inactive-role",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "GRANTS",
+      "realMysql": true
+    },
+    {
+      "case": "active-default-role",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "ROLES",
+      "realMysql": true
+    },
+    {
+      "case": "global-mandatory-role-new-instance-only",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "ROLES",
+      "realMysql": true
+    },
+    {
+      "case": "extra-auth-event-column-real-mysql",
+      "status": "PASS",
+      "exitCode": 2,
+      "reason": "DATABASE_CHECK",
+      "realMysql": true
+    },
+    {
+      "case": "auth-event-shape-restored",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-read-public-canary",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "reader-cannot-read-admin",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-update-account",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-read-audit",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-read-auth-events",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-update-auth-events",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-delete-auth-events",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "writer-cannot-read-migration-history",
+      "status": "PASS",
+      "mysqlErrorCode": 1142,
+      "realMysql": true
+    },
+    {
+      "case": "real-jdbc-argon2-login-wrong-and-absent-with-durable-audit",
+      "status": "PASS",
+      "secretValuesLogged": false,
+      "realMysql": true
+    },
+    {
+      "case": "same-verified-pool-real-store-issue-read-revoke-idempotency-audit",
+      "status": "PASS",
+      "auditRowsAdded": 2,
+      "realMysql": true
+    },
+    {
+      "case": "actual-empty-tls-cipher-rejected-via-test-source-factory",
+      "status": "PASS",
+      "realMysql": true,
+      "productionBypassAdded": false
+    },
+    {
+      "case": "default-non-web-runtime-and-private-console-graceful-shutdown",
+      "status": "PASS",
+      "exitCode": 130,
+      "remainingWriterConnections": 0,
+      "realMysql": true
+    },
+    {
+      "case": "exact-writer-after-negative-fixture-restoration",
+      "status": "PASS",
+      "exitCode": 0,
+      "reason": null,
+      "realMysql": true
+    }
+  ],
+  "strictTlsMigrations": 2,
+  "noExistingServerOrGrantsModified": true,
+  "c2Acceptance": "NOT_CLOSED_BY_THIS_REPORT",
+  "limitations": [
+    "Local test certificates, not production CA/deployment acceptance",
+    "Non-Web login only; no HTTP/CSRF/admin UI or account lifecycle CLI",
+    "Full reactor only if reactor.status=PASS; public smoke/contract, fresh scans and protection evidence remain separate",
+    "Plaintext verifier probe is test-source only; no production bypass"
+  ],
+  "result": "PASS",
+  "caseCount": 39,
+  "instanceIdentitySha256": "547052c89a8ff213cd7ff10960cdf57921281ca9f94e146acd724815bc8882d2",
+  "testCaSha256": "ddea14db176128e76af77fad5d65bff3358e1e5a14feb1672e7959b20265c3ea",
+  "postcheck": {
+    "privateMysqlProcessesAbsent": true,
+    "privatePortFree": true,
+    "knownPrivateKeyFilesChecked": 3,
+    "knownPrivateKeyFilesWrittenSinceRenewal": [],
+    "legacy85Mismatches": [],
+    "v1v2Mismatches": []
+  },
+  "verificationJob": "j19",
+  "postcheckJob": "j20",
+  "historicalRuntimeCaseTrace": {
+    "historicalRuntimeCaseCount": 29,
+    "missingHistoricalRuntimeCases": [],
+    "currentRuntimeCaseCount": 39,
+    "newRuntimeCases": [
+      "auth-event-shape-restored",
+      "extra-auth-event-column-real-mysql",
+      "extra-auth-event-delete",
+      "extra-auth-event-select",
+      "extra-auth-event-update",
+      "missing-auth-event-insert",
+      "real-jdbc-argon2-login-wrong-and-absent-with-durable-audit",
+      "writer-cannot-delete-auth-events",
+      "writer-cannot-read-auth-events",
+      "writer-cannot-update-auth-events"
+    ]
+  }
+}

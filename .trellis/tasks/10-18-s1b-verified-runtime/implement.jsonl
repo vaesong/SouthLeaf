@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "S1-B scope and safety contract"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "S1-B scope and safety contract"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "S1-B scope and safety contract"}
+{"file": "docs/设计笔记集/05_数据与存储/06_后台管理运行隔离与Writer最小权限设计.md", "reason": "S1-B scope and safety contract"}
+{"file": "docs/计划/P03_阶段二分批交付与编码执行计划.md", "reason": "S1-B scope and safety contract"}

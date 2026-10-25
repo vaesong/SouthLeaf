@@ -1,0 +1,29 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": null,
+  "candidateSourceSha256": "291a25fe74ebf02ce5c19fbfc08df0a69615b8681c0df6bf9d99f931454e2af9",
+  "checkCount": 4,
+  "checkedAtUtc": "2026-10-24T18:20:10Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback",
+    "disposable-schema-and-dedicated-migrator-created",
+    "explicit-migrate-and-validate-over-verified-tls",
+    "schema-users-exactly-scoped-to-disposable-fixture"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "C3_ACCOUNT_FACTS_MISSING",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "a813d7d8",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

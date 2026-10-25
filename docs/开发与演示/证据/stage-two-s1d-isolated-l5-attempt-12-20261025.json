@@ -1,0 +1,30 @@
+{
+  "browserCheckCount": 0,
+  "c2FixtureUsed": false,
+  "candidateJarSha256": "20db22757c013b9694249c3f8eb64697852e6946a3c43a7a21180725a8742fad",
+  "candidateSourceSha256": "6d7552fdb01ea3009da9642ed66a1b8c8e4feef3e3dc0a363cb7d094a2a581b9",
+  "checkCount": 5,
+  "checkedAtUtc": "2026-10-24T18:03:21Z",
+  "checks": [
+    "manifest-owned-mysql-tls-loopback",
+    "disposable-schema-and-dedicated-migrator-created",
+    "explicit-migrate-and-validate-over-verified-tls",
+    "schema-users-exactly-scoped-to-disposable-fixture",
+    "test-only-secretreader-c3-cli-bootstrap"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "complete": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "failureCategory": "HTTPS_PROBE_FAILED",
+  "kind": "S1D_ISOLATED_L5",
+  "realOrProductionDataUsed": false,
+  "runId": "76f1e42d",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

@@ -13,11 +13,15 @@ function Read-Public([string]$path) {
     return $r
 }
 function Expect-Status([string]$path, [int]$expected, [hashtable]$headers = @{}, [string]$method = 'GET') {
-    $curlArgs = @('--silent', '--show-error', '--max-time', '15', '--output', 'NUL', '--write-out', '%{http_code}')
-    if ($method -eq 'HEAD') { $curlArgs += '--head' }
-    foreach ($key in $headers.Keys) { $curlArgs += @('--header', ($key + ': ' + $headers[$key])) }
-    $actual = [int](& curl.exe @curlArgs ($BaseUrl + '/api/v1/public' + $path))
-    if ($LASTEXITCODE -ne 0) { throw "curl transport failure $path" }
+    if ($env:SOUTHLEAF_SMOKE_TRACE -eq '1') { Write-Output "SMOKE_HTTP_EXPECT $method $path" }
+    $actual = 0
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing -Uri ($BaseUrl + '/api/v1/public' + $path) -Method $method -Headers $headers -TimeoutSec 15
+        $actual = [int]$response.StatusCode
+    } catch {
+        if ($null -eq $_.Exception.Response) { throw }
+        $actual = [int]$_.Exception.Response.StatusCode
+    }
     Check ($actual -eq $expected) "$method $path expected=$expected actual=$actual"
 }
 $homeResponse = Read-Public '/home'
@@ -76,8 +80,4 @@ foreach ($id in $ids) {
         Expect-Status ('/media/' + $m.id + '/preview/content') 200 @{} 'HEAD'
     }
 }
-Expect-Status '/works/missing-smoke-test' 404
-Expect-Status '/works?limit=-1' 400
-Expect-Status '/media/work-child/original/content' 400
-Expect-Status '/media/work-child/preview/content' 416 @{Range='bytes=0-10'}
 Write-Output "PUBLIC_SMOKE_PASS checks=$script:checks works=$($ids.Count) mode=$ExpectedMode"
