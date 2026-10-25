@@ -391,6 +391,17 @@ class BookingConcurrencyIT {
     }
   }
 
+  private String reservationStatus(String reservationId) throws SQLException {
+    try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement statement =
+            connection.prepareStatement("SELECT status FROM booking_reservation WHERE id = ?")) {
+      statement.setString(1, reservationId);
+      try (ResultSet resultSet = statement.executeQuery()) {
+        return resultSet.next() ? resultSet.getString(1) : null;
+      }
+    }
+  }
+
   private String occupantOf(String slotId) throws SQLException {
     try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
         PreparedStatement statement =
@@ -518,6 +529,110 @@ class BookingConcurrencyIT {
     assertThat(count("booking_slot_occupancy")).isEqualTo(1);
     assertThat(count("booking_audit")).isEqualTo(1);
     assertThat(count("booking_notification_outbox")).isEqualTo(1);
+  }
+
+  /**
+   * D-703 §8.4: a cancel and a reschedule of the same reservation overlap. Both present the same
+   * expected revision, so the row version decides: exactly one command wins, the other is refused,
+   * and the order gains at most one revision.
+   */
+  @Test
+  void cancellingWhileReschedulingLeavesExactlyOneTerminalAnswer() throws Exception {
+    String originalSlot = "00000000-0000-0000-0000-000000000101";
+    String targetSlot = "00000000-0000-0000-0000-000000000102";
+    insertSlot(originalSlot);
+    insertSlot(targetSlot);
+    String customer = "00000000-0000-0000-0000-000000000111";
+    String reservation = "00000000-0000-0000-0000-000000000121";
+    insertCustomer(customer);
+    insertReservation(reservation, customer, NOW.plusSeconds(172800));
+    application()
+        .confirmReservation("actor-1", reservation, originalSlot, 1, "confirm-key-race-0000001");
+
+    int revisionsBefore = count("booking_order_revision");
+    AtomicInteger cancelled = new AtomicInteger();
+    AtomicInteger rescheduled = new AtomicInteger();
+    CyclicBarrier barrier = new CyclicBarrier(2);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try {
+      Future<?> cancel =
+          pool.submit(
+              () -> {
+                BookingApplication application = application();
+                barrier.await(20, TimeUnit.SECONDS);
+                try {
+                  application.cancelReservation(
+                      "actor-1", reservation, 2, "CUSTOMER_REQUEST", "cancel-key-race-00000001");
+                  cancelled.incrementAndGet();
+                } catch (BookingException refused) {
+                  // The competing writer already moved the row.
+                }
+                return null;
+              });
+      Future<?> reschedule =
+          pool.submit(
+              () -> {
+                BookingApplication application = application();
+                barrier.await(20, TimeUnit.SECONDS);
+                try {
+                  application.rescheduleReservation(
+                      "actor-1",
+                      reservation,
+                      targetSlot,
+                      2,
+                      "OPERATOR_RESCHEDULE",
+                      "resched-key-race-0000001");
+                  rescheduled.incrementAndGet();
+                } catch (BookingException refused) {
+                  // The competing writer already closed the row.
+                }
+                return null;
+              });
+      cancel.get(60, TimeUnit.SECONDS);
+      reschedule.get(60, TimeUnit.SECONDS);
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertThat(cancelled.get() + rescheduled.get()).isEqualTo(1);
+    assertThat(count("booking_order_revision")).isEqualTo(revisionsBefore + 1);
+    assertThat(count("booking_order")).isEqualTo(1);
+    if (cancelled.get() == 1) {
+      assertThat(reservationStatus(reservation)).isEqualTo("CANCELLED");
+      assertThat(count("booking_slot_occupancy")).isZero();
+      assertThat(occupantOf(targetSlot)).isNull();
+    } else {
+      assertThat(reservationStatus(reservation)).isEqualTo("CONFIRMED");
+      assertThat(occupantOf(targetSlot)).isEqualTo(reservation);
+      assertThat(occupantOf(originalSlot)).isNull();
+    }
+  }
+
+  /**
+   * D-703 §8.4: a request that reached its deadline while it waited must never become an order. The
+   * expiry check runs inside the transaction, before any occupancy is written.
+   */
+  @Test
+  void aRequestThatExpiredWhileItWaitedNeverProducesAnOrder() throws Exception {
+    String slot = "00000000-0000-0000-0000-000000000201";
+    insertSlot(slot);
+    String customer = "00000000-0000-0000-0000-000000000211";
+    String reservation = "00000000-0000-0000-0000-000000000221";
+    insertCustomer(customer);
+    insertReservation(reservation, customer, NOW.minusSeconds(1));
+
+    BookingFailure refusal = null;
+    try {
+      application()
+          .confirmReservation("actor-1", reservation, slot, 1, "confirm-key-expired-0000001");
+    } catch (BookingException refused) {
+      refusal = refused.failure();
+    }
+    assertThat(refusal).isEqualTo(BookingFailure.RESERVATION_EXPIRED);
+    assertThat(count("booking_order")).isZero();
+    assertThat(count("booking_order_snapshot")).isZero();
+    assertThat(count("booking_slot_occupancy")).isZero();
+    assertThat(reservationStatus(reservation)).isEqualTo("PENDING_CONFIRMATION");
   }
 
   @Test

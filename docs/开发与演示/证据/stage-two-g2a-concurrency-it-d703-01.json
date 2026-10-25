@@ -1,0 +1,94 @@
+{
+  "kind": "G2A_D703_CONCURRENCY_IT",
+  "status": "PASS",
+  "runId": "9c41a7d3",
+  "executedAt": "2026-10-25T19:12:30+08:00",
+  "closedGate": "D-703 §8.4 并发证据",
+  "checkCount": 9,
+  "checks": [
+    "owned_isolated_mysql_started_on_loopback_non_3306_with_marker",
+    "v6_admin_identity_booking_migration_applied_on_owned_schema",
+    "two_confirmations_for_the_same_slot_produce_exactly_one_order",
+    "two_confirmations_with_the_same_idempotency_key_produce_exactly_one_order",
+    "two_workers_lease_the_same_outbox_message_only_once",
+    "cancel_and_reschedule_race_yields_exactly_one_terminal_answer",
+    "expired_while_waiting_never_becomes_an_order",
+    "module_boundary_verifier_and_booking_sql_column_check_pass",
+    "owned_datadir_removed_and_isolated_mysql_stopped"
+  ],
+  "caseMapping": [
+    {
+      "caseId": "RES-03",
+      "testPath": "backend/admin-booking/src/test/java/cn/zhinan/adminbooking/integration/BookingConcurrencyIT.java#twoConfirmationsForTheSameSlotProduceExactlyOneOrder",
+      "assertion": "1 winner, 1 loser, booking_order=1, booking_order_snapshot=1, booking_slot_occupancy=1, occupancy owner is the winner"
+    },
+    {
+      "caseId": "RES-02/RES-03",
+      "testPath": "backend/admin-booking/src/test/java/cn/zhinan/adminbooking/integration/BookingConcurrencyIT.java#twoConfirmationsWithTheSameIdempotencyKeyProduceExactlyOneOrder",
+      "assertion": "same key replays one order; conflicting digest is refused with IDEMPOTENCY_CONFLICT; no second occupancy or snapshot"
+    },
+    {
+      "caseId": "REV-01",
+      "testPath": "backend/admin-booking/src/test/java/cn/zhinan/adminbooking/integration/BookingConcurrencyIT.java#cancellingWhileReschedulingLeavesExactlyOneTerminalAnswer",
+      "assertion": "one terminal answer only; exactly one extra order revision; cancelled path leaves no occupancy, rescheduled path moves occupancy and releases the original slot"
+    },
+    {
+      "caseId": "RES-05",
+      "testPath": "backend/admin-booking/src/test/java/cn/zhinan/adminbooking/integration/BookingConcurrencyIT.java#aRequestThatExpiredWhileItWaitedNeverProducesAnOrder",
+      "assertion": "RESERVATION_EXPIRED refused inside the transaction; booking_order/booking_order_snapshot/booking_slot_occupancy all zero; reservation stays PENDING_CONFIRMATION"
+    },
+    {
+      "caseId": "TASK-01",
+      "testPath": "backend/admin-booking/src/test/java/cn/zhinan/adminbooking/integration/BookingConcurrencyIT.java#twoWorkersLeaseTheSameOutboxMessageOnlyOnce",
+      "assertion": "single lease owner across two workers"
+    }
+  ],
+  "testCounts": {
+    "unit": 77,
+    "integration": {
+      "BookingConcurrencyIT": 5,
+      "BookingDatabaseIT": 16,
+      "OutboxDatabaseIT": 10,
+      "total": 31
+    },
+    "grandTotal": 108,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File backend/scripts/Test-BookingDatabaseIntegration.ps1 (cwd e:/SouthLeaf)",
+  "innerCommand": "backend/mvnw.cmd -o -pl admin-booking verify -DskipTests=false -Dmaven.test.skip=false -DskipITs=false",
+  "exitCode": 0,
+  "buildResult": "BUILD SUCCESS",
+  "environment": {
+    "jdk": "21.0.12 (Oracle JDK 21 LTS)",
+    "mysql": "8.4.11 Community Server, isolated instance on 127.0.0.1:3307",
+    "os": "Windows 10.0.26200",
+    "schema": "southleaf_booking_it (owned, marker-verified)",
+    "productionOr3306Touched": false
+  },
+  "sourceVersion": {
+    "commit": "46a0d7d",
+    "concurrencyTestBlob": "c6751c01aa6f0a0462f969d292ace369f66442ed"
+  },
+  "auxiliaryChecks": {
+    "moduleBoundaries": "PASS",
+    "bookingSqlColumns": "MATCH_SCHEMA"
+  },
+  "cleanup": {
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "runtimeGraceful": true,
+    "cleanupMarker": "BOOKING_DB_STOPPED_AND_OWNED_DATADIR_REMOVED"
+  },
+  "failureCategory": null,
+  "realOrProductionDataUsed": false,
+  "syntheticDataOnly": true,
+  "testSinkOnly": true,
+  "secretsRecorded": false,
+  "limitations": [
+    "Covers module-level concurrency on a disposable schema; it is not production grant, load or failover evidence.",
+    "The IT launcher identity holds rebuild rights only inside the owned test schema.",
+    "No payment, notification provider, or real customer data is exercised."
+  ]
+}
