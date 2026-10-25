@@ -1,6 +1,7 @@
 package cn.zhinan.adminruntime;
 
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.MultipartConfigElement;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
@@ -54,6 +55,9 @@ class AdminWebServerConfiguration {
     var registration = new ServletRegistrationBean<>(dispatcherServlet, "/");
     registration.setName("dispatcherServlet");
     registration.setLoadOnStartup(1);
+    // In-memory only (threshold = limit); used solely by the bounded S2-B upload endpoint.
+    long limit = AdminOriginFilter.MAX_UPLOAD_REQUEST_BYTES;
+    registration.setMultipartConfig(new MultipartConfigElement("", limit, limit, (int) limit));
     return registration;
   }
 

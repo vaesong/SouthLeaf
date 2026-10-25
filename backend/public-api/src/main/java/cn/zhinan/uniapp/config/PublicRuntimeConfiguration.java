@@ -1,6 +1,7 @@
 package cn.zhinan.uniapp.config;
 
 import cn.zhinan.uniapp.authorization.port.PublicAuthorizationEvaluator;
+import cn.zhinan.uniapp.authorization.port.PublicOverlayAuthorizationEvaluator;
 import cn.zhinan.uniapp.media.application.PublicMediaService;
 import cn.zhinan.uniapp.media.port.MediaObjectStore;
 import cn.zhinan.uniapp.publicquery.application.CatalogReadService;
@@ -29,8 +30,10 @@ public class PublicRuntimeConfiguration {
 
   @Bean
   public PublicVisibilityPolicy publicVisibilityPolicy(
-      PublicAuthorizationEvaluator authorization, Clock clock) {
-    return new PublicVisibilityPolicy(authorization, clock);
+      PublicAuthorizationEvaluator authorization,
+      PublicOverlayAuthorizationEvaluator overlayAuthorization,
+      Clock clock) {
+    return new PublicVisibilityPolicy(authorization, overlayAuthorization, clock);
   }
 
   @Bean

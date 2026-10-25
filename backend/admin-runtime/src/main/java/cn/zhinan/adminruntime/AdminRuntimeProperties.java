@@ -29,9 +29,16 @@ final class AdminRuntimeProperties {
           "SOUTHLEAF_ADMIN_WEB_PORT",
           "SOUTHLEAF_ADMIN_WEB_KEYSTORE_PATH",
           "SOUTHLEAF_ADMIN_WEB_KEYSTORE_PASSWORD",
-          "SOUTHLEAF_ADMIN_WEB_KEYSTORE_TYPE");
+          "SOUTHLEAF_ADMIN_WEB_KEYSTORE_TYPE",
+          "SOUTHLEAF_ADMIN_BOOKING_MODE",
+          "SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME",
+          "SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD",
+          "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER");
   private final String url, username, password, schema, expectedUser;
   private final AdminWebProperties web;
+  private final AdminContentProperties content;
+  private final AdminOutboxProperties outbox;
+  private final AdminBookingProperties booking;
 
   private AdminRuntimeProperties(
       String url,
@@ -39,13 +46,19 @@ final class AdminRuntimeProperties {
       String password,
       String schema,
       String expectedUser,
-      AdminWebProperties web) {
+      AdminWebProperties web,
+      AdminContentProperties content,
+      AdminOutboxProperties outbox,
+      AdminBookingProperties booking) {
     this.url = url;
     this.username = username;
     this.password = password;
     this.schema = schema;
     this.expectedUser = expectedUser;
     this.web = web;
+    this.content = content;
+    this.outbox = outbox;
+    this.booking = booking;
   }
 
   static AdminRuntimeProperties load(Map<String, String> env, Properties system) {
@@ -58,7 +71,10 @@ final class AdminRuntimeProperties {
           || k.startsWith("SERVER_")
           || k.equals("DEBUG")
           || k.equals("TRACE")
-          || (k.startsWith("SOUTHLEAF_ADMIN_") && !KEYS.contains(key)))
+          || (k.startsWith("SOUTHLEAF_ADMIN_")
+              && !KEYS.contains(key)
+              && !AdminContentProperties.KEYS.contains(key)
+              && !AdminOutboxProperties.KEYS.contains(key)))
         refuse(AdminStartupException.Reason.CONFIG_SOURCE);
     }
     for (String key : system.stringPropertyNames()) {
@@ -95,8 +111,32 @@ final class AdminRuntimeProperties {
     } catch (IllegalArgumentException ex) {
       throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
     }
+    AdminContentProperties content =
+        AdminContentProperties.load(
+            env, env.get("SOUTHLEAF_ADMIN_MODE"), schema, username, web.enabled());
+    AdminOutboxProperties outbox =
+        AdminOutboxProperties.load(
+            env, env.get("SOUTHLEAF_ADMIN_MODE"), schema, username, web.enabled());
+    AdminBookingProperties booking =
+        AdminBookingProperties.load(
+            env,
+            env.get("SOUTHLEAF_ADMIN_MODE"),
+            username,
+            outbox.databaseUser(),
+            content.businessUser(),
+            content.publicationUser(),
+            web.enabled(),
+            outbox.enabled());
     return new AdminRuntimeProperties(
-        url, username, env.get("SOUTHLEAF_ADMIN_DB_PASSWORD"), schema, expected, web);
+        url,
+        username,
+        env.get("SOUTHLEAF_ADMIN_DB_PASSWORD"),
+        schema,
+        expected,
+        web,
+        content,
+        outbox,
+        booking);
   }
 
   private static void refuse(AdminStartupException.Reason reason) {
@@ -125,6 +165,18 @@ final class AdminRuntimeProperties {
 
   AdminWebProperties web() {
     return web;
+  }
+
+  AdminContentProperties content() {
+    return content;
+  }
+
+  AdminOutboxProperties outbox() {
+    return outbox;
+  }
+
+  AdminBookingProperties booking() {
+    return booking;
   }
 
   @Override

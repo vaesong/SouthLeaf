@@ -18,8 +18,79 @@ public record CatalogSnapshot(
     Map<String, Asset> assets,
     List<Binding> bindings,
     List<String> featuredBusinesses,
-    List<String> featuredPackages) {
+    List<String> featuredPackages,
+    List<String> featuredWorks,
+    Map<String, String> overlayReleases) {
+  /** V1-only snapshot: no S2 per-work overlay entries. */
+  public CatalogSnapshot(
+      String releaseId,
+      String contentVersion,
+      String dataMode,
+      String approvalStatus,
+      Brand brand,
+      Contact contact,
+      List<Business> businesses,
+      List<Package> packages,
+      List<Work> works,
+      Map<String, Asset> assets,
+      List<Binding> bindings,
+      List<String> featuredBusinesses,
+      List<String> featuredPackages) {
+    this(
+        releaseId,
+        contentVersion,
+        dataMode,
+        approvalStatus,
+        brand,
+        contact,
+        businesses,
+        packages,
+        works,
+        assets,
+        bindings,
+        featuredBusinesses,
+        featuredPackages,
+        List.of(),
+        Map.of());
+  }
+
+  /** Existing callers keep the V1/S2 default ordering until a V3 snapshot curates featured work. */
+  public CatalogSnapshot(
+      String releaseId,
+      String contentVersion,
+      String dataMode,
+      String approvalStatus,
+      Brand brand,
+      Contact contact,
+      List<Business> businesses,
+      List<Package> packages,
+      List<Work> works,
+      Map<String, Asset> assets,
+      List<Binding> bindings,
+      List<String> featuredBusinesses,
+      List<String> featuredPackages,
+      Map<String, String> overlayReleases) {
+    this(
+        releaseId,
+        contentVersion,
+        dataMode,
+        approvalStatus,
+        brand,
+        contact,
+        businesses,
+        packages,
+        works,
+        assets,
+        bindings,
+        featuredBusinesses,
+        featuredPackages,
+        List.of(),
+        overlayReleases);
+  }
+
   public CatalogSnapshot {
+    featuredWorks = List.copyOf(featuredWorks);
+    overlayReleases = Map.copyOf(overlayReleases);
     businesses = List.copyOf(businesses);
     packages = List.copyOf(packages);
     works = List.copyOf(works);
@@ -36,9 +107,21 @@ public record CatalogSnapshot(
       String shareTitle,
       String tagline,
       String description,
+      String logoMediaId,
       List<TeamMember> team) {
     public Brand {
       team = List.copyOf(team);
+    }
+
+    public Brand(
+        String name,
+        String englishName,
+        String discoveryHeading,
+        String shareTitle,
+        String tagline,
+        String description,
+        List<TeamMember> team) {
+      this(name, englishName, discoveryHeading, shareTitle, tagline, description, null, team);
     }
   }
 

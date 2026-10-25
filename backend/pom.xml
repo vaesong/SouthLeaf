@@ -28,6 +28,8 @@
         <module>admin-migration-cli</module>
         <module>admin-account-cli</module>
         <module>admin-security-jdbc</module>
+        <module>admin-content</module>
+        <module>admin-booking</module>
         <module>admin-runtime</module>
     </modules>
     <build>

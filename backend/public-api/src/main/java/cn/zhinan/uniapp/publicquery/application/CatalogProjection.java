@@ -50,6 +50,9 @@ public final class CatalogProjection {
 
   private boolean bound(CatalogSnapshot.Binding binding) {
     return switch (binding.ownerType()) {
+      case "BRAND" ->
+          "brand".equals(binding.ownerId())
+              && binding.mediaId().equals(catalog.brand().logoMediaId());
       case "WORK" ->
           work(binding.ownerId()).map(w -> w.mediaIds().contains(binding.mediaId())).orElse(false);
       case "BUSINESS" ->
@@ -85,6 +88,7 @@ public final class CatalogProjection {
   }
 
   public Optional<PublicDtos.Media> media(String owner, String id, String variant) {
+    if (id == null || variant == null) return Optional.empty();
     var asset = catalog.assets().get(id);
     if (asset == null || !asset.variants().containsKey(variant)) return Optional.empty();
     return catalog.bindings().stream()
@@ -148,7 +152,7 @@ public final class CatalogProjection {
         b.shareTitle(),
         b.tagline(),
         b.description(),
-        null,
+        media("brand", b.logoMediaId(), "preview").orElse(null),
         contact(),
         b.team().stream()
             .map(

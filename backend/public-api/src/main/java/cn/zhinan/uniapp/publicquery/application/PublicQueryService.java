@@ -38,8 +38,14 @@ public class PublicQueryService {
 
   public QueryResult<PublicDtos.Home> readHome() {
     var p = projection();
-    var works =
-        p.visibleWorks(null, "recommended").stream().limit(DEFAULT_LIMIT).map(p::summary).toList();
+    var visibleWorks = p.visibleWorks(null, "recommended");
+    var selectedWorks =
+        p.snapshot().featuredWorks().isEmpty()
+            ? visibleWorks
+            : p.snapshot().featuredWorks().stream()
+                .flatMap(id -> visibleWorks.stream().filter(work -> work.id().equals(id)).limit(1))
+                .toList();
+    var works = selectedWorks.stream().limit(DEFAULT_LIMIT).map(p::summary).toList();
     var heroes =
         works.stream()
             .limit(3)

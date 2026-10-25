@@ -14,7 +14,8 @@ import xml.etree.ElementTree as ET
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 MODULES = ['public-api', 'admin-security-core', 'admin-db-policy', 'admin-migration-cli',
-           'admin-account-cli', 'admin-security-jdbc', 'admin-runtime', 'admin-credential-crypto']
+           'admin-account-cli', 'admin-security-jdbc', 'admin-runtime', 'admin-credential-crypto',
+           'admin-content', 'admin-booking']
 ARTIFACTS = {m: ('uniapp-api' if m == 'public-api' else m) for m in MODULES}
 VERSION = '0.1.0-SNAPSHOT'
 EXPECTED = {
@@ -26,7 +27,10 @@ EXPECTED = {
     'admin-security-jdbc': {('admin-security-core', 'compile'), ('admin-migration-cli', 'test'),
                              ('admin-credential-crypto', 'test')},
     'admin-runtime': {('admin-security-core', 'compile'), ('admin-security-jdbc', 'compile'),
-                      ('admin-db-policy', 'compile'), ('admin-credential-crypto', 'compile')},
+                      ('admin-db-policy', 'compile'), ('admin-credential-crypto', 'compile'),
+                      ('admin-content', 'compile'), ('admin-booking', 'compile')},
+    'admin-content': set(),
+    'admin-booking': set(),
 }
 
 
@@ -164,7 +168,8 @@ def main():
     public_forbidden = ['cn/zhinan/uniapp/adminsecurity/', 'cn/zhinan/adminsecurity/',
                         'cn/zhinan/adminruntime/', 'cn/zhinan/adminmigration/', 'cn/zhinan/adminaccountcli/',
                         'cn/zhinan/admindbpolicy/', 'AdminDatabaseMigrationMain', 'db/admin-migration/', 'application-admin.properties',
-                        'TestSessionTokenCodec', 'cn/zhinan/admincredentialcrypto/',
+                        'TestSessionTokenCodec', 'cn/zhinan/admincredentialcrypto/', 'cn/zhinan/admincontent/',
+                        'cn/zhinan/adminbooking/',
                         'org/bouncycastle/', 'org/springframework/security/crypto/']
     # S1-D makes admin-runtime an opt-in same-origin servlet surface. Servlet/Spring Web classes are
     # therefore allowed here, while every public application class/resource and migration surface remains forbidden.
@@ -180,6 +185,15 @@ def main():
         'admin-migration-cli': scan_jar(
             jars['admin-migration-cli'],
             ['BOOT-INF/', 'cn/zhinan/adminruntime/', 'cn/zhinan/adminaccountcli/']),
+        'admin-content': scan_jar(
+            jars['admin-content'],
+            ['BOOT-INF/', 'cn/zhinan/uniapp/', 'cn/zhinan/adminruntime/', 'cn/zhinan/adminsecurity/',
+             'cn/zhinan/adminmigration/', 'cn/zhinan/adminaccountcli/', 'db/']),
+        'admin-booking': scan_jar(
+            jars['admin-booking'],
+            ['BOOT-INF/', 'cn/zhinan/uniapp/', 'cn/zhinan/adminruntime/', 'cn/zhinan/adminsecurity/',
+             'cn/zhinan/adminmigration/', 'cn/zhinan/adminaccountcli/', 'cn/zhinan/admincontent/',
+             'db/']),
         'admin-account-cli': scan_jar(
             jars['admin-account-cli'],
             ['BOOT-INF/', 'cn/zhinan/uniapp/', 'cn/zhinan/adminruntime/',

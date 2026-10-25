@@ -1,6 +1,7 @@
 package cn.zhinan.adminruntime;
 
 import cn.zhinan.admindbpolicy.AdminRuntimeGrantPolicy;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +26,12 @@ public final class AdminRuntimeApplication {
         throw new AdminStartupException(AdminStartupException.Reason.ARGUMENTS);
       var properties = AdminRuntimeProperties.load(environment, system);
       try (var context = start(properties)) {
-        String runtimeMode = properties.web().enabled() ? "HTTPS_WEB" : "NON_WEB";
+        String runtimeMode =
+            !properties.web().enabled()
+                ? "NON_WEB"
+                : properties.content().enabled() ? "HTTPS_WEB_CONTENT" : "HTTPS_WEB";
+        if (properties.outbox().enabled()) runtimeMode += "_OUTBOX";
+        if (properties.booking().enabled()) runtimeMode += "_BOOKING";
         System.out.println(
             "ADMIN_RUNTIME_READY:" + AdminRuntimeGrantPolicy.CONTRACT_ID + ":" + runtimeMode);
         if (args.length == 0) awaitShutdown(context);
@@ -42,7 +48,13 @@ public final class AdminRuntimeApplication {
   }
 
   static ConfigurableApplicationContext start(AdminRuntimeProperties properties) {
-    var application = new SpringApplication(AdminRuntimeConfiguration.class);
+    // Optional capabilities are composed only when explicitly enabled and verified.
+    var sources = new ArrayList<Class<?>>();
+    sources.add(AdminRuntimeConfiguration.class);
+    if (properties.content().enabled()) sources.add(AdminContentConfiguration.class);
+    if (properties.outbox().enabled()) sources.add(AdminOutboxConfiguration.class);
+    if (properties.booking().enabled()) sources.add(AdminBookingConfiguration.class);
+    var application = new SpringApplication(sources.toArray(Class<?>[]::new));
     application.setEnvironment(isolatedEnvironment(properties.web()));
     application.setWebApplicationType(
         properties.web().enabled() ? WebApplicationType.SERVLET : WebApplicationType.NONE);

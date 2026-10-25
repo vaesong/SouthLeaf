@@ -14,6 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * contract.
  */
 final class AdminOriginFilter extends OncePerRequestFilter {
+  static final String UPLOAD_PATH = "/api/admin/v1/media/uploads";
+  static final long MAX_UPLOAD_REQUEST_BYTES = 4L * 1024 * 1024 + 64 * 1024;
+  private static final long MAX_PUT_BYTES = 16 * 1024;
   private final String expectedOrigin;
 
   AdminOriginFilter(AdminWebProperties properties) {
@@ -43,6 +46,44 @@ final class AdminOriginFilter extends OncePerRequestFilter {
             "HTTPS is required for administrative writes.");
         return;
       }
+      if (UPLOAD_PATH.equals(request.getRequestURI())
+          && HttpMethod.POST.matches(request.getMethod())) {
+        // The only non-JSON write: one bounded multipart file; chunked/unknown length is refused.
+        String type = request.getContentType();
+        if (type == null
+            || !type.toLowerCase(Locale.ROOT).startsWith("multipart/form-data;")
+            || hasContentEncoding(request)) {
+          AdminHttpResponses.writeError(
+              response,
+              HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+              "MEDIA_TYPE_UNSUPPORTED",
+              "Only a single multipart/form-data file is accepted.");
+          return;
+        }
+        long length = request.getContentLengthLong();
+        if (length < 0 || length > MAX_UPLOAD_REQUEST_BYTES) {
+          AdminHttpResponses.writeError(
+              response, 413, "MEDIA_TOO_LARGE", "The upload exceeds the configured limit.");
+          return;
+        }
+        chain.doFilter(request, response);
+        return;
+      }
+      if (HttpMethod.PUT.matches(request.getMethod())) {
+        if (!jsonUtf8(request.getContentType()) || hasContentEncoding(request)) {
+          AdminHttpResponses.writeError(
+              response,
+              HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+              "UNSUPPORTED_MEDIA_TYPE",
+              "Only application/json is accepted.");
+          return;
+        }
+        if (request.getContentLengthLong() > MAX_PUT_BYTES) {
+          AdminHttpResponses.writeError(
+              response, 413, "PAYLOAD_TOO_LARGE", "The request body exceeds 16 KiB.");
+          return;
+        }
+      }
       if (HttpMethod.POST.matches(request.getMethod())) {
         if (!jsonUtf8(request.getContentType())
             || (request.getHeader("Content-Encoding") != null
@@ -63,6 +104,11 @@ final class AdminOriginFilter extends OncePerRequestFilter {
       }
     }
     chain.doFilter(request, response);
+  }
+
+  private static boolean hasContentEncoding(HttpServletRequest request) {
+    String encoding = request.getHeader("Content-Encoding");
+    return encoding != null && !encoding.isBlank() && !"identity".equalsIgnoreCase(encoding.trim());
   }
 
   private static boolean jsonUtf8(String value) {

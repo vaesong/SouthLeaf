@@ -1,0 +1,21 @@
+package cn.zhinan.adminbooking.domain;
+
+/** Stable, non-sensitive failure categories. HTTP mapping is owned by the runtime adapter. */
+public enum BookingFailure {
+  INVALID_REQUEST,
+  NOT_FOUND,
+  FORBIDDEN,
+  VERSION_CONFLICT,
+  IDEMPOTENCY_CONFLICT,
+  SLOT_UNAVAILABLE,
+  SLOT_CLOSED,
+  RESERVATION_NOT_PENDING,
+  RESERVATION_EXPIRED,
+  RESERVATION_ALREADY_CANCELLED,
+  ORDER_ALREADY_CANCELLED,
+  RELATIONSHIP_REQUIRED,
+  LINK_NOT_APPROVED,
+  CUSTOMER_LINK_EXISTS,
+  STORAGE_UNAVAILABLE,
+  CONFLICT
+}
