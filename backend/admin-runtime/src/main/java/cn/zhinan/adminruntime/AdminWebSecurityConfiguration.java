@@ -117,7 +117,9 @@ class AdminWebSecurityConfiguration {
         routes.matcher(
             HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/reschedule"),
         routes.matcher(
-            HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/confirm"));
+            HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/confirm"),
+        routes.matcher(
+            HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/reject"));
   }
 
   private static RequestMatcher contentRoutes(AdminRuntimeProperties runtime) {

@@ -220,6 +220,44 @@ class AdminBookingController {
         });
   }
 
+  /**
+   * Refuses a pending request. Confirming and rejecting are the two answers to the same question,
+   * so they share the contract shape: current revision in, revision out. A rejection never names a
+   * slot, because refusing a request must not be able to reserve anything.
+   */
+  @PostMapping("/reservations/{reservationId}/reject")
+  ResponseEntity<?> reject(HttpServletRequest request, @PathVariable String reservationId) {
+    return handle(
+        request,
+        AdminPermission.RESERVATION_REJECT,
+        (principal, requestId) -> {
+          int expectedVersion = ifMatch(request);
+          Map<String, String> body = strictObject(request, Set.of("reasonCode"));
+          var result =
+              booking.rejectReservation(
+                  principal.accountId(),
+                  reservationId,
+                  expectedVersion,
+                  body.get("reasonCode"),
+                  request.getHeader("Idempotency-Key"));
+          ReservationView current = booking.reservationView(reservationId);
+          return okBuilder(requestId)
+              .eTag(reservationEtag(current.reservation().version()))
+              .body(
+                  new Envelope<>(
+                      "OK",
+                      requestId,
+                      new ActionView(
+                          "REJECTED",
+                          result.commandId(),
+                          result.reservationId(),
+                          null,
+                          null,
+                          0,
+                          result.replayed())));
+        });
+  }
+
   private ResponseEntity<?> handle(
       HttpServletRequest request, AdminPermission permission, Handler handler) {
     String requestId = UUID.randomUUID().toString();

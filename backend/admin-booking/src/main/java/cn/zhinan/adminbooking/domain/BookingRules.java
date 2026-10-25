@@ -230,6 +230,18 @@ public final class BookingRules {
       throw new BookingException(BookingFailure.INVALID_REQUEST, "NOT_CONFIRMED");
   }
 
+  /**
+   * Only a pending request can be refused. A decided request is closed by cancel or expiry, so a
+   * late refusal cannot rewrite a business answer that already shipped to the customer.
+   */
+  public static void assertRejectable(
+      BookingModels.ReservationStatus status, Instant expiresAt, Instant now) {
+    if (status != BookingModels.ReservationStatus.PENDING_CONFIRMATION)
+      throw new BookingException(BookingFailure.RESERVATION_NOT_PENDING, "NOT_PENDING");
+    if (expiresAt != null && !now.isBefore(expiresAt))
+      throw new BookingException(BookingFailure.RESERVATION_EXPIRED, "EXPIRED");
+  }
+
   public static void assertOrderCancellable(BookingModels.OrderLifecycle lifecycle) {
     if (lifecycle == BookingModels.OrderLifecycle.CANCELLED)
       throw new BookingException(BookingFailure.ORDER_ALREADY_CANCELLED, "ALREADY_CANCELLED");

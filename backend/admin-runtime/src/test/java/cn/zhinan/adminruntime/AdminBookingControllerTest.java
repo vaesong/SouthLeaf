@@ -113,6 +113,44 @@ class AdminBookingControllerTest {
         .isEqualTo("REQUEST_INVALID");
   }
 
+  @Test
+  void rejectRequiresRejectCapabilityRevisionAndAReasonButNeverASlot() {
+    var wrongPermission = new Fixture(Set.of(AdminPermission.RESERVATION_CONFIRM));
+    var denied =
+        wrongPermission.controller.reject(
+            request("POST", "/bookings/reservations/" + RESERVATION + "/reject"), RESERVATION);
+    assertThat(denied.getStatusCode().value()).isEqualTo(403);
+    assertThat(((AdminBookingController.ErrorEnvelope) denied.getBody()).code())
+        .isEqualTo("CAPABILITY_REQUIRED");
+
+    var fixture = new Fixture(Set.of(AdminPermission.RESERVATION_REJECT));
+    var missingRevision =
+        fixture.controller.reject(rejectRequest("{\"reasonCode\":\"DECLINED\"}"), RESERVATION);
+    assertThat(missingRevision.getStatusCode().value()).isEqualTo(428);
+
+    // Refusing a request must not be able to name a slot, so a slot in the body is rejected.
+    var withSlot = rejectRequest("{\"slotId\":\"00000000-0000-0000-0000-000000000002\"}");
+    withSlot.addHeader("If-Match", "\"r1\"");
+    var invalid = fixture.controller.reject(withSlot, RESERVATION);
+    assertThat(invalid.getStatusCode().value()).isEqualTo(400);
+    assertThat(((AdminBookingController.ErrorEnvelope) invalid.getBody()).code())
+        .isEqualTo("REQUEST_INVALID");
+
+    var notJson = request("POST", "/bookings/reservations/" + RESERVATION + "/reject");
+    notJson.addHeader("If-Match", "\"r1\"");
+    notJson.addHeader("Idempotency-Key", "k".repeat(32));
+    assertThat(fixture.controller.reject(notJson, RESERVATION).getStatusCode().value())
+        .isEqualTo(415);
+  }
+
+  private static MockHttpServletRequest rejectRequest(String body) {
+    var request = request("POST", "/bookings/reservations/" + RESERVATION + "/reject");
+    request.setContentType("application/json");
+    request.setContent(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    request.addHeader("Idempotency-Key", "k".repeat(32));
+    return request;
+  }
+
   private static MockHttpServletRequest confirmRequest(String body) {
     var request = request("POST", "/bookings/reservations/" + RESERVATION + "/confirm");
     request.setContentType("application/json");

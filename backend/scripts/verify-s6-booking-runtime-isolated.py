@@ -164,6 +164,11 @@ def seed_booking_facts(helpers, state: dict[str, object], ids: dict[str, str]) -
         f"({q(ids['confirm_reservation'])},{q(customer)},'s6-synthetic-package-v1','OFFLINE','PENDING_CONFIRMATION',{q(expires_text)},NULL,0,NULL,NULL,{q(created_text)},{q(created_text)},1);"
     )
     sql.append(
+        f"INSERT INTO `{schema}`.booking_reservation "
+        "(id,customer_id,package_version_ref,source,status,expires_at,slot_id,schedule_revision,confirmed_at,confirmed_by,created_at,updated_at,version) VALUES "
+        f"({q(ids['reject_reservation'])},{q(customer)},'s6-synthetic-package-v1','OFFLINE','PENDING_CONFIRMATION',{q(expires_text)},NULL,0,NULL,NULL,{q(created_text)},{q(created_text)},1);"
+    )
+    sql.append(
         f"INSERT INTO `{schema}`.admin_package_fact "
         "(version_ref,display_name,currency_code,amount_minor_units,price_version,data_mode,created_at) VALUES "
         f"('s6-synthetic-package-v1','S6 Synthetic Test Package','JPY',12345,'s6-synthetic-price-v1','SYNTHETIC',{q(created_text)});"
@@ -299,14 +304,44 @@ def verify_business_facts(helpers, state: dict[str, object], ids: dict[str, str]
         "AND currency_code='JPY' AND data_mode='SYNTHETIC';"
     ) != "1":
         raise RuntimeError("PACKAGE_FACT_ROW_CHANGED")
+    refused = ids["reject_reservation"]
+    refused_state = query(
+        f"SELECT status,slot_id,version FROM `{schema}`.booking_reservation WHERE id='{refused}';"
+    ).split("\t")
+    if refused_state != ["REJECTED", "NULL", "2"]:
+        raise RuntimeError("REJECT_RESERVATION_FACT_MISMATCH:" + "|".join(refused_state))
+    # Refusing a request must never hold a slot or create an order.
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_slot_occupancy WHERE reservation_id='{refused}';"
+    ) != "0":
+        raise RuntimeError("REJECT_OCCUPANCY_LEAKED")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_order WHERE source_reservation_id='{refused}';"
+    ) != "0":
+        raise RuntimeError("REJECT_CREATED_AN_ORDER")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_audit WHERE object_type='RESERVATION' "
+        f"AND object_id='{refused}' AND action='REJECT';"
+    ) != "1":
+        raise RuntimeError("REJECT_AUDIT_NOT_EXACTLY_ONE")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_notification_outbox "
+        f"WHERE intent='RESERVATION_REJECTED' AND object_ref='{refused}';"
+    ) != "1":
+        raise RuntimeError("REJECT_OUTBOX_NOT_EXACTLY_ONE")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_command WHERE operation='REJECT_RESERVATION';"
+    ) != "1":
+        raise RuntimeError("REJECT_COMMAND_NOT_EXACTLY_ONE")
+
     audit_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_audit;")
-    if audit_total != "4":
+    if audit_total != "5":
         raise RuntimeError("BOOKING_AUDIT_FACTS_MISMATCH:" + audit_total)
     outbox_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_notification_outbox;")
-    if outbox_total != "4":
+    if outbox_total != "5":
         raise RuntimeError("BOOKING_OUTBOX_FACTS_MISMATCH:" + outbox_total)
     command_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_command;")
-    if command_total != "4":
+    if command_total != "5":
         raise RuntimeError("BOOKING_COMMAND_FACTS_MISMATCH:" + command_total)
     recovered = query(
         f"SELECT status,attempts FROM `{schema}`.booking_notification_outbox "
@@ -352,6 +387,7 @@ def grant_synthetic_operator(helpers, state: dict[str, object], account_id: str)
         "RESERVATION_CANCEL",
         "RESERVATION_RESCHEDULE",
         "RESERVATION_CONFIRM",
+        "RESERVATION_REJECT",
         "ORDER_READ",
         "OUTBOX_READ",
         "OUTBOX_RECOVER",
@@ -469,6 +505,7 @@ def run_browser(helpers, state, tools, account_id, password, ids):
             "S6_E2E_DEAD_MESSAGE_ID": ids["dead_outbox_message"],
             "S6_E2E_CONFIRM_ID": ids["confirm_reservation"],
             "S6_E2E_CONFIRM_SLOT_ID": ids["confirm_slot"],
+            "S6_E2E_REJECT_ID": ids["reject_reservation"],
         }
     )
     result = subprocess.run(
@@ -563,7 +600,7 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         "customer", "reschedule_old_slot", "target_slot", "cancel_slot",
         "reschedule_reservation", "cancel_reservation", "reschedule_order",
         "cancel_order", "reschedule_snapshot", "cancel_snapshot", "dead_outbox_message",
-        "confirm_slot", "confirm_reservation")}
+        "confirm_slot", "confirm_reservation", "reject_reservation")}
     status = "FAIL"
     failure = None
     runtime_graceful = False
@@ -591,7 +628,7 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         seed_dead_letter(helpers, state, ids)
         print("S6_STAGE:runtime_https_booking_and_test_sink_outbox")
         start_runtime(helpers, state, tools, build, passwords)
-        print("S6_STAGE:edge_browser_confirm_reschedule_cancel_and_outbox_recovery")
+        print("S6_STAGE:edge_browser_confirm_reject_reschedule_cancel_and_outbox_recovery")
         run_browser(helpers, state, tools, account_id, passwords["account"], ids)
         verify_business_facts(helpers, state, ids)
         status = "PASS"
@@ -610,13 +647,14 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         "kind": FIXTURE_KIND,
         "status": status,
         "runId": run_id,
-        "checkCount": 8,
+        "checkCount": 9,
         "checks": [
             "dedicated_isolated_tls_mysql_and_migrations",
             "verified_booking_writer_and_outbox_grants",
             "synthetic_session_capabilities_and_booking_facts",
             "runtime_https_same_origin_login_and_csrf",
             "browser_pending_request_confirmed_into_unique_order",
+            "browser_pending_request_rejected_without_side_effects",
             "browser_reschedule_cancel_and_order_revision",
             "browser_outbox_failure_review_and_manual_recovery",
             "database_occupancy_audit_command_and_outbox_facts",

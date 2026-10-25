@@ -15,6 +15,7 @@ import cn.zhinan.adminbooking.domain.BookingModels.OrderRevision;
 import cn.zhinan.adminbooking.domain.BookingModels.OrderSnapshot;
 import cn.zhinan.adminbooking.domain.BookingModels.OrderView;
 import cn.zhinan.adminbooking.domain.BookingModels.PackageFact;
+import cn.zhinan.adminbooking.domain.BookingModels.RejectionResult;
 import cn.zhinan.adminbooking.domain.BookingModels.RescheduleResult;
 import cn.zhinan.adminbooking.domain.BookingModels.Reservation;
 import cn.zhinan.adminbooking.domain.BookingModels.ReservationCreated;
@@ -48,6 +49,7 @@ public final class BookingApplication {
   private static final String OP_CREATE_RESERVATION = "CREATE_RESERVATION";
   private static final String OP_CONFIRM_RESERVATION = "CONFIRM_RESERVATION";
   private static final String OP_CANCEL_RESERVATION = "CANCEL_RESERVATION";
+  private static final String OP_REJECT_RESERVATION = "REJECT_RESERVATION";
   private static final String OP_RESCHEDULE_RESERVATION = "RESCHEDULE_RESERVATION";
   private static final String OP_CREATE_CUSTOMER = "CREATE_CUSTOMER";
   private static final String OP_ATTACH_EXTERNAL_IDENTITY = "ATTACH_EXTERNAL_IDENTITY";
@@ -761,6 +763,58 @@ public final class BookingApplication {
               "RESERVATION_CANCELLED", reservation.customerId(), reservationId, now, now);
           return new CancellationResult(
               commandId, reservationId, order.orderId(), order.currentRevision() + 1, now, false);
+        });
+  }
+
+  /**
+   * Refuses a pending request. Nothing is occupied and no order exists yet, so the decision is the
+   * terminal status plus its audit record and notification intent: a rejection is a recorded
+   * answer, never a silent delete, and it can never hold a slot.
+   */
+  public RejectionResult rejectReservation(
+      String actorId,
+      String reservationId,
+      int expectedRevision,
+      String reasonCode,
+      String idempotencyKey) {
+    BookingRules.idempotencyKey(idempotencyKey);
+    BookingRules.uuid(reservationId);
+    BookingRules.reasonCode(reasonCode);
+    String digest =
+        BookingRules.requestDigest(reservationId, String.valueOf(expectedRevision), reasonCode);
+    Instant now = clock.instant();
+    return transactions.inTransaction(
+        () -> {
+          Optional<StoredCommand> stored =
+              commands.find(actorId, OP_REJECT_RESERVATION, idempotencyKey);
+          if (stored.isPresent()) {
+            if (!stored.get().requestSha256().equals(digest))
+              throw new BookingException(
+                  BookingFailure.IDEMPOTENCY_CONFLICT, "IDEMPOTENCY_KEY_REUSE");
+            return new RejectionResult(stored.get().resultId(), reservationId, now, true);
+          }
+          Reservation reservation =
+              reservations
+                  .find(reservationId)
+                  .orElseThrow(
+                      () ->
+                          new BookingException(BookingFailure.NOT_FOUND, "RESERVATION_NOT_FOUND"));
+          if (reservation.version() != expectedRevision)
+            throw new BookingException(
+                BookingFailure.VERSION_CONFLICT, "RESERVATION_REVISION_MISMATCH");
+          BookingRules.assertRejectable(reservation.status(), reservation.expiresAt(), now);
+
+          int updated =
+              reservations.markRejected(reservationId, expectedRevision, reasonCode, actorId, now);
+          if (updated == 0)
+            throw new BookingException(
+                BookingFailure.VERSION_CONFLICT, "RESERVATION_REVISION_MISMATCH");
+
+          String commandId = BookingRules.newId();
+          recordCommand(actorId, OP_REJECT_RESERVATION, idempotencyKey, digest, commandId, now);
+          audit.record(actorId, commandId, "RESERVATION", reservationId, "REJECT", reasonCode, now);
+          outbox.enqueue("RESERVATION_REJECTED", reservation.customerId(), reservationId, now, now);
+          return new RejectionResult(commandId, reservationId, now, false);
         });
   }
 

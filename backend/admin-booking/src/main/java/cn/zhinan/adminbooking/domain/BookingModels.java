@@ -206,6 +206,9 @@ public final class BookingModels {
       Instant completedAt,
       boolean replayed) {}
 
+  public record RejectionResult(
+      String commandId, String reservationId, Instant completedAt, boolean replayed) {}
+
   public record RescheduleResult(
       String commandId,
       String reservationId,
