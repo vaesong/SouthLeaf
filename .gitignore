@@ -20,5 +20,11 @@ __pycache__/
 /outputs/.chrome-*/
 /nul
 
+# Local-only working material: never part of a source distribution.
+/outputs/
+/deliverables/
+/rule/
+/.workbuddy/
+
 # Local rights-unknown quarantine: not part of source distribution.
 /archive/legacy-frontend-assets/
