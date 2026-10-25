@@ -36,6 +36,10 @@ const statusByCode = {
   BOOKING_PACKAGE_CATALOG_UNCONFIGURED: 503,
   BOOKING_SERVICE_UNAVAILABLE: 503,
 };
+// A resource that was just created answers 201; every other code has exactly one status. Without
+// this, a successful intake is read as a malformed response and the page says "please retry".
+const acceptsStatus = (code, status) =>
+  statusByCode[code] === status || (code === "OK" && status === 201);
 const showToast = (message, icon = "none") =>
   wx.showToast({ title: message, icon, duration: 1800 });
 const getBaseURL = () => getApp().runtime.apiOrigin;
@@ -71,7 +75,7 @@ const send = (method, path, { params = {}, body = null, headers = {} } = {}) =>
           typeof payload !== "object" ||
           typeof payload.requestId !== "string" ||
           !payload.meta ||
-          statusByCode[payload.code] !== response.statusCode
+          !acceptsStatus(payload.code, response.statusCode)
         ) {
           reject(createError("PUBLIC_RESPONSE_INVALID"));
           return;

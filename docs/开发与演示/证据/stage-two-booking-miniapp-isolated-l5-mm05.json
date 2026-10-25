@@ -1,0 +1,35 @@
+{
+  "checkCount": 9,
+  "checks": [
+    "dedicated_isolated_tls_mysql_admin_and_public_schemas",
+    "intake_writer_grants_match_startup_policy_exactly",
+    "public_api_started_with_synthetic_data_mode_and_test_identity_sink",
+    "miniapp_built_against_the_isolated_api_origin",
+    "wechat_devtools_automation_drives_the_real_miniapp",
+    "miniapp_lists_packages_and_slots_without_any_payment_entry",
+    "miniapp_submits_a_pending_request_and_reports_pending_status",
+    "pending_request_holds_no_slot_and_leaves_audit_and_outbox",
+    "miniapp_shows_confirmed_agreement_without_payment"
+  ],
+  "cleanup": {
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "runtimeGraceful": true
+  },
+  "confirmed": {},
+  "created": {},
+  "devtoolsMode": "reused",
+  "failureCategory": "MINIAPP_E2E_FAILED_CREATE",
+  "kind": "BOOKING_MINIAPP_E2E",
+  "limitations": [
+    "The WeChat identity is the TEST sink: no real openid, no WeChat login, no getPhoneNumber.",
+    "The developer tools IDE is a local GUI process; the runner starts it but does not close it.",
+    "Notification delivery stays in the test sink, so this proves the intake view, not real messaging."
+  ],
+  "realOrProductionDataUsed": false,
+  "runId": "df59c5eb",
+  "secretsRecorded": false,
+  "status": "FAIL",
+  "syntheticDataOnly": true,
+  "testSinkOnly": true
+}

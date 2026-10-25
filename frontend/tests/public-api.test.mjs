@@ -270,3 +270,23 @@ test("all layout controls cycle directly and wrap", () => {
   );
   assert.equal(display.nextLayout("album", ["album", "overview"]), "overview");
 });
+
+test("a created resource is accepted as 201 and nothing else", async () => {
+  const original = globalThis.wx.request;
+  const reply = (statusCode) => (options) =>
+    options.success({ ...success(), statusCode });
+  try {
+    globalThis.wx.request = reply(201);
+    const created = await api.post("/api/v1/public/booking/requests", {});
+    assert.equal(created.requestId, "req-test");
+    for (const statusCode of [200 + 2, 204]) {
+      globalThis.wx.request = reply(statusCode);
+      await assert.rejects(
+        () => api.post("/api/v1/public/booking/requests", {}),
+        (error) => error.code === "PUBLIC_RESPONSE_INVALID",
+      );
+    }
+  } finally {
+    globalThis.wx.request = original;
+  }
+});
