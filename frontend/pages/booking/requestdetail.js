@@ -1,39 +1,21 @@
 const booking = require("../../api/booking.js");
 const { commit } = require("../../presentation/page-state.js");
-
-const STATUS_LABELS = {
-  PENDING_CONFIRMATION: "待确认",
-  CONFIRMED: "已确认",
-  REJECTED: "未接受",
-  EXPIRED: "已过期",
-  CANCELLED: "已取消",
-};
-
-const STATUS_HINTS = {
-  PENDING_CONFIRMATION: "工作室会人工复核时段，确认前不会占用档期。",
-  CONFIRMED: "档期已确认，到店前请留意工作室的联系。",
-  REJECTED: "这次申请未通过，可以重新选择时段再提交。",
-  EXPIRED: "申请已超过有效期，可以重新提交。",
-  CANCELLED: "该预约已取消。",
-};
-
-const slotLabel = (slot) =>
-  slot
-    ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd
-    : "未指定时段";
+const views = require("../../presentation/booking-views.js");
+const settlement = require("../../presentation/settlement.js");
 
 function present(data) {
   const request = data.request || {};
+  const status = views.statusOf(request.displayStatus);
   return {
     ...data,
-    statusLabel: STATUS_LABELS[request.displayStatus] || "状态未知",
-    statusHint: STATUS_HINTS[request.displayStatus] || "",
-    slotLabel: slotLabel(request.requestedSlot),
+    statusLabel: status.label,
+    statusHint: status.hint,
+    slotLabel: views.slotLabel(request.requestedSlot),
     hasOrder: Boolean(request.order),
-    order: request.order || null,
-    expiresAt: request.expiresAt
-      ? String(request.expiresAt).slice(0, 16).replace("T", " ")
-      : "",
+    order: views.orderView(request.order),
+    payAction: settlement.actionFor(request.order),
+    settlementLabel: settlement.settlementLabel(),
+    expiresAt: views.timeLabel(request.expiresAt),
   };
 }
 
@@ -47,6 +29,8 @@ Page({
     slotLabel: "",
     hasOrder: false,
     order: null,
+    payAction: settlement.actionFor(null),
+    settlementLabel: "",
     expiresAt: "",
     errorMessage: "",
     dataMode: "",
@@ -116,6 +100,16 @@ Page({
   handleBackTap() {
     wx.navigateBack({
       fail: () => wx.switchTab({ url: "/pages/package/package" }),
+    });
+  },
+  // 阶段二不收款：这里只解释，不发请求、不改状态。
+  handleSettleTap() {
+    if (!this.data.payAction || !this.data.payAction.visible) return;
+    wx.showModal({
+      title: settlement.LABELS.action,
+      content: settlement.blockedNotice(),
+      showCancel: false,
+      confirmText: "知道了",
     });
   },
   handleBookAgainTap() {

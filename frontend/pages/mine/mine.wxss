@@ -1,0 +1,154 @@
+.mine-page {
+  padding: 24rpx 28rpx 60rpx;
+  color: #23513f;
+  background: #f8f8f8;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.mine-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 18rpx;
+}
+.mine-title {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+.mine-subtitle {
+  font-size: 22rpx;
+  color: #7b8a80;
+}
+.identity-card {
+  margin-top: 12rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 18rpx;
+}
+.identity-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+.identity-meta {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7b8a80;
+}
+.section {
+  margin-top: 28rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 18rpx;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+.section-action {
+  font-size: 24rpx;
+  color: #315849;
+  padding-bottom: 16rpx;
+}
+.request-card {
+  padding: 22rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid #dfe6e1;
+  border-radius: 14rpx;
+}
+.request-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.request-slot {
+  font-size: 27rpx;
+  font-weight: 600;
+}
+.status-pill {
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: #eef1ef;
+  color: #55655b;
+}
+.status-CONFIRMED {
+  background: #e6f1ea;
+  color: #315849;
+}
+.status-PENDING_CONFIRMATION {
+  background: #fdf3e3;
+  color: #8a6a2f;
+}
+.status-REJECTED,
+.status-EXPIRED,
+.status-CANCELLED {
+  background: #f4efee;
+  color: #8a6a63;
+}
+.request-hint {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #7b8a80;
+}
+.order-block {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #eef1ef;
+}
+.order-name {
+  display: block;
+  font-size: 25rpx;
+}
+.order-amount {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #315849;
+}
+.order-settlement {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #7b8a80;
+}
+.pay-button {
+  margin-top: 16rpx;
+  background: #315849;
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+.pay-button-blocked {
+  background: #ffffff;
+  color: #7b8a80;
+  border: 1rpx solid #dfe6e1;
+}
+.hint {
+  font-size: 24rpx;
+  color: #7b8a80;
+  padding: 12rpx 4rpx;
+}
+.state-panel {
+  margin-top: 120rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #7b8a80;
+}
+.state-panel button {
+  margin-top: 28rpx;
+  background: #315849;
+  color: #ffffff;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+}

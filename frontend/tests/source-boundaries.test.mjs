@@ -45,11 +45,24 @@ test("detail pages have no contact CTAs; UI retains direct controls and vertical
   assert.match(text("pages/about/about.wxml"), /team-row/);
   assert.doesNotMatch(text("pages/about/about.wxml"), /team-specialties/);
 });
-test("active static source declares only eight approved PNGs", () => {
-  const names = fs.readdirSync(new URL("static/icons/", root));
-  assert.equal(names.length, 8);
+test("every page that renders the demo notice declares the component", () => {
+  for (const route of routes) {
+    const wxml = text(route + ".wxml");
+    if (!wxml.includes("<demo-notice")) continue;
+    const config = JSON.parse(text(route + ".json"));
+    assert.equal(
+      config.usingComponents?.["demo-notice"],
+      "../../components/demo-notice/index",
+      route + " must declare demo-notice",
+    );
+  }
+});
+
+test("active static source declares only the approved PNGs", () => {
+  const names = fs.readdirSync(new URL("static/icons/", root)).sort();
+  assert.equal(names.length, 10);
   for (const n of names)
-    assert.match(n, /^tab-(home|works|services|about)(-active)?\.png$/);
+    assert.match(n, /^tab-(home|works|services|about|mine)(-active)?\.png$/);
 });
 
 test("native WXML expressions do not contain HTML-escaped operators or JS unicode escapes", () => {

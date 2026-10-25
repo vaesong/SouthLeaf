@@ -1,0 +1,64 @@
+<view class="mine-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="mine-header"
+    ><text class="mine-title">我的</text
+    ><text class="mine-subtitle">预约与结算</text></view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载你的预约...</view
+  ><view wx:elif="{{status === 'unauthenticated'}}" class="state-panel"
+    ><text>还没有取得身份</text
+    ><text class="hint">进入预约页会自动使用微信身份登录</text
+    ><button bindtap="handleNewBookingTap">去预约</button></view
+  ><view wx:elif="{{status === 'error'}}" class="state-panel"
+    ><text>{{errorMessage}}</text
+    ><button bindtap="handleRetryTap">重试</button></view
+  ><block wx:else
+    ><view class="identity-card"
+      ><text class="identity-name">{{identityLabel}}</text
+      ><text wx:if="{{identityExpires}}" class="identity-meta"
+        >会话有效至 {{identityExpires}}（UTC）</text
+      ></view
+    ><view class="section"
+      ><view class="section-head"
+        ><text class="section-title">我的预约</text
+        ><text class="section-action" bindtap="handleNewBookingTap"
+          >＋ 新预约</text
+        ></view
+      ><view wx:if="{{status === 'empty'}}" class="hint"
+        >还没有提交过预约申请</view
+      ><view
+        wx:for="{{cards}}"
+        wx:key="reservationId"
+        class="request-card"
+        data-id="{{item.reservationId}}"
+        bindtap="handleCardTap"
+        ><view class="request-card-head"
+          ><text class="request-slot">{{item.slotLabel}}</text
+          ><text class="status-pill status-{{item.statusCode}}"
+            >{{item.statusLabel}}</text
+          ></view
+        ><text wx:if="{{item.statusHint}}" class="request-hint"
+          >{{item.statusHint}}</text
+        ><view wx:if="{{item.hasOrder}}" class="order-block"
+          ><text class="order-name">{{item.order.packageDisplayName}}</text
+          ><text class="order-amount">{{item.order.amountLabel}}</text
+          ><text class="order-settlement">{{settlementLabel}}</text
+          ><button
+            class="pay-button {{item.payAction.enabled ? '' : 'pay-button-blocked'}}"
+            data-id="{{item.reservationId}}"
+            catchtap="handleSettleTap"
+          >
+            {{item.payAction.label}}
+          </button></view
+        ><text wx:elif="{{item.expiresLabel}}" class="request-hint"
+          >申请有效期至 {{item.expiresLabel}}（UTC）</text
+        ></view
+      ></view
+    ><view class="section"
+      ><text class="section-title">说明</text
+      ><text class="hint"
+        >这里只显示你在本小程序提交的预约记录；更早的记录请联系工作室。</text
+      ></view
+    ></block
+  ></view
+>

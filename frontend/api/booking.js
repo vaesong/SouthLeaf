@@ -2,10 +2,18 @@ const http = require("./api.js");
 const { createError, get, post } = http;
 
 const TOKEN_KEY = "southleaf.booking.session";
+const PROFILE_KEY = "southleaf.booking.session.profile";
 
 const token = () => {
   const stored = wx.getStorageSync(TOKEN_KEY);
   return typeof stored === "string" ? stored : "";
+};
+
+// 会话里可展示的部分（昵称、有效期、身份来源）单独存一份，
+// 免得「我的」页为了显示昵称又多登录一次。
+const profile = () => {
+  const stored = wx.getStorageSync(PROFILE_KEY);
+  return stored && typeof stored === "object" ? stored : null;
 };
 
 const auth = (extra = {}) => {
@@ -31,10 +39,16 @@ const signIn = async () => {
     loginCode: code,
   });
   wx.setStorageSync(TOKEN_KEY, session.data.token);
+  wx.setStorageSync(PROFILE_KEY, session.data);
   return session.data;
 };
 
 const ensureSession = async () => (token() ? null : signIn());
+
+const currentSession = async () => {
+  await ensureSession();
+  return profile() || (await signIn());
+};
 
 const getPackages = () => get("/api/v1/public/booking/packages");
 
@@ -64,13 +78,19 @@ const getRequest = async (reservationId) => {
   );
 };
 
-const clearSession = () => wx.removeStorageSync(TOKEN_KEY);
+const clearSession = () => {
+  wx.removeStorageSync(TOKEN_KEY);
+  wx.removeStorageSync(PROFILE_KEY);
+};
 
 module.exports = {
   TOKEN_KEY,
+  PROFILE_KEY,
   token,
+  profile,
   signIn,
   ensureSession,
+  currentSession,
   getPackages,
   getSlots,
   createRequest,

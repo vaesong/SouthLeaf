@@ -1,4 +1,7 @@
 {
+  "usingComponents": {
+    "demo-notice": "../../components/demo-notice/index"
+  },
   "navigationBarTitleText": "预约",
   "enablePullDownRefresh": true
 }

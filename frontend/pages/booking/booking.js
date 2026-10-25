@@ -1,13 +1,6 @@
 const booking = require("../../api/booking.js");
 const { commit } = require("../../presentation/page-state.js");
-
-const STATUS_LABELS = {
-  PENDING_CONFIRMATION: "待确认",
-  CONFIRMED: "已确认",
-  REJECTED: "未接受",
-  EXPIRED: "已过期",
-  CANCELLED: "已取消",
-};
+const { slotLabel } = require("../../presentation/booking-views.js");
 
 const two = (value) => (value < 10 ? "0" + value : "" + value);
 const dayOffset = (days) => {
@@ -21,10 +14,6 @@ const dayOffset = (days) => {
     two(date.getDate())
   );
 };
-const slotLabel = (slot) =>
-  slot
-    ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd
-    : "未指定时段";
 const newKey = () =>
   "mp-" +
   Date.now().toString(36) +
@@ -40,11 +29,6 @@ function present(data) {
       active: slot.slotId === data.selectedSlotId,
     })),
     packageLabels: (data.packages || []).map((item) => item.displayName),
-    requestRows: (data.requests || []).map((item) => ({
-      reservationId: item.reservationId,
-      slotLabel: slotLabel(item.requestedSlot),
-      statusLabel: STATUS_LABELS[item.displayStatus] || "状态未知",
-    })),
   };
 }
 
@@ -63,9 +47,6 @@ Page({
     slotRows: [],
     selectedSlotId: "",
     submitting: false,
-    requests: [],
-    requestRows: [],
-    requestError: "",
     dataMode: "",
   }),
   update(patch) {
@@ -120,29 +101,11 @@ Page({
         dataMode: slots.meta.dataMode,
         status: packages.data.items.length ? "success" : "empty",
       });
-      this.loadRequests(version);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
         status: "error",
         errorMessage: error.message || "预约暂时无法加载",
-      });
-    }
-  },
-  async loadRequests(version) {
-    try {
-      const response = await booking.getRequests();
-      if (version !== this._generation) return;
-      this.update({
-        requests: response.data.items,
-        dataMode: response.meta.dataMode,
-        requestError: "",
-      });
-    } catch (error) {
-      if (version !== this._generation) return;
-      this.update({
-        requests: [],
-        requestError: error.message || "申请列表暂时无法加载",
       });
     }
   },
@@ -224,14 +187,8 @@ Page({
   handleRetryTap() {
     this.load();
   },
-  handleRequestTap(event) {
-    const reservationId = event.currentTarget.dataset.id;
-    if (!reservationId) return;
-    wx.navigateTo({
-      url:
-        "/pages/booking/requestdetail?reservationId=" +
-        encodeURIComponent(reservationId),
-    });
+  handleMineTap() {
+    wx.switchTab({ url: "/pages/mine/mine" });
   },
   handleBackTap() {
     wx.navigateBack({

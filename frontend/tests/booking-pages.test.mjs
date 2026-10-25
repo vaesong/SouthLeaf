@@ -164,14 +164,12 @@ test("booking page presents slots and keeps the selected slot across a reload", 
   const host = page("booking/booking", {
     getPackages: async () => packages(),
     getSlots: async () => slotPage(),
-    getRequests: async () => requestList([pending]),
   });
   host.onLoad();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(host.data.status, "success");
   assert.equal(host.data.packageLabels[0], "虚构演示套餐");
   assert.equal(host.data.slotRows[0].label, "2026-10-26 10:00-11:30");
-  assert.equal(host.data.requestRows[0].statusLabel, "待确认");
   host.handleSlotTap({ currentTarget: { dataset: { slot: slot.slotId } } });
   assert.equal(host.data.selectedSlotId, slot.slotId);
   assert.equal(host.data.slotRows[0].active, true);
@@ -183,7 +181,6 @@ test("submit sends one idempotent request and opens the receipt page", async () 
   const host = page("booking/booking", {
     getPackages: async () => packages(),
     getSlots: async () => slotPage(),
-    getRequests: async () => requestList(),
     createRequest: async (key, slotId, ref) => {
       calls.push({ key, slotId, ref });
       return ok(pending);
@@ -210,7 +207,6 @@ test("a refused submission is shown and never navigates away", async () => {
   const host = page("booking/booking", {
     getPackages: async () => packages(),
     getSlots: async () => slotPage(),
-    getRequests: async () => requestList(),
     createRequest: async () => {
       throw Object.assign(new Error("该时段已被占用，请换一个时段"), {
         code: "BOOKING_SLOT_UNAVAILABLE",
@@ -290,7 +286,6 @@ test("hide clears the booking page so stale slots never republish", async () => 
   const host = page("booking/booking", {
     getPackages: async () => packages(),
     getSlots: async () => slotPage(),
-    getRequests: async () => requestList([pending]),
   });
   host.onLoad();
   await new Promise((resolve) => setImmediate(resolve));

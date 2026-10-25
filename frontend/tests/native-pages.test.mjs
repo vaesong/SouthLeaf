@@ -136,7 +136,8 @@ for (const [route, loader, field] of [
   ["package/package", "loadPackages", "packages"],
   ["package/pkgdetail", "loadPackage", "pkg"],
   ["about/about", "loadBrand", "brand"],
-  ["booking/booking", "load", "requests"],
+  ["booking/booking", "load", "slots"],
+  ["mine/mine", "load", "cards"],
 ]) {
   test("native hide/resume/refresh/unload lifecycle: " + route, async () => {
     const p = page(route);

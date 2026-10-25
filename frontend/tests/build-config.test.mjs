@@ -66,11 +66,11 @@ test("guest AppID is explicitly demo only, release cannot import demo origin", (
     }),
   );
 });
-test("eight routes and eight exact approved assets fail closed", () => {
+test("nine routes and ten exact approved assets fail closed", () => {
   const app = JSON.parse(
     fs.readFileSync(new URL("../app.json", import.meta.url)),
   );
-  assert.equal(approvedTabAssets(app).size, 8);
+  assert.equal(approvedTabAssets(app).size, 10);
   app.tabBar.list[0].iconPath = "static/private.jpg";
   assert.throws(() => approvedTabAssets(app));
   assert.throws(() => approvedTabAssets({}));

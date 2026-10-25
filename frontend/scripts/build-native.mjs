@@ -46,7 +46,7 @@ if (
   actualAssets.some((name) => !assets.has(name))
 )
   throw new Error(
-    "Undeclared static asset; only eight approved tab PNGs are allowed",
+    "Undeclared static asset; only the approved tab PNGs are allowed",
   );
 const output = path.join(root, "dist/build/mp-weixin");
 const stage = output + ".staging";
@@ -71,6 +71,8 @@ try {
       "api/public-display.js",
       "presentation/views.js",
       "presentation/page-state.js",
+      "presentation/booking-views.js",
+      "presentation/settlement.js",
     ],
     ...assets,
   ];

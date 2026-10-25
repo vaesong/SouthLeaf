@@ -29,7 +29,14 @@
       ><text class="value-row">{{order.packageDisplayName}}</text
       ><text class="value-row">时段 {{order.slotLabel}}</text
       ><text class="value-row">参考金额 {{order.amountLabel}}</text
-      ><text class="hint">{{order.settlementNotice}}</text></view
+      ><text class="hint">{{settlementLabel}}</text
+      ><text class="hint">{{order.settlementNotice}}</text
+      ><button
+        class="pay-button {{payAction.enabled ? '' : 'pay-button-blocked'}}"
+        catchtap="handleSettleTap"
+      >
+        {{payAction.label}}
+      </button></view
     ><view wx:else class="section"
       ><text class="section-title">确认约定</text
       ><text class="hint">工作室确认后，这里会显示套餐与时段约定。</text></view

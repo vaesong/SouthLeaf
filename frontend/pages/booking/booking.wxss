@@ -80,6 +80,15 @@
   background: #a9b7ae;
   color: #f2f5f3;
 }
+.mine-entry {
+  margin-top: 24rpx;
+  padding: 22rpx;
+  text-align: center;
+  font-size: 25rpx;
+  color: #315849;
+  background: #ffffff;
+  border-radius: 18rpx;
+}
 .request-row {
   display: flex;
   justify-content: space-between;
