@@ -85,6 +85,24 @@ class AdminBookingPropertiesTest {
   }
 
   @Test
+  void requiresAnExplicitDataModeAndRejectsAnythingButSyntheticOrProduction() {
+    var missing = configured();
+    missing.remove("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE");
+    assertThatThrownBy(() -> AdminRuntimeProperties.load(missing, new Properties()))
+        .isInstanceOf(AdminStartupException.class);
+
+    var nonsense = configured();
+    nonsense.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "DEMO");
+    assertThatThrownBy(() -> AdminRuntimeProperties.load(nonsense, new Properties()))
+        .isInstanceOf(AdminStartupException.class);
+
+    var production = configured();
+    production.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "production");
+    assertThat(AdminRuntimeProperties.load(production, new Properties()).booking().dataMode())
+        .isEqualTo("PRODUCTION");
+  }
+
+  @Test
   void rejectsUnexpectedBookingConfigurationNamesAndSecretsInJvmProperties() {
     var env = configured();
     env.put("SOUTHLEAF_ADMIN_BOOKING_ALLOW_PROD", "true");
@@ -121,6 +139,7 @@ class AdminBookingPropertiesTest {
     values.put("SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME", "southleaf_booking_writer");
     values.put("SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD", "BOOKING_SENTINEL");
     values.put("SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER", "southleaf_booking_writer@localhost");
+    values.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "SYNTHETIC");
     return values;
   }
 }

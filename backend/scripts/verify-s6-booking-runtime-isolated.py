@@ -84,11 +84,20 @@ def allocate_port(helpers, excluded: set[int]) -> int:
     return helpers.allocate_loopback_port(excluded)
 
 
+def execute_sql(helpers, state: dict[str, object], sql: str) -> str:
+    """Runs control SQL and keeps the server's own error text, so a fixture failure is diagnosable."""
+    result = helpers.mysql_query_raw(state, sql)
+    if result is None or result.returncode != 0:
+        detail = "" if result is None else result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError("S6_SQL_FAILED:" + detail.replace("\n", " ")[:300])
+    return result.stdout.decode("utf-8", errors="replace").strip()
+
+
 def seed_booking_facts(helpers, state: dict[str, object], ids: dict[str, str]) -> None:
     schema = str(state["meta"]["schema"])
     q = lambda value: helpers.sql_quote(value)
     created = datetime.now(timezone.utc).replace(tzinfo=None)
-    starts = [created + timedelta(days=14 + index) for index in range(3)]
+    starts = [created + timedelta(days=14 + index) for index in range(4)]
     created_text = created.strftime("%Y-%m-%d %H:%M:%S.%f")
     expires_text = (created + timedelta(days=2)).strftime("%Y-%m-%d %H:%M:%S.%f")
     windows = [
@@ -141,7 +150,25 @@ def seed_booking_facts(helpers, state: dict[str, object], ids: dict[str, str]) -
             "(id,order_id,package_version_ref,package_display_name,currency_code,amount_minor_units,price_version,slot_id,start_at,end_at,business_zone,display_offset,schedule_revision,customer_id,source,captured_at) VALUES "
             f"({q(snapshot)},{q(order)},'s6-synthetic-package-v1','S6 Synthetic Test Package','JPY',12345,'s6-synthetic-price-v1',{q(slot)},{q(start_text)},{q(end_text)},'Asia/Tokyo','+09:00',1,{q(customer)},'OFFLINE',{q(created_text)});"
         )
-    helpers.mysql_exec(state, "\n".join(sql))
+    # Intake-shaped pending request: a package version is named and no slot is held yet. Confirming
+    # it is the operator gate from Q02, and the price can only come from the SYNTHETIC package fact.
+    confirm_start, confirm_end = windows[3]
+    sql.append(
+        f"INSERT INTO `{schema}`.booking_service_slot "
+        "(id,start_at,end_at,business_zone,display_offset,status,capacity,rule_version,revision,created_at,updated_at) VALUES "
+        f"({q(ids['confirm_slot'])},{q(confirm_start)},{q(confirm_end)},'Asia/Tokyo','+09:00','OPEN',1,'s6-isolated-fixture-v1',1,{q(created_text)},{q(created_text)});"
+    )
+    sql.append(
+        f"INSERT INTO `{schema}`.booking_reservation "
+        "(id,customer_id,package_version_ref,source,status,expires_at,slot_id,schedule_revision,confirmed_at,confirmed_by,created_at,updated_at,version) VALUES "
+        f"({q(ids['confirm_reservation'])},{q(customer)},'s6-synthetic-package-v1','OFFLINE','PENDING_CONFIRMATION',{q(expires_text)},NULL,0,NULL,NULL,{q(created_text)},{q(created_text)},1);"
+    )
+    sql.append(
+        f"INSERT INTO `{schema}`.admin_package_fact "
+        "(version_ref,display_name,currency_code,amount_minor_units,price_version,data_mode,created_at) VALUES "
+        f"('s6-synthetic-package-v1','S6 Synthetic Test Package','JPY',12345,'s6-synthetic-price-v1','SYNTHETIC',{q(created_text)});"
+    )
+    execute_sql(helpers, state, "\n".join(sql))
 
 
 def seed_dead_letter(helpers, state: dict[str, object], ids: dict[str, str]) -> None:
@@ -150,7 +177,8 @@ def seed_dead_letter(helpers, state: dict[str, object], ids: dict[str, str]) -> 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     now_text = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     due_text = (now + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S.%f")
-    helpers.mysql_exec(
+    execute_sql(
+        helpers,
         state,
         f"INSERT INTO `{schema}`.booking_notification_outbox "
         "(id,intent,recipient_ref,object_ref,due_at,status,attempts,lease_until,lease_owner,last_error,created_at,updated_at) VALUES "
@@ -206,12 +234,80 @@ def verify_business_facts(helpers, state: dict[str, object], ids: dict[str, str]
         f"SELECT COUNT(*) FROM `{schema}`.booking_order_revision WHERE order_id='{ids['cancel_order']}' AND revision_no=2;"
     ) != "1":
         raise RuntimeError("CANCEL_HISTORY_MISSING")
-    if query(f"SELECT COUNT(*) FROM `{schema}`.booking_audit;") != "3":
-        raise RuntimeError("BOOKING_AUDIT_FACTS_MISSING")
-    if int(query(f"SELECT COUNT(*) FROM `{schema}`.booking_notification_outbox;")) < 3:
-        raise RuntimeError("BOOKING_OUTBOX_FACTS_MISSING")
-    if int(query(f"SELECT COUNT(*) FROM `{schema}`.booking_command;")) != 3:
-        raise RuntimeError("BOOKING_COMMAND_FACTS_MISSING")
+    pending = ids["confirm_reservation"]
+    confirm_slot = ids["confirm_slot"]
+    confirmed_state = query(
+        f"SELECT status,slot_id,version,schedule_revision FROM `{schema}`.booking_reservation "
+        f"WHERE id='{pending}';"
+    ).split("\t")
+    if confirmed_state != ["CONFIRMED", confirm_slot, "2", "1"]:
+        raise RuntimeError("CONFIRM_RESERVATION_FACT_MISMATCH:" + "|".join(confirmed_state))
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_slot_occupancy WHERE slot_id='{confirm_slot}';"
+    ) != "1":
+        raise RuntimeError("CONFIRM_OCCUPANCY_NOT_UNIQUE")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_slot_occupancy "
+        f"WHERE slot_id='{confirm_slot}' AND reservation_id='{pending}';"
+    ) != "1":
+        raise RuntimeError("CONFIRM_OCCUPANCY_OWNER_MISMATCH")
+    confirm_orders = query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_order WHERE source_reservation_id='{pending}';"
+    )
+    if confirm_orders != "1":
+        raise RuntimeError("CONFIRM_ORDER_NOT_UNIQUE:" + confirm_orders)
+    confirm_snapshot = query(
+        f"SELECT s.package_version_ref,s.currency_code,s.amount_minor_units,s.price_version,s.slot_id "
+        f"FROM `{schema}`.booking_order_snapshot s "
+        f"JOIN `{schema}`.booking_order o ON o.snapshot_id = s.id "
+        f"WHERE o.source_reservation_id='{pending}';"
+    )
+    if confirm_snapshot != f"s6-synthetic-package-v1\tJPY\t12345\ts6-synthetic-price-v1\t{confirm_slot}":
+        raise RuntimeError("CONFIRM_SNAPSHOT_FACT_MISMATCH:" + confirm_snapshot.replace("\t", "|"))
+    # Revision 1 is the creation itself and is carried by the snapshot; corrections append from
+    # revision 2. A freshly confirmed order therefore has no revision rows yet.
+    confirm_order = query(
+        f"SELECT lifecycle_status,current_revision FROM `{schema}`.booking_order "
+        f"WHERE source_reservation_id='{pending}';"
+    ).split("\t")
+    if confirm_order != ["ACTIVE", "1"]:
+        raise RuntimeError("CONFIRM_ORDER_FACT_MISMATCH:" + "|".join(confirm_order))
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_order_revision "
+        f"WHERE order_id=(SELECT id FROM `{schema}`.booking_order WHERE source_reservation_id='{pending}');"
+    ) != "0":
+        raise RuntimeError("CONFIRM_ORDER_MUTATED_AFTER_CREATION")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_audit WHERE object_type='RESERVATION' "
+        f"AND object_id='{pending}' AND action='CONFIRM';"
+    ) != "1":
+        raise RuntimeError("CONFIRM_AUDIT_NOT_EXACTLY_ONE")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_notification_outbox "
+        f"WHERE intent='RESERVATION_CONFIRMED' AND object_ref='{pending}';"
+    ) != "1":
+        raise RuntimeError("CONFIRM_OUTBOX_NOT_EXACTLY_ONE")
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.booking_command WHERE operation='CONFIRM_RESERVATION' "
+        f"AND result_ref=(SELECT id FROM `{schema}`.booking_order WHERE source_reservation_id='{pending}');"
+    ) != "1":
+        raise RuntimeError("CONFIRM_COMMAND_NOT_EXACTLY_ONE")
+    # The issued fact stays as issued: a correction would be a new version_ref, never an update.
+    if query(
+        f"SELECT COUNT(*) FROM `{schema}`.admin_package_fact "
+        "WHERE version_ref='s6-synthetic-package-v1' AND amount_minor_units=12345 "
+        "AND currency_code='JPY' AND data_mode='SYNTHETIC';"
+    ) != "1":
+        raise RuntimeError("PACKAGE_FACT_ROW_CHANGED")
+    audit_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_audit;")
+    if audit_total != "4":
+        raise RuntimeError("BOOKING_AUDIT_FACTS_MISMATCH:" + audit_total)
+    outbox_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_notification_outbox;")
+    if outbox_total != "4":
+        raise RuntimeError("BOOKING_OUTBOX_FACTS_MISMATCH:" + outbox_total)
+    command_total = query(f"SELECT COUNT(*) FROM `{schema}`.booking_command;")
+    if command_total != "4":
+        raise RuntimeError("BOOKING_COMMAND_FACTS_MISMATCH:" + command_total)
     recovered = query(
         f"SELECT status,attempts FROM `{schema}`.booking_notification_outbox "
         f"WHERE id='{ids['dead_outbox_message']}';"
@@ -234,6 +330,11 @@ def create_booking_and_outbox_users(helpers, state: dict[str, object], passwords
     ]
     for table in BOOKING_TABLES:
         statements.append(f"GRANT ALL PRIVILEGES ON `{schema}`.`{table}` TO 'southleaf_booking_writer'@'localhost';")
+    # admin_package_fact is a mode-scoped, read-only price source. The writer may only SELECT from
+    # it; the runtime verifies at startup that this read-only privilege set matches exactly.
+    statements.append(
+        f"GRANT SELECT ON `{schema}`.admin_package_fact TO 'southleaf_booking_writer'@'localhost';"
+    )
     statements.extend(
         [
             f"GRANT SELECT, UPDATE ON `{schema}`.booking_notification_outbox TO 's6_outbox'@'localhost';",
@@ -241,7 +342,7 @@ def create_booking_and_outbox_users(helpers, state: dict[str, object], passwords
             f"GRANT INSERT ON `{schema}`.booking_audit TO 's6_outbox'@'localhost';",
         ]
     )
-    helpers.mysql_exec(state, "\n".join(statements))
+    execute_sql(helpers, state, "\n".join(statements))
 
 
 def grant_synthetic_operator(helpers, state: dict[str, object], account_id: str) -> None:
@@ -250,12 +351,14 @@ def grant_synthetic_operator(helpers, state: dict[str, object], account_id: str)
         "RESERVATION_READ",
         "RESERVATION_CANCEL",
         "RESERVATION_RESCHEDULE",
+        "RESERVATION_CONFIRM",
         "ORDER_READ",
         "OUTBOX_READ",
         "OUTBOX_RECOVER",
     )
     values = ",".join(f"({helpers.sql_quote(account_id)},{helpers.sql_quote(code)})" for code in codes)
-    helpers.mysql_exec(
+    execute_sql(
+        helpers,
         state,
         f"INSERT INTO `{schema}`.admin_account_permission (account_id,permission_code) VALUES {values};",
     )
@@ -284,6 +387,8 @@ def start_runtime(helpers, state, tools, build, passwords):
             "SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME": "southleaf_booking_writer",
             "SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD": passwords["booking"],
             "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER": "southleaf_booking_writer@localhost",
+            # The writer only sees SYNTHETIC package facts; a production runtime can never read them.
+            "SOUTHLEAF_ADMIN_BOOKING_DATA_MODE": "SYNTHETIC",
             "SOUTHLEAF_ADMIN_OUTBOX_MODE": "enabled",
             "SOUTHLEAF_ADMIN_OUTBOX_DB_USERNAME": "s6_outbox",
             "SOUTHLEAF_ADMIN_OUTBOX_DB_PASSWORD": passwords["outbox"],
@@ -362,6 +467,8 @@ def run_browser(helpers, state, tools, account_id, password, ids):
             "S6_E2E_CANCEL_ID": ids["cancel_reservation"],
             "S6_E2E_TARGET_SLOT_ID": ids["target_slot"],
             "S6_E2E_DEAD_MESSAGE_ID": ids["dead_outbox_message"],
+            "S6_E2E_CONFIRM_ID": ids["confirm_reservation"],
+            "S6_E2E_CONFIRM_SLOT_ID": ids["confirm_slot"],
         }
     )
     result = subprocess.run(
@@ -401,7 +508,7 @@ def cleanup(helpers, state, root, base) -> tuple[bool, bool, bool]:
     return not root.exists(), runtime_graceful, mysql_graceful
 
 
-def run_fixture(helpers) -> int:
+def run_fixture(helpers, evidence_name: str = "") -> int:
     tools = helpers.discover_tools()
     build = helpers.check_build_inputs()
     if not BROWSER_TEST.is_file():
@@ -455,7 +562,8 @@ def run_fixture(helpers) -> int:
     ids = {key: str(uuid.uuid4()) for key in (
         "customer", "reschedule_old_slot", "target_slot", "cancel_slot",
         "reschedule_reservation", "cancel_reservation", "reschedule_order",
-        "cancel_order", "reschedule_snapshot", "cancel_snapshot", "dead_outbox_message")}
+        "cancel_order", "reschedule_snapshot", "cancel_snapshot", "dead_outbox_message",
+        "confirm_slot", "confirm_reservation")}
     status = "FAIL"
     failure = None
     runtime_graceful = False
@@ -483,11 +591,13 @@ def run_fixture(helpers) -> int:
         seed_dead_letter(helpers, state, ids)
         print("S6_STAGE:runtime_https_booking_and_test_sink_outbox")
         start_runtime(helpers, state, tools, build, passwords)
-        print("S6_STAGE:edge_browser_reschedule_cancel_and_outbox_recovery")
+        print("S6_STAGE:edge_browser_confirm_reschedule_cancel_and_outbox_recovery")
         run_browser(helpers, state, tools, account_id, passwords["account"], ids)
         verify_business_facts(helpers, state, ids)
         status = "PASS"
     except Exception as error:
+        detail = str(error).replace("\n", " ")[:400]
+        print(f"S6_FAILURE_DETAIL:{type(error).__name__}:{detail}")
         failure = str(error) if str(error).isupper() and len(str(error)) < 100 else type(error).__name__
     finally:
         removed, runtime_graceful, mysql_graceful = cleanup(helpers, state, root, base)
@@ -500,12 +610,13 @@ def run_fixture(helpers) -> int:
         "kind": FIXTURE_KIND,
         "status": status,
         "runId": run_id,
-        "checkCount": 7,
+        "checkCount": 8,
         "checks": [
             "dedicated_isolated_tls_mysql_and_migrations",
             "verified_booking_writer_and_outbox_grants",
             "synthetic_session_capabilities_and_booking_facts",
             "runtime_https_same_origin_login_and_csrf",
+            "browser_pending_request_confirmed_into_unique_order",
             "browser_reschedule_cancel_and_order_revision",
             "browser_outbox_failure_review_and_manual_recovery",
             "database_occupancy_audit_command_and_outbox_facts",
@@ -521,6 +632,18 @@ def run_fixture(helpers) -> int:
         "secretsRecorded": False,
         "realOrProductionDataUsed": False,
     }
+    if evidence_name:
+        if not evidence_name.isalnum() or not evidence_name.islower():
+            print("S6_NOT_RUN:EVIDENCE_NAME_INVALID")
+            return 3
+        target = REPO / "docs" / "开发与演示" / "证据" / f"stage-two-s5-confirm-isolated-l5-{evidence_name}.json"
+        if target.exists():
+            print("S6_NOT_RUN:EVIDENCE_ALREADY_EXISTS")
+            return 3
+        target.write_text(
+            json.dumps(evidence, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+        )
+        print(f"S6_EVIDENCE:{target.as_posix()}")
     print(json.dumps(evidence, ensure_ascii=False, sort_keys=True))
     return 0 if status == "PASS" and fixture_removed else 2
 
@@ -528,13 +651,14 @@ def run_fixture(helpers) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--confirm-disposable-s6-booking-e2e", action="store_true")
+    parser.add_argument("--evidence-name", default="")
     args = parser.parse_args()
     if not args.confirm_disposable_s6_booking_e2e:
         print("S6_NOT_RUN:EXPLICIT_FIXTURE_CONFIRMATION_REQUIRED")
         return 3
     helpers = load_helpers()
     try:
-        return run_fixture(helpers)
+        return run_fixture(helpers, args.evidence_name)
     except Exception as error:
         reason = str(error) if str(error).isupper() and len(str(error)) < 100 else type(error).__name__
         print(f"S6_NOT_RUN:{reason}")

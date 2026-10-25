@@ -1,6 +1,7 @@
 package cn.zhinan.adminruntime;
 
 import cn.zhinan.adminbooking.policy.AdminBookingGrantPolicy;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,21 +12,28 @@ final class AdminBookingProperties {
           "SOUTHLEAF_ADMIN_BOOKING_MODE",
           "SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME",
           "SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD",
-          "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER");
+          "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER",
+          "SOUTHLEAF_ADMIN_BOOKING_DATA_MODE");
   static final AdminBookingProperties DISABLED =
-      new AdminBookingProperties(false, null, null, null);
+      new AdminBookingProperties(false, null, null, null, null);
 
   private final boolean enabled;
   private final String databaseUser;
   private final String databasePassword;
   private final String expectedUser;
+  private final String dataMode;
 
   private AdminBookingProperties(
-      boolean enabled, String databaseUser, String databasePassword, String expectedUser) {
+      boolean enabled,
+      String databaseUser,
+      String databasePassword,
+      String expectedUser,
+      String dataMode) {
     this.enabled = enabled;
     this.databaseUser = databaseUser;
     this.databasePassword = databasePassword;
     this.expectedUser = expectedUser;
+    this.dataMode = dataMode;
   }
 
   static AdminBookingProperties load(
@@ -58,8 +66,10 @@ final class AdminBookingProperties {
         || same(username, outboxUser)
         || same(username, contentBusinessUser)
         || same(username, contentPublicationUser)) refuse();
+    String dataMode = env.get("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE").trim().toUpperCase(Locale.ROOT);
+    if (!dataMode.equals("SYNTHETIC") && !dataMode.equals("PRODUCTION")) refuse();
     return new AdminBookingProperties(
-        true, username, env.get("SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD"), expected);
+        true, username, env.get("SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD"), expected, dataMode);
   }
 
   private static boolean same(String left, String right) {
@@ -84,6 +94,11 @@ final class AdminBookingProperties {
 
   String expectedUser() {
     return expectedUser;
+  }
+
+  /** Package fact scope this runtime may read: {@code SYNTHETIC} or {@code PRODUCTION}. */
+  String dataMode() {
+    return dataMode;
   }
 
   @Override

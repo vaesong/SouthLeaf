@@ -74,7 +74,9 @@ final class AdminRuntimeProperties {
           || (k.startsWith("SOUTHLEAF_ADMIN_")
               && !KEYS.contains(key)
               && !AdminContentProperties.KEYS.contains(key)
-              && !AdminOutboxProperties.KEYS.contains(key)))
+              && !AdminOutboxProperties.KEYS.contains(key)
+              // Read the booking vocabulary from its owner so the two lists cannot drift apart.
+              && !AdminBookingProperties.KEYS.contains(key)))
         refuse(AdminStartupException.Reason.CONFIG_SOURCE);
     }
     for (String key : system.stringPropertyNames()) {

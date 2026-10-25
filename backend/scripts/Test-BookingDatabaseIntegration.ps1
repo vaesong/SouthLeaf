@@ -40,6 +40,7 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "Module boundary verification exit $LASTEXITCODE" }
   & python (Join-Path $repository 'backend/scripts/check-booking-sql-columns.py') `
       (Join-Path $repository 'backend/admin-migration-cli/src/main/resources/db/admin-migration/V6__admin_identity_booking.sql') `
+      (Join-Path $repository 'backend/admin-migration-cli/src/main/resources/db/admin-migration/V8__admin_package_fact.sql') `
       (Join-Path $repository 'backend/admin-booking/src/main/java/cn/zhinan/adminbooking/adapter/jdbc')
   if ($LASTEXITCODE -ne 0) { throw "Booking SQL/schema check exit $LASTEXITCODE" }
 }

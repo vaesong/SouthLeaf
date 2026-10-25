@@ -36,7 +36,20 @@ public final class AdminBookingGrantPolicy {
 
   /** Tables the booking slice may read but must never write. */
   public static final List<String> READ_ONLY_TABLES =
-      List.of("admin_work", "admin_work_version", "admin_media_asset", "admin_publication");
+      List.of(
+          "admin_work",
+          "admin_work_version",
+          "admin_media_asset",
+          "admin_publication",
+          "admin_package_fact");
+
+  /**
+   * Read-only grants with an exact privilege set, enforced by the startup verifier. A table listed
+   * here must be granted exactly these privileges and nothing more: a released package fact is
+   * readable so an order snapshot can quote it, but never writable by the booking runtime.
+   */
+  public static final java.util.Map<String, List<String>> READ_ONLY_GRANTS =
+      java.util.Map.of("admin_package_fact", List.of("SELECT"));
 
   /** The grantee that owns the booking schema. */
   public static final String BOOKING_WRITER = "southleaf_booking_writer";

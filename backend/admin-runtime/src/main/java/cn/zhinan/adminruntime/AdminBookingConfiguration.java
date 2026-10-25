@@ -5,13 +5,13 @@ import cn.zhinan.adminbooking.adapter.jdbc.JdbcCommandLedger;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcConnectionProvider;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcCustomerRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcOrderRepository;
+import cn.zhinan.adminbooking.adapter.jdbc.JdbcPackageFactCatalog;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcReservationRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcScheduleRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcTransactionRunner;
 import cn.zhinan.adminbooking.application.BookingApplication;
 import cn.zhinan.adminbooking.port.BookingPorts.PackageCatalog;
 import java.time.Clock;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -36,7 +36,10 @@ class AdminBookingConfiguration {
 
   @Bean
   BookingApplication bookingApplication(
-      @Qualifier("bookingConnections") JdbcConnectionProvider connections, Clock clock) {
+      @Qualifier("bookingConnections") JdbcConnectionProvider connections,
+      AdminRuntimeProperties runtime,
+      Clock clock) {
+    String dataMode = runtime.booking().dataMode();
     var customers = new JdbcCustomerRepository(connections);
     var schedule = new JdbcScheduleRepository(connections);
     var reservations = new JdbcReservationRepository(connections);
@@ -44,15 +47,15 @@ class AdminBookingConfiguration {
     var commands = new JdbcCommandLedger(connections);
     var auditAndOutbox = new JdbcBookingAudit(connections);
     var transactions = new JdbcTransactionRunner(connections);
-    // Package facts are intentionally unavailable in this local operations slice. No create or
-    // confirm endpoint is exposed until the immutable published-package adapter is wired.
-    PackageCatalog unavailablePackages = packageVersionRef -> Optional.empty();
+    // Package facts are read from the immutable admin_package_fact table through a mode-scoped
+    // read-only adapter: a PRODUCTION runtime cannot see SYNTHETIC rows and vice versa.
+    PackageCatalog packages = new JdbcPackageFactCatalog(connections, dataMode);
     return new BookingApplication(
         customers,
         schedule,
         reservations,
         orders,
-        unavailablePackages,
+        packages,
         commands,
         auditAndOutbox,
         auditAndOutbox,

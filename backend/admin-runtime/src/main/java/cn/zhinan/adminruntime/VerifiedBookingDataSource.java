@@ -126,6 +126,9 @@ final class VerifiedBookingDataSource implements AutoCloseable {
     for (String table : AdminBookingGrantPolicy.OWNED_TABLES)
       for (String privilege : TABLE_PRIVILEGES)
         required.add(schema + ":" + table + ":" + privilege);
+    for (var entry : AdminBookingGrantPolicy.READ_ONLY_GRANTS.entrySet())
+      for (String privilege : entry.getValue())
+        required.add(schema + ":" + entry.getKey() + ":" + privilege);
 
     var found = new HashSet<String>();
     boolean usage = false;
@@ -143,6 +146,14 @@ final class VerifiedBookingDataSource implements AutoCloseable {
       }
       if (!database.equals("`" + schema + "`") || table.equals("*")) fail();
       String name = table.substring(1, table.length() - 1);
+      var readOnly = AdminBookingGrantPolicy.READ_ONLY_GRANTS.get(name);
+      if (readOnly != null) {
+        List<String> allowed = readOnly;
+        if (granted.size() != allowed.size() || !allowed.containsAll(granted)) fail();
+        for (String privilege : granted)
+          if (!found.add(schema + ":" + name + ":" + privilege)) fail();
+        continue;
+      }
       if (!AdminBookingGrantPolicy.OWNED_TABLES.contains(name)) fail();
       Set<String> privileges =
           granted.size() == 1

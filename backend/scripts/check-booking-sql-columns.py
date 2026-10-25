@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Check that booking JDBC adapter write columns exist in the V6 schema.
+"""Check that booking JDBC adapter write columns exist in the booking schemas.
 
 The unit tests use in-memory fakes, so a wrong INSERT or UPDATE column in a production statement is
 invisible until the statement runs against a real schema. This script reads the migration file and
 the adapter sources and reports unknown table references and write columns. It does not replace the
 real database integration suite, which is the authoritative SQL evidence.
 
-Usage: python scripts/check-booking-sql-columns.py <migration.sql> <adapter dir>
+Usage: python scripts/check-booking-sql-columns.py <migration.sql> [more.sql ...] <adapter dir>
+
+Every given migration contributes tables; the last argument is the adapter source directory. The
+booking adapter spans V6 (identity/booking) and V8 (package facts), so both must be passed.
 """
 from __future__ import annotations
 
@@ -107,12 +110,14 @@ def columns_of(statement: str) -> list[str]:
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 3:
         print(__doc__)
         return 2
-    migration = pathlib.Path(sys.argv[1])
-    adapters = pathlib.Path(sys.argv[2])
-    schema = parse_schema(migration)
+    migrations = [pathlib.Path(arg) for arg in sys.argv[1:-1]]
+    adapters = pathlib.Path(sys.argv[-1])
+    schema: dict[str, set[str]] = {}
+    for migration in migrations:
+        schema.update(parse_schema(migration))
     problems: list[str] = []
     for source in sorted(adapters.glob("*.java")):
         for statement in statements_of(source):

@@ -61,6 +61,14 @@ class VerifiedBookingDataSourceTest {
     rejected(grantOption);
 
     rejected(List.of("GRANT ALL PRIVILEGES ON *.* TO `southleaf_booking_writer`@`localhost`"));
+
+    var writableFact = new ArrayList<String>();
+    for (String line : grants()) if (!line.contains("admin_package_fact")) writableFact.add(line);
+    writableFact.add(
+        "GRANT ALL PRIVILEGES ON `"
+            + SCHEMA
+            + "`.`admin_package_fact` TO `southleaf_booking_writer`@`localhost`");
+    rejected(writableFact);
   }
 
   @Test
@@ -87,6 +95,16 @@ class VerifiedBookingDataSourceTest {
               + "`.`"
               + table
               + "` TO `southleaf_booking_writer`@`localhost`");
+    for (var entry : AdminBookingGrantPolicy.READ_ONLY_GRANTS.entrySet())
+      for (String privilege : entry.getValue())
+        result.add(
+            "GRANT "
+                + privilege
+                + " ON `"
+                + SCHEMA
+                + "`.`"
+                + entry.getKey()
+                + "` TO `southleaf_booking_writer`@`localhost`");
     return result;
   }
 
