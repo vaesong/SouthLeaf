@@ -785,18 +785,27 @@ def bootstrap_fixture_account(
 
 
 def static_candidate(root: Path, build: dict[str, Path], meta: dict[str, object]) -> Path:
+    # The packaging step is the same script the deployment instructions use: what this run
+    # exercises is exactly what ships.
     candidate = root / "candidate-admin-runtime.jar"
-    shutil.copy2(RUNTIME_JAR, candidate)
+    result = checked_run(
+        [
+            sys.executable,
+            BACKEND / "scripts" / "build-admin-runtime.py",
+            "--jar",
+            RUNTIME_JAR,
+            "--dist",
+            build["dist"],
+            "--output",
+            candidate,
+        ],
+        cwd=REPO,
+        timeout=90,
+        category="STATIC_PACKAGING",
+    )
+    output = result.stdout.decode("utf-8", errors="replace")
+    require("ADMIN_RUNTIME_STATIC_PACKED:" in output, "STATIC_PACKAGING_REFUSED")
     prefix = "BOOT-INF/classes/static/"
-    files = [path for path in build["dist"].rglob("*") if path.is_file()]
-    require(files and (build["dist"] / "index.html").is_file(), "FRONTEND_DIST_EMPTY")
-    with zipfile.ZipFile(candidate, "a", compression=zipfile.ZIP_DEFLATED) as archive:
-        existing = set(archive.namelist())
-        require(not any(name.startswith(prefix) for name in existing), "STATIC_ASSET_COLLISION")
-        for path in files:
-            relative = path.relative_to(build["dist"]).as_posix()
-            require(not relative.startswith("../") and "\\" not in relative, "STATIC_ASSET_PATH_INVALID")
-            archive.write(path, prefix + relative)
     with zipfile.ZipFile(candidate, "r") as archive:
         names = set(archive.namelist())
         require(prefix + "index.html" in names, "STATIC_INDEX_NOT_PACKAGED")
