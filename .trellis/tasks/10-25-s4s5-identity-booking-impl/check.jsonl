@@ -1,0 +1,16 @@
+{"check":"task_files_present","target":".trellis/tasks/10-25-s4s5-identity-booking-impl/task.json","result":"pass","note":"任务锚点存在，status=in_progress，dev_type=backend"}
+{"check":"prd_present","target":".trellis/tasks/10-25-s4s5-identity-booking-impl/prd.md","result":"pass","note":"目标/范围/设计交付/验收标准/硬边界/非目标齐备"}
+{"check":"design_present","target":".trellis/tasks/10-25-s4s5-identity-booking-impl/design.md","result":"pass","note":"含信任边界、状态机不变量、事务与锁顺序、幂等、时区、错误契约"}
+{"check":"implement_present","target":".trellis/tasks/10-25-s4s5-identity-booking-impl/implement.md","result":"pass","note":"实施要点与未包含项、验证状态如实记录"}
+{"check":"module_created","target":"backend/admin-booking","result":"pass","note":"新建模块，含 domain/port/application/adapter(jdbc)/policy 与测试"}
+{"check":"domain_pure_java","target":"backend/admin-booking/src/main/java/cn/zhinan/adminbooking/domain","result":"pass","note":"未引入 Spring/Web/JDBC 类型；BookingRules 为纯函数"}
+{"check":"stable_failure_categories","target":"backend/admin-booking/src/main/java/cn/zhinan/adminbooking/domain/BookingFailure.java","result":"pass","note":"仅类别枚举，无 SQL/路径/联系值"}
+{"check":"exclusive_occupancy_by_unique_key","target":"backend/admin-migration-cli/src/main/resources/db/admin-migration/V6__admin_identity_booking.sql","result":"pass","note":"booking_slot_occupancy 以 slot_id 为主键，排他不依赖先查后写"}
+{"check":"one_order_per_reservation","target":"backend/admin-migration-cli/src/main/resources/db/admin-migration/V6__admin_identity_booking.sql","result":"pass","note":"booking_order 上 UNIQUE(source_reservation_id)"}
+{"check":"snapshot_immutable","target":"backend/admin-migration-cli/src/main/resources/db/admin-migration/V6__admin_identity_booking.sql","result":"pass","note":"booking_order_snapshot 无 updated_at/version，修订走 append-only 表"}
+{"check":"no_payment_state","target":"backend/admin-migration-cli/src/main/resources/db/admin-migration/V6__admin_identity_booking.sql","result":"pass","note":"无 payment/deposit/refund/delivery 列"}
+{"check":"no_automerge","target":"backend/admin-booking/src/main/java/cn/zhinan/adminbooking/application/BookingApplication.java","result":"pass","note":"同手机号/姓名不触发自动合并，关联须经 link request 审批"}
+{"check":"exact_grants","target":"backend/admin-booking/src/main/java/cn/zhinan/adminbooking/policy/AdminBookingGrantPolicy.java","result":"pass","note":"封闭表清单+精确 grantee，拒绝子串/前缀匹配"}
+{"check":"unit_tests_present","target":"backend/admin-booking/src/test/java/cn/zhinan/adminbooking","result":"pass","note":"规则/应用/grants 三组单测覆盖幂等、竞态、回滚语义、快照不可变"}
+{"check":"mysql_isolated_evidence","target":"backend/scripts","result":"pending","note":"真实 MySQL 并发、唯一约束、锁序证据属后续隔离验收，本次不宣称通过"}
+{"check":"full_reactor_verify","target":"backend/mvnw.cmd verify","result":"blocked","note":"被缺失的 SOUTHLEAF_TEST_DB_URL 阻塞，非本任务引入"}

@@ -1,0 +1,13 @@
+{"step":"read_authoritative_inputs","action":"read D-304/D-305/D-306/D-106/D-703/D-403/D-607 与 Trellis backend spec","result":"done","note":"确认设计为可直接实现而非骨架；确认 Q02/Q04/Q05/Q06 不阻塞本切片"}
+{"step":"create_trellis_task","action":"写 task.json / prd.md / design.md / implement.md / check.jsonl / implement.jsonl","result":"done","note":"任务目录 .trellis/tasks/10-25-s4s5-identity-booking-impl"}
+{"step":"build_domain_layer","action":"实现 BookingFailure / BookingException / BookingModels / BookingRules","result":"done","note":"纯 Java；容量/时长/时区由调用方传入，不写死经营数值"}
+{"step":"build_port_layer","action":"实现 BookingPorts","result":"done","note":"客户/档期/预约/订单/目录/幂等/审计/outbox/事务/查询"}
+{"step":"build_application_layer","action":"实现 BookingApplication 的 S4/S5/S6 命令","result":"done","note":"创建/确认/拒绝/过期/取消/改期；幂等；原子事务；锁顺序一致"}
+{"step":"build_jdbc_adapters","action":"实现 JdbcConnectionProvider / JdbcTransactionRunner / JdbcSupport 及各仓储","result":"done","note":"条件更新、唯一约束冲突翻译为稳定类别、快照仅插入"}
+{"step":"build_migration","action":"写 V6__admin_identity_booking.sql","result":"done","note":"15 张表，含 occupancy/order/source_reservation/revision/command 唯一键"}
+{"step":"build_grants_policy","action":"实现 AdminBookingGrantPolicy 与其单测","result":"done","note":"封闭清单，拒绝子串与前缀匹配，公开读者零 booking 表"}
+{"step":"write_unit_tests","action":"BookingRulesTest / BookingApplicationTest / AdminBookingGrantPolicyTest","result":"done","note":"覆盖状态机、幂等重放与冲突、过期与确认竞态、改期失败保留旧档、快照捕获、grants 精确性"}
+{"step":"register_module","action":"backend/pom.xml 与 backend/scripts/check-module-boundaries.py 增加 admin-booking","result":"pending","note":"共享文件，需在用户机器上以 read-then-edit(expected_sha256) 执行，避免与并行 AI 冲突"}
+{"step":"update_docs","action":"补 D-403 §9、D-607 §4–§7、D-106 §4–§9 细化、D-703 §7–§8 矩阵行、阶段二实施跟踪","result":"pending","note":"文档改动需通过 MCP 写入用户机器"}
+{"step":"execute_unit_tests","action":"在与用户机器一致的构建环境运行 admin-booking 测试","result":"pending","note":"需用户机器的 Maven 环境"}
+{"step":"mysql_isolated_verification","action":"真实 MySQL 并发确认/唯一订单/快照/回滚证据","result":"pending","note":"属后续隔离验收，不得在本任务宣称通过"}

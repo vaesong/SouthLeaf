@@ -1,0 +1,33 @@
+{
+  "c2FixtureUsed": false,
+  "candidateJarSha256": null,
+  "candidateSourceSha256": "f6940bf57b62bb01a7bd8b18dccb0057649171637fe289c5a02e61b23f04ed6f",
+  "checkCount": 1,
+  "checkedAtUtc": "2026-10-25T03:32:55Z",
+  "checks": [
+    "owned-mysql-8.4-innodb-tls-loopback"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "publicGraceful": true,
+    "publicStopped": true,
+    "runtimeGraceful": true,
+    "runtimeStopped": true
+  },
+  "database": "owned MySQL 8.4 InnoDB, TLS VERIFY_IDENTITY, dual schema, five scoped users",
+  "facts": {},
+  "failedStage": "schemas",
+  "failureCategory": "MYSQL_CONTROL_QUERY",
+  "kind": "S2B_ISOLATED_L5",
+  "limitations": [
+    "Local disposable fixture only; not production acceptance",
+    "Authorization gates are TEST_SYNTHETIC rows written by the fixture (A15 authority process not in S2-B scope)"
+  ],
+  "realOrProductionDataUsed": false,
+  "runId": "f44e0309",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}

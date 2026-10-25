@@ -1,0 +1,56 @@
+{
+  "c2FixtureUsed": false,
+  "candidateJarSha256": "96250ee4c1dbf21a6ed3e65dd5faee2f228dc31b985a473bc0feeadc728f5c3d",
+  "candidateSourceSha256": "f542545790be7f11848556cd06dd7f360128018f6398638f23140eb3261ea286",
+  "checkCount": 22,
+  "checkedAtUtc": "2026-10-25T03:45:22Z",
+  "checks": [
+    "owned-mysql-8.4-innodb-tls-loopback",
+    "admin-v5-and-public-v2-explicit-migrations",
+    "grant-positive-s2b_content",
+    "grant-positive-s2b_publisher",
+    "grant-positive-s2b_reader",
+    "grant-negative-00-s2b_content",
+    "grant-negative-01-s2b_content",
+    "grant-negative-02-s2b_content",
+    "grant-negative-03-s2b_content",
+    "grant-negative-04-s2b_content",
+    "grant-negative-05-s2b_publisher",
+    "grant-negative-06-s2b_publisher",
+    "grant-negative-07-s2b_publisher",
+    "grant-negative-08-s2b_publisher",
+    "grant-negative-09-s2b_publisher",
+    "grant-negative-10-s2b_publisher",
+    "grant-negative-11-s2b_publisher",
+    "grant-negative-12-s2b_reader",
+    "grant-negative-13-s2b_reader",
+    "grant-negative-14-s2b_reader",
+    "grant-negative-15-s2b_runtime",
+    "grant-negative-16-s2b_runtime"
+  ],
+  "cleanup": {
+    "browserStopped": true,
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "mysqlStopped": true,
+    "publicGraceful": true,
+    "publicStopped": true,
+    "runtimeGraceful": false,
+    "runtimeStopped": true
+  },
+  "database": "owned MySQL 8.4 InnoDB, TLS VERIFY_IDENTITY, dual schema, five scoped users",
+  "facts": {
+    "grantNegativeCount": 17
+  },
+  "failedStage": "runtimes",
+  "failureCategory": "ADMIN_RUNTIME_REFUSED_DATABASE_CHECK",
+  "kind": "S2B_ISOLATED_L5",
+  "limitations": [
+    "Local disposable fixture only; not production acceptance",
+    "Authorization gates are TEST_SYNTHETIC rows written by the fixture (A15 authority process not in S2-B scope)"
+  ],
+  "realOrProductionDataUsed": false,
+  "runId": "2ee45cd7",
+  "secretsRecorded": false,
+  "status": "FAIL"
+}
