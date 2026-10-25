@@ -27,6 +27,8 @@ public final class PublicBookingRuntime implements AutoCloseable {
     VerifiedPublicBookingDataSource dataSource = VerifiedPublicBookingDataSource.open(properties);
     boolean accepted = false;
     try {
+      // Fail here rather than at the first confirmation: the configured refs must already exist.
+      PackageFactCatalogCheck.requireVerified(dataSource.dataSource(), properties);
       SubjectExchange exchange =
           "TEST".equals(properties.identitySink())
               ? new TestSinkSubjectExchange()
