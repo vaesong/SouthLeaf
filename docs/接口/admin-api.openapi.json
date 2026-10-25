@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "SouthLeaf Admin API",
-    "version": "1.0.0-s1d",
-    "description": "S1-D same-origin administrative login/session contract. This is not a production deployment contract and exposes no account lifecycle or business-management API."
+    "version": "1.1.0-s5",
+    "description": "Same-origin administrative contract: login/session plus the stage-two booking and notification surfaces. Reservation confirm is an explicit operator action and one transaction; nothing in this contract charges, refunds or deposits money."
   },
   "servers": [
     {
@@ -20,13 +20,33 @@
           "200": {
             "description": "CSRF token issued or returned; Cache-Control is no-store.",
             "headers": {
-              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
-              "Set-Cookie": { "description": "Secure __Host-sl_admin_csrf cookie; not an authentication cookie.", "schema": { "type": "string" } }
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Set-Cookie": {
+                "description": "Secure __Host-sl_admin_csrf cookie; not an authentication cookie.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             },
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CsrfEnvelope" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfEnvelope"
+                }
+              }
+            }
           },
-          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
         }
       }
     },
@@ -35,14 +55,20 @@
         "operationId": "loginAdmin",
         "summary": "Authenticate a staff account and issue a secure session cookie",
         "parameters": [
-          { "$ref": "#/components/parameters/Origin" },
-          { "$ref": "#/components/parameters/CsrfHeader" }
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfHeader"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
             }
           }
         },
@@ -50,20 +76,54 @@
           "200": {
             "description": "Authenticated current identity. The raw session token is only in Set-Cookie; the JSON body never contains it.",
             "headers": {
-              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
-              "Set-Cookie": { "description": "New __Host-sl_admin_session cookie with Secure, HttpOnly, SameSite=Strict and Path=/; CSRF state is rotated.", "schema": { "type": "string" } }
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Set-Cookie": {
+                "description": "New __Host-sl_admin_session cookie with Secure, HttpOnly, SameSite=Strict and Path=/; CSRF state is rotated.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             },
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IdentityEnvelope" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityEnvelope"
+                }
+              }
+            }
           },
-          "400": { "$ref": "#/components/responses/InvalidRequest" },
-          "401": { "$ref": "#/components/responses/InvalidCredentials" },
-          "403": { "$ref": "#/components/responses/OriginOrCsrfRejected" },
-          "409": { "$ref": "#/components/responses/AlreadyAuthenticated" },
-          "413": { "$ref": "#/components/responses/PayloadTooLarge" },
-          "415": { "$ref": "#/components/responses/UnsupportedMediaType" },
-          "429": { "$ref": "#/components/responses/RateLimited" },
-          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCredentials"
+          },
+          "403": {
+            "$ref": "#/components/responses/OriginOrCsrfRejected"
+          },
+          "409": {
+            "$ref": "#/components/responses/AlreadyAuthenticated"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
         }
       }
     },
@@ -75,13 +135,30 @@
           "200": {
             "description": "Current identity; Cache-Control is no-store.",
             "headers": {
-              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
             },
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IdentityEnvelope" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityEnvelope"
+                }
+              }
+            }
           },
-          "401": { "$ref": "#/components/responses/AuthenticationRequired" },
-          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
         }
       }
     },
@@ -90,56 +167,1701 @@
         "operationId": "logoutAdmin",
         "summary": "Revoke the current staff session before clearing cookies",
         "parameters": [
-          { "$ref": "#/components/parameters/Origin" },
-          { "$ref": "#/components/parameters/CsrfHeader" }
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfHeader"
+          }
         ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "maxProperties": 0 } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
         },
         "responses": {
           "204": {
             "description": "Session revocation completed or no valid session existed; secure session and CSRF cookies are cleared.",
             "headers": {
-              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } },
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" },
-              "Set-Cookie": { "description": "Clears the same cookie names/path/security attributes using Max-Age=0.", "schema": { "type": "string" } }
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "Set-Cookie": {
+                "description": "Clears the same cookie names/path/security attributes using Max-Age=0.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
-          "400": { "$ref": "#/components/responses/InvalidRequest" },
-          "403": { "$ref": "#/components/responses/OriginOrCsrfRejected" },
-          "415": { "$ref": "#/components/responses/UnsupportedMediaType" },
-          "503": { "$ref": "#/components/responses/AuthUnavailable" }
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/OriginOrCsrfRejected"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/reservations/pending": {
+      "get": {
+        "operationId": "listPendingReservations",
+        "summary": "List pending requests awaiting an explicit operator review",
+        "description": "Q02: a request never occupies a slot by itself. Only this list plus an explicit confirm can turn a request into an order. Bounded to the most recent 100 rows.",
+        "responses": {
+          "200": {
+            "description": "Pending reservations, newest first.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ReservationList"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/reservations/{reservationId}": {
+      "get": {
+        "operationId": "getReservation",
+        "summary": "Read one reservation with its assignments and current order reference",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reservation detail. The ETag is the revision to present on any write.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "description": "Opaque reservation revision validator, for example \"r2\"; send it back as If-Match.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ReservationDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/slots": {
+      "get": {
+        "operationId": "listOpenSlots",
+        "summary": "List open slots inside a UTC range",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Open, unoccupied slots with capacity left, bounded to 100 rows.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/SlotList"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/orders/{orderId}": {
+      "get": {
+        "operationId": "getOrder",
+        "summary": "Read one order with its immutable snapshot and append-only revisions",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order detail. There is no payment, deposit or delivery field anywhere in this contract.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/reservations/{reservationId}/confirm": {
+      "post": {
+        "operationId": "confirmReservation",
+        "summary": "Confirm a pending request: occupy the slot, create the unique order and its immutable snapshot",
+        "description": "One transaction: occupancy -> reservation -> order -> snapshot -> audit -> outbox. The slot is named by the operator, so no request can occupy a slot by itself. The price is read from the immutable package fact; a missing fact fails with PACKAGE_NOT_FOUND semantics rather than a guessed amount. Replaying the same Idempotency-Key returns the same order instead of creating a second one.",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "slotId"
+                ],
+                "properties": {
+                  "slotId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmed. The new ETag is the reservation revision after the write.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "description": "Opaque reservation revision validator, for example \"r2\"; send it back as If-Match.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Action"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/BookingBodyTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/reservations/{reservationId}/cancel": {
+      "post": {
+        "operationId": "cancelReservation",
+        "summary": "Cancel a reservation, release occupancy and append an order revision",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reasonCode": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancelled. No refund or payment step exists in this contract.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "description": "Opaque reservation revision validator, for example \"r2\"; send it back as If-Match.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Action"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/BookingBodyTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/reservations/{reservationId}/reschedule": {
+      "post": {
+        "operationId": "rescheduleReservation",
+        "summary": "Move a reservation to another slot inside one transaction",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "slotId"
+                ],
+                "properties": {
+                  "slotId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rescheduled. The previous occupancy is released and the snapshot is unchanged.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "description": "Opaque reservation revision validator, for example \"r2\"; send it back as If-Match.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Action"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/BookingBodyTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/notifications/outbox": {
+      "get": {
+        "operationId": "listNotificationBoard",
+        "summary": "Read the notification pending-work board",
+        "description": "Delivery is lease-and-retry, never exactly-once. This board only exposes failures that an operator may recover manually.",
+        "responses": {
+          "200": {
+            "description": "Delivery mode, pending count and dead letters.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Board"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/notifications/outbox/{messageId}/recover": {
+      "post": {
+        "operationId": "recoverNotification",
+        "summary": "Requeue a dead letter after an explicit operator review",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/RecoveryReason"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The recovery was recorded as a command and the message is queued again.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Recovery"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/BookingBodyTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
         }
       }
     }
   },
   "components": {
     "parameters": {
-      "Origin": { "name": "Origin", "in": "header", "required": true, "schema": { "type": "string", "format": "uri" }, "description": "Must exactly equal the server-configured public admin origin." },
-      "CsrfHeader": { "name": "X-CSRF-TOKEN", "in": "header", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 4096 }, "description": "Value obtained from GET /auth/csrf; never persist it." }
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Must exactly equal the server-configured public admin origin."
+      },
+      "CsrfHeader": {
+        "name": "X-CSRF-TOKEN",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "description": "Value obtained from GET /auth/csrf; never persist it."
+      },
+      "IfMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\"r[0-9]{1,9}\"$"
+        },
+        "description": "The reservation revision last read, for example \"r2\". A missing value is 428, a stale one is 409 VERSION_CONFLICT."
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "description": "Client-generated key scoped to the actor and operation. Replaying it returns the stored result instead of a second side effect."
+      },
+      "RecoveryReason": {
+        "name": "X-Recovery-Reason",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,39}$"
+        },
+        "description": "Operator-supplied reason code written into the audit record."
+      }
     },
     "headers": {
-      "RequestId": { "description": "Server-generated request correlation identifier; not an authentication or business identifier.", "schema": { "type": "string", "format": "uuid" } }
+      "RequestId": {
+        "description": "Server-generated request correlation identifier; not an authentication or business identifier.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
     },
     "schemas": {
-      "LoginRequest": { "type": "object", "additionalProperties": false, "required": ["accountId", "password"], "properties": { "accountId": { "type": "string", "minLength": 1, "maxLength": 64 }, "password": { "type": "string", "minLength": 1, "maxLength": 512, "writeOnly": true } } },
-      "Identity": { "type": "object", "additionalProperties": false, "required": ["accountId", "permissions", "expiresAt"], "properties": { "accountId": { "type": "string" }, "permissions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,63}$" } }, "expiresAt": { "type": "string", "format": "date-time" } } },
-      "EnvelopeBase": { "type": "object", "additionalProperties": false, "required": ["code", "requestId"], "properties": { "code": { "type": "string" }, "requestId": { "type": "string", "format": "uuid" } } },
-      "CsrfEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["data"], "properties": { "code": { "const": "OK" }, "data": { "type": "object", "additionalProperties": false, "required": ["csrfToken", "headerName"], "properties": { "csrfToken": { "type": "string", "minLength": 1, "maxLength": 4096 }, "headerName": { "const": "X-CSRF-TOKEN" } } } } } ] },
-      "IdentityEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["data"], "properties": { "code": { "const": "OK" }, "data": { "$ref": "#/components/schemas/Identity" } } } ] },
-      "ErrorEnvelope": { "allOf": [ { "$ref": "#/components/schemas/EnvelopeBase" }, { "type": "object", "required": ["message"], "properties": { "message": { "type": "string", "maxLength": 200 } } } ] }
+      "LoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accountId",
+          "password"
+        ],
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "writeOnly": true
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accountId",
+          "permissions",
+          "expiresAt"
+        ],
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]{1,63}$"
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EnvelopeBase": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "requestId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CsrfEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EnvelopeBase"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "code": {
+                "const": "OK"
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "csrfToken",
+                  "headerName"
+                ],
+                "properties": {
+                  "csrfToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  },
+                  "headerName": {
+                    "const": "X-CSRF-TOKEN"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "IdentityEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EnvelopeBase"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "code": {
+                "const": "OK"
+              },
+              "data": {
+                "$ref": "#/components/schemas/Identity"
+              }
+            }
+          }
+        ]
+      },
+      "ErrorEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EnvelopeBase"
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "maxLength": 200
+              }
+            }
+          }
+        ]
+      },
+      "Reservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "status",
+          "source",
+          "expiresAt",
+          "createdAt",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_CONFIRMATION",
+              "CONFIRMED",
+              "REJECTED",
+              "EXPIRED",
+              "CANCELLED"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "slotId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "ReservationList": {
+        "type": "array",
+        "maxItems": 100,
+        "items": {
+          "$ref": "#/components/schemas/Reservation"
+        }
+      },
+      "Assignment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slotId",
+          "assignedAt",
+          "reasonCode",
+          "revision"
+        ],
+        "properties": {
+          "slotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "previousSlotId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "assignedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "ReservationDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reservation",
+          "assignments"
+        ],
+        "properties": {
+          "reservation": {
+            "$ref": "#/components/schemas/Reservation"
+          },
+          "orderId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "assignments": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Assignment"
+            }
+          }
+        }
+      },
+      "Slot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "startAt",
+          "endAt",
+          "businessZone",
+          "displayOffset",
+          "status",
+          "capacity",
+          "ruleVersion",
+          "revision"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "businessZone": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "displayOffset": {
+            "type": "string",
+            "pattern": "^[+-][0-9]{2}:[0-9]{2}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "ruleVersion": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "SlotList": {
+        "type": "array",
+        "maxItems": 100,
+        "items": {
+          "$ref": "#/components/schemas/Slot"
+        }
+      },
+      "Snapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Written once at confirmation and never updated; a correction is a new revision, not an edit.",
+        "required": [
+          "packageVersionRef",
+          "packageDisplayName",
+          "currencyCode",
+          "amountMinorUnits",
+          "priceVersion",
+          "slotId",
+          "startAt",
+          "endAt",
+          "businessZone",
+          "displayOffset",
+          "scheduleRevision",
+          "source",
+          "capturedAt"
+        ],
+        "properties": {
+          "packageVersionRef": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "packageDisplayName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "currencyCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amountMinorUnits": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "priceVersion": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "slotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "businessZone": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "displayOffset": {
+            "type": "string",
+            "pattern": "^[+-][0-9]{2}:[0-9]{2}$"
+          },
+          "scheduleRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "actorRef",
+          "changedFields",
+          "reasonCode",
+          "createdAt"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "actorRef": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "changedFields": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reservationId",
+          "lifecycle",
+          "fulfilment",
+          "currentRevision",
+          "createdAt",
+          "snapshot",
+          "revisions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ]
+          },
+          "fulfilment": {
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reservationStatus": {
+            "type": "string"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/Snapshot"
+          },
+          "revisions": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/OrderRevision"
+            }
+          }
+        }
+      },
+      "Action": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "commandId",
+          "reservationId",
+          "orderRevision",
+          "replayed"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "CANCELLED",
+              "RESCHEDULED"
+            ]
+          },
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "slotId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "orderRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Failure": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "intent",
+          "status",
+          "attempts",
+          "dueAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "intent": {
+            "type": "string",
+            "maxLength": 48
+          },
+          "status": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Board": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deliveryMode",
+          "externalDeliveryEnabled",
+          "pendingCount",
+          "failures"
+        ],
+        "properties": {
+          "deliveryMode": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "externalDeliveryEnabled": {
+            "type": "boolean"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failures": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Failure"
+            }
+          }
+        }
+      },
+      "Recovery": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "commandId",
+          "messageId",
+          "status",
+          "replayed"
+        ],
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "const": "QUEUED"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      }
     },
     "responses": {
-      "InvalidRequest": { "description": "Malformed or disallowed request; no credential verification ran.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "InvalidCredentials": { "description": "Uniform credential/account-state failure; never reveals account existence.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "AuthenticationRequired": { "description": "No valid current session.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "OriginOrCsrfRejected": { "description": "Same-origin browser safeguard rejected before protected work.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "AlreadyAuthenticated": { "description": "A valid session cookie already exists; callers must not silently switch identities.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "PayloadTooLarge": { "description": "Request exceeds the S1 4KiB bound.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "UnsupportedMediaType": { "description": "Only application/json is accepted for writes.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "RateLimited": { "description": "Bounded local rate/KDF budget exhausted.", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } },
-      "AuthUnavailable": { "description": "Authentication dependency, audit, database or KDF service unavailable; it is not represented as a credential error or confirmed logout.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } }
+      "InvalidRequest": {
+        "description": "Malformed or disallowed request; no credential verification ran.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "InvalidCredentials": {
+        "description": "Uniform credential/account-state failure; never reveals account existence.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "AuthenticationRequired": {
+        "description": "No valid current session.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "OriginOrCsrfRejected": {
+        "description": "Same-origin browser safeguard rejected before protected work.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "AlreadyAuthenticated": {
+        "description": "A valid session cookie already exists; callers must not silently switch identities.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "Request exceeds the S1 4KiB bound.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "UnsupportedMediaType": {
+        "description": "Only application/json is accepted for writes.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Bounded local rate/KDF budget exhausted.",
+        "headers": {
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "AuthUnavailable": {
+        "description": "Authentication dependency, audit, database or KDF service unavailable; it is not represented as a credential error or confirmed logout.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The current identity lacks the capability this route requires.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The resource does not exist or is not visible to this identity; the two cases are deliberately indistinguishable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Version conflict, slot already unavailable, or an idempotency key reused with a different body.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "BookingBodyTooLarge": {
+        "description": "Booking writes are bounded to 1 KiB.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "PreconditionRequired": {
+        "description": "If-Match, If-Match format or Idempotency-Key was missing, so no write ran.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "BookingUnavailable": {
+        "description": "Booking or notification storage is unavailable; the caller must not treat this as a business outcome.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      }
     }
   }
 }
