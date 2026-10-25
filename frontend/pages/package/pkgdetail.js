@@ -132,6 +132,11 @@ Page({
   handleLoadPackageTap(_event) {
     this.loadPackage();
   },
+  handleBookingTap(_event) {
+    wx.navigateTo({
+      url: "/pages/booking/booking",
+    });
+  },
   handleMediaFailedError(_event) {
     this.update({
       mediaFailed: true,

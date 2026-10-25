@@ -66,7 +66,7 @@ test("guest AppID is explicitly demo only, release cannot import demo origin", (
     }),
   );
 });
-test("six routes and eight exact approved assets fail closed", () => {
+test("eight routes and eight exact approved assets fail closed", () => {
   const app = JSON.parse(
     fs.readFileSync(new URL("../app.json", import.meta.url)),
   );

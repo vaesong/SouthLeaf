@@ -26,6 +26,7 @@
       ><text class="package-title">{{pkg.name || '未命名套餐'}}</text
       ><text wx:if="{{pkg.summary}}" class="description">{{pkg.summary}}</text
       ><text class="price">{{priceLabel}}</text
+      ><button class="booking-entry" bindtap="handleBookingTap">预约咨询</button
       ><view
         wx:if="{{pkg.suitableFor || pkg.durationMinutes}}"
         class="detail-section"

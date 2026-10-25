@@ -125,3 +125,10 @@
   padding: 0 24rpx;
   line-height: 2.3;
 }
+.booking-entry {
+  margin-top: 24rpx;
+  background: #315849;
+  color: #ffffff;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+}

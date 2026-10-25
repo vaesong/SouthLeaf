@@ -6,6 +6,8 @@ export const routes = [
   "pages/package/package",
   "pages/package/pkgdetail",
   "pages/about/about",
+  "pages/booking/booking",
+  "pages/booking/requestdetail",
 ];
 // Syntax checks are not ownership, filing, DNS, certificate or deployment approval.
 export function resolveBuildConfig({ mode, apiOrigin, deployment = {} }) {
@@ -56,7 +58,7 @@ export function resolveBuildConfig({ mode, apiOrigin, deployment = {} }) {
 }
 export function approvedTabAssets(config) {
   if (JSON.stringify(config.pages) !== JSON.stringify(routes))
-    throw new Error("Exactly six approved routes required");
+    throw new Error("Exactly eight approved routes required");
   const tabs = config.tabBar?.list;
   if (!Array.isArray(tabs) || tabs.length !== 4)
     throw new Error("Exactly four approved tabs required");

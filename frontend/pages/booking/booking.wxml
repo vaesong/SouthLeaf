@@ -1,0 +1,70 @@
+<view class="booking-page"
+  ><demo-notice mode="{{dataMode}}"></demo-notice
+  ><view class="booking-topbar"
+    ><text bindtap="handleBackTap">‹</text><text>预约</text
+    ><text class="topbar-hint">工作室确认后生效</text></view
+  ><view wx:if="{{status === 'loading'}}" class="state-panel"
+    >正在加载可预约时段...</view
+  ><view wx:elif="{{status === 'error'}}" class="state-panel"
+    ><text>{{errorMessage}}</text
+    ><button bindtap="handleRetryTap">重试</button></view
+  ><view wx:elif="{{status === 'empty'}}" class="state-panel"
+    ><text>暂无可预约套餐</text
+    ><button bindtap="handleRetryTap">刷新</button></view
+  ><block wx:else
+    ><view class="section"
+      ><text class="section-title">选择套餐</text
+      ><picker
+        mode="selector"
+        range="{{packageLabels}}"
+        value="{{packageIndex}}"
+        bindchange="handlePackageChange"
+        ><view class="picker-row">{{packageLabels[packageIndex]}}</view></picker
+      ></view
+    ><view class="section"
+      ><text class="section-title">选择日期</text
+      ><view class="date-row"
+        ><picker mode="date" value="{{from}}" bindchange="handleFromChange"
+          ><view class="picker-row">起始 {{from}}</view></picker
+        ><picker mode="date" value="{{to}}" bindchange="handleToChange"
+          ><view class="picker-row">结束 {{to}}</view></picker
+        ></view
+      ></view
+    ><view class="section"
+      ><text class="section-title">可预约时段</text
+      ><view wx:if="{{slotRows.length === 0}}" class="hint"
+        >所选日期内没有空余时段</view
+      ><view
+        wx:for="{{slotRows}}"
+        wx:key="slotId"
+        class="slot-row {{item.active ? 'slot-row-active' : ''}}"
+        data-slot="{{item.slotId}}"
+        bindtap="handleSlotTap"
+        ><text>{{item.label}}</text
+        ><text class="slot-tag">{{item.active ? '已选择' : '选择'}}</text></view
+      ></view
+    ><view wx:if="{{error}}" class="error-row">{{error}}</view
+    ><view wx:if="{{message}}" class="hint">{{message}}</view
+    ><button
+      class="submit-button"
+      disabled="{{!selectedSlotId || submitting}}"
+      bindtap="handleSubmitTap"
+    >
+      {{submitting ? '正在提交...' : '提交预约申请'}}</button
+    ><view class="section"
+      ><text class="section-title">我的申请</text
+      ><view wx:if="{{requestError}}" class="error-row">{{requestError}}</view
+      ><view wx:elif="{{requestRows.length === 0}}" class="hint"
+        >还没有提交过申请</view
+      ><view
+        wx:for="{{requestRows}}"
+        wx:key="reservationId"
+        class="request-row"
+        data-id="{{item.reservationId}}"
+        bindtap="handleRequestTap"
+        ><text>{{item.slotLabel}}</text
+        ><text class="request-status">{{item.statusLabel}}</text></view
+      ></view
+    ></block
+  ></view
+>

@@ -1,0 +1,65 @@
+.request-page {
+  padding: 24rpx 28rpx 60rpx;
+  color: #23513f;
+  background: #f8f8f8;
+}
+.request-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 34rpx;
+  font-weight: 600;
+  padding-bottom: 18rpx;
+}
+.topbar-hint {
+  font-size: 22rpx;
+  font-weight: 400;
+  color: #7b8a80;
+}
+.section {
+  margin-top: 26rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 18rpx;
+}
+.section-title {
+  display: block;
+  font-size: 26rpx;
+  color: #7b8a80;
+  margin-bottom: 14rpx;
+}
+.status-title {
+  display: block;
+  font-size: 38rpx;
+  font-weight: 600;
+}
+.status-hint {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #7b8a80;
+}
+.value-row {
+  display: block;
+  font-size: 27rpx;
+  padding: 8rpx 0;
+}
+.hint {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 23rpx;
+  color: #7b8a80;
+}
+.secondary-button {
+  margin-top: 34rpx;
+  background: #eef4f0;
+  color: #315849;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+}
+.state-panel {
+  margin-top: 120rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #7b8a80;
+}

@@ -5,7 +5,9 @@
     "pages/works/workdetail",
     "pages/package/package",
     "pages/package/pkgdetail",
-    "pages/about/about"
+    "pages/about/about",
+    "pages/booking/booking",
+    "pages/booking/requestdetail"
   ],
   "window": {
     "navigationBarTextStyle": "black",

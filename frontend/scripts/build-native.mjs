@@ -67,6 +67,7 @@ try {
     ...[
       "api/api.js",
       "api/public.js",
+      "api/booking.js",
       "api/public-display.js",
       "presentation/views.js",
       "presentation/page-state.js",
@@ -174,7 +175,10 @@ try {
       mode +
       " declaredFiles=" +
       files.length +
-      " runtimeDependencies=0 routes=6 assets=8",
+      " runtimeDependencies=0 routes=" +
+      routes.length +
+      " assets=" +
+      assets.size,
   );
 } catch (error) {
   await fs.rm(stage, { recursive: true, force: true });

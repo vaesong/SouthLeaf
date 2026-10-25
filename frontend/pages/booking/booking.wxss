@@ -1,0 +1,98 @@
+.booking-page {
+  padding: 24rpx 28rpx 60rpx;
+  color: #23513f;
+  background: #f8f8f8;
+}
+.booking-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 34rpx;
+  font-weight: 600;
+  padding-bottom: 18rpx;
+}
+.topbar-hint {
+  font-size: 22rpx;
+  font-weight: 400;
+  color: #7b8a80;
+}
+.section {
+  margin-top: 28rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 18rpx;
+}
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+.picker-row {
+  padding: 18rpx 20rpx;
+  border: 1rpx solid #dfe6e1;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+.date-row {
+  display: flex;
+  gap: 16rpx;
+}
+.date-row picker {
+  flex: 1;
+}
+.slot-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 22rpx;
+  margin-bottom: 14rpx;
+  border: 1rpx solid #dfe6e1;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+.slot-row-active {
+  border-color: #315849;
+  background: #eef4f0;
+}
+.slot-tag {
+  color: #315849;
+  font-size: 22rpx;
+}
+.hint {
+  font-size: 24rpx;
+  color: #7b8a80;
+  padding: 12rpx 4rpx;
+}
+.error-row {
+  margin-top: 20rpx;
+  font-size: 24rpx;
+  color: #b4544a;
+}
+.submit-button {
+  margin-top: 30rpx;
+  background: #315849;
+  color: #ffffff;
+  border-radius: 14rpx;
+  font-size: 30rpx;
+}
+.submit-button[disabled] {
+  background: #a9b7ae;
+  color: #f2f5f3;
+}
+.request-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 18rpx 4rpx;
+  border-bottom: 1rpx solid #eef1ef;
+  font-size: 25rpx;
+}
+.request-status {
+  color: #315849;
+}
+.state-panel {
+  margin-top: 120rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #7b8a80;
+}
