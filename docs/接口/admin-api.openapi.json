@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "SouthLeaf Admin API",
-    "version": "1.1.0-s5",
-    "description": "Same-origin administrative contract: login/session plus the stage-two booking and notification surfaces. Reservation confirm is an explicit operator action and one transaction; nothing in this contract charges, refunds or deposits money."
+    "version": "1.2.0-s5",
+    "description": "Same-origin administrative contract: login/session plus the stage-two booking and notification surfaces. Confirm and reject are both explicit operator decisions about a pending request; only confirm can occupy a slot and create an order, and nothing in this contract charges, refunds or deposits money."
   },
   "servers": [
     {
@@ -1005,6 +1005,126 @@
           }
         }
       }
+    },
+    "/bookings/reservations/{reservationId}/reject": {
+      "post": {
+        "operationId": "rejectReservation",
+        "summary": "Refuse a pending request without occupying a slot or creating an order",
+        "description": "The other answer to the same pending question. A rejection only closes the request: no occupancy, no order, no snapshot. It is audited and enqueues a RESERVATION_REJECTED notification, so the decision is recorded rather than silently dropped. The body must not name a slot.",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reasonCode"
+                ],
+                "properties": {
+                  "reasonCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected. orderId and slotId are null because neither exists for a refusal.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "description": "Opaque reservation revision validator after the write.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Action"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/BookingBodyTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1573,7 +1693,7 @@
             "enum": [
               "CONFIRMED",
               "CANCELLED",
-              "RESCHEDULED"
+              "REJECTED"
             ]
           },
           "commandId": {

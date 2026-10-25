@@ -1,0 +1,26 @@
+{
+  "checkCount": 8,
+  "checks": [
+    "dedicated_isolated_tls_mysql_and_migrations",
+    "verified_booking_writer_and_outbox_grants",
+    "synthetic_session_capabilities_and_booking_facts",
+    "runtime_https_same_origin_login_and_csrf",
+    "browser_pending_request_confirmed_into_unique_order",
+    "browser_reschedule_cancel_and_order_revision",
+    "browser_outbox_failure_review_and_manual_recovery",
+    "database_occupancy_audit_command_and_outbox_facts"
+  ],
+  "cleanup": {
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "runtimeGraceful": true
+  },
+  "failureCategory": null,
+  "kind": "S6_BOOKING_RUNTIME_E2E",
+  "realOrProductionDataUsed": false,
+  "runId": "a54b8428",
+  "secretsRecorded": false,
+  "status": "PASS",
+  "syntheticDataOnly": true,
+  "testSinkOnly": true
+}
