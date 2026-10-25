@@ -12,6 +12,8 @@ const rescheduleId = process.env.S6_E2E_RESCHEDULE_ID;
 const cancelId = process.env.S6_E2E_CANCEL_ID;
 const targetSlotId = process.env.S6_E2E_TARGET_SLOT_ID;
 const deadMessageId = process.env.S6_E2E_DEAD_MESSAGE_ID;
+const confirmId = process.env.S6_E2E_CONFIRM_ID;
+const confirmSlotId = process.env.S6_E2E_CONFIRM_SLOT_ID;
 
 assert.ok(baseUrl && /^https:\/\/localhost:[0-9]{5}$/.test(baseUrl));
 assert.ok(accountId && /^s1d\.[a-z0-9]{8}$/.test(accountId));
@@ -22,6 +24,8 @@ assert.match(rescheduleId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(cancelId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(targetSlotId ?? "", /^[0-9a-f-]{36}$/i);
 assert.match(deadMessageId ?? "", /^[0-9a-f-]{36}$/i);
+assert.match(confirmId ?? "", /^[0-9a-f-]{36}$/i);
+assert.match(confirmSlotId ?? "", /^[0-9a-f-]{36}$/i);
 
 await mkdir(profileDir);
 console.log("S6_BROWSER_STAGE:launch");
@@ -89,7 +93,9 @@ try {
     .locator("#new-slot option")
     .evaluateAll((options) => options.map((option) => option.value));
   console.log(`S6_BROWSER_SLOTS:${slotIds.join(",")}`);
-  assert.deepEqual(slotIds, [targetSlotId]);
+  // Two slots are free in this fixture: the reschedule target and the untouched confirm slot.
+  assert.ok(slotIds.includes(targetSlotId));
+  assert.equal(new Set(slotIds).size, slotIds.length);
   await page.locator("#new-slot").selectOption(targetSlotId);
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => {
@@ -123,6 +129,34 @@ try {
   console.log("S6_BROWSER_STAGE:cancelled");
   assert.match(await page.locator(".detail-section").innerText(), /CANCELLED/);
   assert.match(await page.locator(".order-section").innerText(), /CANCELLED/);
+
+  await lookup(confirmId);
+  console.log("S6_BROWSER_STAGE:confirm-loaded");
+  assert.match(await page.locator(".detail-section").innerText(), /PENDING_CONFIRMATION/);
+  const pendingOrderText =
+    (await page.locator(".order-section").count()) === 0
+      ? ""
+      : await page.locator(".order-section").innerText();
+  assert.doesNotMatch(pendingOrderText, /S6 Synthetic Test Package/);
+
+  await page.getByRole("button", { name: "查詢可佔用時段" }).click();
+  await page.locator("#confirm-slot").waitFor({ timeout: 15000 });
+  await page.locator("#confirm-slot").selectOption(confirmSlotId);
+  await Promise.all([
+    page.waitForEvent("dialog").then(async (dialog) => {
+      assert.match(dialog.message(), /請核對後確認/);
+      await dialog.accept();
+    }),
+    page.getByRole("button", { name: "核對並確認成單" }).click(),
+  ]);
+  await page
+    .getByRole("alert")
+    .getByText("確認已記錄", { exact: false })
+    .waitFor({ timeout: 15000 });
+  console.log("S6_BROWSER_STAGE:confirmed");
+  assert.match(await page.locator(".detail-section").innerText(), /CONFIRMED/);
+  assert.match(await page.locator(".order-section").innerText(), /S6 Synthetic Test Package/);
+  assert.match(await page.locator(".order-section").innerText(), /JPY/);
 
   await page.goto(`${baseUrl}/outbox`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.getByRole("heading", { name: "通知失败待办" }).waitFor({ timeout: 15000 });
