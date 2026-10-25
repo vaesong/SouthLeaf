@@ -1,0 +1,63 @@
+{
+  "kind": "G2A_OPENAPI_CONTRACT",
+  "status": "PASS",
+  "runId": "b3f61c8a",
+  "executedAt": "2026-10-25T19:41:00+08:00",
+  "command": "python backend/scripts/check-openapi-contract.py",
+  "exitCode": 0,
+  "checkCount": 6,
+  "checks": [
+    "admin_contract_matches_admin_runtime_controllers",
+    "public_contract_matches_public_api_controllers",
+    "no_documented_operation_missing_in_code",
+    "no_implemented_api_route_missing_from_contract",
+    "operation_ids_unique_and_every_operation_declares_responses",
+    "head_operations_covered_by_get_handlers"
+  ],
+  "admin": {
+    "spec": "docs/接口/admin-api.openapi.json",
+    "specVersion": "1.3.0-s2b-content",
+    "baseUrl": "/api/admin/v1",
+    "documentedPaths": 31,
+    "documentedOperations": 34,
+    "implementedOperations": 34,
+    "controllerCount": 4,
+    "intentionalUndocumented": 0,
+    "wildcardRoutes": ["GET /{*path} (AdminWebUiController)"]
+  },
+  "public": {
+    "spec": "docs/接口/public-api.openapi.json",
+    "specVersion": "0.4.0-booking",
+    "baseUrl": "/api/v1/public",
+    "documentedPaths": 15,
+    "documentedOperations": 16,
+    "implementedOperations": 16,
+    "controllerCount": 3,
+    "intentionalUndocumented": 0,
+    "wildcardRoutes": []
+  },
+  "gapFoundAndClosed": {
+    "summary": "AdminContentController exposed 21 content authoring operations that the admin contract never listed.",
+    "previousSpecVersion": "1.2.0-s5",
+    "previousPaths": 14,
+    "addedPaths": 17,
+    "addedSchemas": 13,
+    "addedHeaders": ["ContentETag", "WorkETag"],
+    "addedResponses": ["PreconditionFailed"]
+  },
+  "cleanup": {
+    "fixtureRemoved": true,
+    "mysqlGraceful": true,
+    "runtimeGraceful": true
+  },
+  "failureCategory": null,
+  "realOrProductionDataUsed": false,
+  "syntheticDataOnly": true,
+  "testSinkOnly": true,
+  "secretsRecorded": false,
+  "limitations": [
+    "The check proves route existence, method and parameter-level agreement only; it does not judge schema shapes, status codes or error codes.",
+    "SPA fallbacks and the retired 410 handlers are reported but not enforced.",
+    "A passing contract is not a substitute for the isolated L5 runs that exercise the same routes."
+  ]
+}
