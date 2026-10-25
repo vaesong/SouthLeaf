@@ -123,8 +123,7 @@ final class AdminRuntimeProperties {
             outbox.databaseUser(),
             content.businessUser(),
             content.publicationUser(),
-            web.enabled(),
-            outbox.enabled());
+            web.enabled());
     return new AdminRuntimeProperties(
         url,
         username,

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class AdminBookingPropertiesTest {
   @Test
-  void enablesOnlyForDemoWithWebAndOutboxAndRedactsTheDedicatedWriterSecret() {
+  void enablesWhenTheWebSurfaceIsUpAndTheDataModeMatchesTheRuntime() {
     var properties = AdminRuntimeProperties.load(configured(), new Properties());
 
     assertThat(properties.booking().enabled()).isTrue();
@@ -35,7 +35,7 @@ class AdminBookingPropertiesTest {
   }
 
   @Test
-  void rejectsBookingWithoutDemoWebAndEnabledOutbox() {
+  void rejectsBookingWithoutTheWebSurface() {
     var noWeb = configured();
     noWeb.remove("SOUTHLEAF_ADMIN_WEB_MODE");
     noWeb.remove("SOUTHLEAF_ADMIN_WEB_ORIGIN");
@@ -45,15 +45,36 @@ class AdminBookingPropertiesTest {
     noWeb.remove("SOUTHLEAF_ADMIN_WEB_KEYSTORE_TYPE");
     assertThatThrownBy(() -> AdminRuntimeProperties.load(noWeb, new Properties()))
         .isInstanceOf(AdminStartupException.class);
+  }
 
-    var noOutbox = configured();
-    noOutbox.keySet().removeIf(key -> key.startsWith("SOUTHLEAF_ADMIN_OUTBOX_"));
-    assertThatThrownBy(() -> AdminRuntimeProperties.load(noOutbox, new Properties()))
+  @Test
+  void confirmationStaysAvailableWithoutTheNotificationDispatcher() {
+    // Confirming writes outbox rows inside the transaction; draining them is a separate process,
+    // so a runtime without the dispatcher can still take a booking.
+    var noDispatcher = configured();
+    noDispatcher.keySet().removeIf(key -> key.startsWith("SOUTHLEAF_ADMIN_OUTBOX_"));
+    var properties = AdminRuntimeProperties.load(noDispatcher, new Properties());
+    assertThat(properties.booking().enabled()).isTrue();
+    assertThat(properties.outbox().enabled()).isFalse();
+  }
+
+  @Test
+  void confirmationInProductionRequiresProductionPrices() {
+    var demoPrices = production();
+    demoPrices.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "SYNTHETIC");
+    assertThatThrownBy(() -> AdminRuntimeProperties.load(demoPrices, new Properties()))
         .isInstanceOf(AdminStartupException.class);
 
-    var production = configured();
-    production.put("SOUTHLEAF_ADMIN_MODE", "production");
-    assertThatThrownBy(() -> AdminRuntimeProperties.load(production, new Properties()))
+    var production = production();
+    assertThat(AdminRuntimeProperties.load(production, new Properties()).booking().enabled())
+        .isTrue();
+  }
+
+  @Test
+  void aDemoRuntimeCannotQuoteProductionPrices() {
+    var values = configured();
+    values.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "PRODUCTION");
+    assertThatThrownBy(() -> AdminRuntimeProperties.load(values, new Properties()))
         .isInstanceOf(AdminStartupException.class);
   }
 
@@ -78,7 +99,6 @@ class AdminBookingPropertiesTest {
                       samePool == 1 ? "southleaf_booking_writer" : "southleaf_outbox",
                       samePool == 2 ? "southleaf_booking_writer" : "content_business",
                       samePool == 3 ? "southleaf_booking_writer" : "content_publication",
-                      true,
                       true))
           .isInstanceOf(AdminStartupException.class);
     }
@@ -96,8 +116,7 @@ class AdminBookingPropertiesTest {
     assertThatThrownBy(() -> AdminRuntimeProperties.load(nonsense, new Properties()))
         .isInstanceOf(AdminStartupException.class);
 
-    var production = configured();
-    production.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "production");
+    var production = production();
     assertThat(AdminRuntimeProperties.load(production, new Properties()).booking().dataMode())
         .isEqualTo("PRODUCTION");
   }
@@ -113,6 +132,24 @@ class AdminBookingPropertiesTest {
     system.setProperty("southleaf.admin.booking.mode", "enabled");
     assertThatThrownBy(() -> AdminRuntimeProperties.load(configured(), system))
         .hasMessage("ADMIN_RUNTIME_REFUSED:CONFIG_SOURCE");
+  }
+
+  /** The same surface in production: named origin, no key store, production prices. */
+  static Map<String, String> production() {
+    Map<String, String> values = new HashMap<>(configured());
+    values.put("SOUTHLEAF_ADMIN_MODE", "production");
+    values.put("SOUTHLEAF_ADMIN_DB_SCHEMA", "southleaf_admin");
+    values.put(
+        "SOUTHLEAF_ADMIN_DB_URL",
+        "jdbc:mysql://localhost:1/southleaf_admin?sslMode=VERIFY_IDENTITY");
+    values.put("SOUTHLEAF_ADMIN_WEB_MODE", "release");
+    values.put("SOUTHLEAF_ADMIN_WEB_ORIGIN", "https://admin.example.com");
+    values.put("SOUTHLEAF_ADMIN_WEB_PORT", "18443");
+    values.put("SOUTHLEAF_ADMIN_WEB_TRUSTED_PROXIES", "127.0.0.1");
+    values.keySet().removeIf(key -> key.startsWith("SOUTHLEAF_ADMIN_WEB_KEYSTORE_"));
+    values.keySet().removeIf(key -> key.startsWith("SOUTHLEAF_ADMIN_OUTBOX_"));
+    values.put("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE", "PRODUCTION");
+    return values;
   }
 
   static Map<String, String> configured() {

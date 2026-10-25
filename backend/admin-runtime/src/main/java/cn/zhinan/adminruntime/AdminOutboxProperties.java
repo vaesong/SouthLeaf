@@ -65,7 +65,11 @@ final class AdminOutboxProperties {
       if (supplied) refuse();
       return DISABLED;
     }
-    if (!"enabled".equals(mode) || !webEnabled || !"demo".equals(adminMode)) refuse();
+    if (!"enabled".equals(mode) || !webEnabled) refuse();
+    // The test sink never reports a real delivery, so it may only run where nobody relies on it.
+    // The day a real channel exists, this is the single line that has to change.
+    if (!"TEST_SINK".equals(env.get("SOUTHLEAF_ADMIN_OUTBOX_DELIVERY_MODE"))
+        || "production".equals(adminMode)) refuse();
     for (String key : KEYS) requireValue(env.get(key));
 
     String username = env.get("SOUTHLEAF_ADMIN_OUTBOX_DB_USERNAME");
@@ -78,7 +82,6 @@ final class AdminOutboxProperties {
         || !schema.matches("[a-z][a-z0-9_]{0,63}")) refuse();
 
     String delivery = env.get("SOUTHLEAF_ADMIN_OUTBOX_DELIVERY_MODE");
-    if (!"TEST_SINK".equals(delivery)) refuse();
     int maxAttempts = integer(env, "SOUTHLEAF_ADMIN_OUTBOX_MAX_ATTEMPTS");
     int leaseSeconds = integer(env, "SOUTHLEAF_ADMIN_OUTBOX_LEASE_SECONDS");
     int baseRetrySeconds = integer(env, "SOUTHLEAF_ADMIN_OUTBOX_RETRY_BASE_SECONDS");

@@ -5,7 +5,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-/** Demo-only reservation operations with a dedicated table-scoped booking-writer identity. */
+/**
+ * Reservation operations over a dedicated table-scoped booking-writer identity.
+ *
+ * <p>The gate is expressed as facts rather than as a mode name: the runtime must be able to serve
+ * the web surface, and the price-fact scope it reads must match the mode it runs in. Requiring the
+ * notification dispatcher here would have made confirmation unavailable in production for no reason
+ * — this surface only writes outbox rows; draining them is a separate process.
+ */
 final class AdminBookingProperties {
   static final Set<String> KEYS =
       Set.of(
@@ -43,16 +50,16 @@ final class AdminBookingProperties {
       String outboxUser,
       String contentBusinessUser,
       String contentPublicationUser,
-      boolean webEnabled,
-      boolean outboxEnabled) {
+      boolean webEnabled) {
     String mode = env.get("SOUTHLEAF_ADMIN_BOOKING_MODE");
     boolean supplied = KEYS.stream().anyMatch(env::containsKey);
     if (mode == null) {
       if (supplied) refuse();
       return DISABLED;
     }
-    if (!"enabled".equals(mode) || !"demo".equals(adminMode) || !webEnabled || !outboxEnabled)
-      refuse();
+    if (!"enabled".equals(mode) || !webEnabled) refuse();
+    // A production runtime may only quote production prices; a demo runtime only synthetic ones.
+    String requiredDataMode = "production".equals(adminMode) ? "PRODUCTION" : "SYNTHETIC";
     for (String key : KEYS) {
       String value = env.get(key);
       if (value == null || value.isBlank() || value.length() > 4096) refuse();
@@ -67,7 +74,7 @@ final class AdminBookingProperties {
         || same(username, contentBusinessUser)
         || same(username, contentPublicationUser)) refuse();
     String dataMode = env.get("SOUTHLEAF_ADMIN_BOOKING_DATA_MODE").trim().toUpperCase(Locale.ROOT);
-    if (!dataMode.equals("SYNTHETIC") && !dataMode.equals("PRODUCTION")) refuse();
+    if (!dataMode.equals(requiredDataMode)) refuse();
     return new AdminBookingProperties(
         true, username, env.get("SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD"), expected, dataMode);
   }
