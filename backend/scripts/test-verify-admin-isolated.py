@@ -246,10 +246,38 @@ class CandidateAndOutputTests(unittest.TestCase):
             self.assertEqual(values['SOUTHLEAF_SECURITY_IT_EXPECTED_USER'], 's1b_migrator@localhost')
             self.assertNotIn('SOUTHLEAF_DB_PASSWORD', values)
 
+    def test_reactor_forwards_only_the_named_booking_and_c3_inputs(self):
+        process = mock.Mock(returncode=0)
+        process.communicate.return_value = (b'synthetic-success', None)
+        meta = {'root': 'synthetic', 'port': 19377, 'serverUuid': 'synthetic'}
+        forwarded = {
+            'SOUTHLEAF_BOOKING_IT_URL': 'jdbc:mysql://127.0.0.1:3307/southleaf_booking_it?sslMode=DISABLED',
+            'SOUTHLEAF_BOOKING_IT_USERNAME': 'booking_it',
+            'SOUTHLEAF_BOOKING_IT_PASSWORD': 'synthetic-booking',
+            'SOUTHLEAF_BOOKING_IT_INSTANCE_ID': 'synthetic-instance',
+            'SOUTHLEAF_C3_IT_MODE': 'demo',
+            'SOUTHLEAF_C3_IT_DB_URL': 'jdbc:mysql://localhost:19378/southleaf_admin_c3_it?sslMode=VERIFY_IDENTITY',
+            'SOUTHLEAF_C3_IT_DB_USERNAME': 'c3_cli',
+            'SOUTHLEAF_C3_IT_DB_PASSWORD': 'synthetic-c3',
+            'SOUTHLEAF_C3_IT_DB_SCHEMA': 'southleaf_admin_c3_it',
+            'SOUTHLEAF_C3_IT_DB_EXPECTED_USER': 'c3_cli@localhost',
+            'SOUTHLEAF_UNRELATED_SECRET': 'must-stay-out'}
+        with mock.patch.dict(verifier.os.environ, forwarded, clear=False), \
+                mock.patch.object(verifier.subprocess, 'Popen', return_value=process) as popen:
+            verifier.run_reactor_verification(meta, {'s1b_migrator': 'synthetic-only'})
+            values = popen.call_args.kwargs['env']
+            for key, value in forwarded.items():
+                if key == 'SOUTHLEAF_UNRELATED_SECRET':
+                    self.assertNotIn(key, values)
+                else:
+                    self.assertEqual(values[key], value)
+
     def test_full_reactor_entry_explicitly_disables_test_skips(self):
         entry = (verifier.REPO / 'backend/scripts/Test-DatabaseIntegration.ps1').read_text()
-        for flag in ('-DskipTests=false', '-Dmaven.test.skip=false', '-DskipITs=false'):
+        for flag in ('-DskipTests=false', '-Dmaven.test.skip=false', '-DskipITs=false', '-Pc3-isolated-it'):
             self.assertIn(flag, entry)
+        self.assertIn('SOUTHLEAF_BOOKING_IT_URL', entry)
+        self.assertIn('SOUTHLEAF_C3_IT_DB_URL', entry)
 
     def test_reactor_errors_are_hashed_not_echoed(self):
         process = mock.Mock(returncode=1)

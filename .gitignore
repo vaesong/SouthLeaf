@@ -28,3 +28,6 @@ __pycache__/
 
 # Local rights-unknown quarantine: not part of source distribution.
 /archive/legacy-frontend-assets/
+
+# Visual preview session. Contains a local browser key.
+/.superpowers/

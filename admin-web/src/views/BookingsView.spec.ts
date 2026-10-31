@@ -128,7 +128,7 @@ describe("BookingsView", () => {
     await wrapper.get("button.danger-button").trigger("click");
     await flushPromises();
     expect(window.confirm).toHaveBeenCalledOnce();
-    expect(wrapper.text()).toContain("取消已記錄");
+    expect(wrapper.text()).toContain("取消已记录");
     expect(fetcher).toHaveBeenCalledTimes(8);
     const [, write] = fetcher.mock.calls[4] as [string, RequestInit];
     const headers = write.headers as Record<string, string>;
@@ -205,7 +205,7 @@ describe("BookingsView", () => {
     await flushPromises();
     await wrapper.get("button.danger-button").trigger("click");
     await flushPromises();
-    expect(wrapper.text()).toContain("操作結果尚未確認");
+    expect(wrapper.text()).toContain("操作结果尚未确认");
 
     await wrapper.get("button.danger-button").trigger("click");
     await flushPromises();
@@ -214,7 +214,7 @@ describe("BookingsView", () => {
     expect((firstWrite.headers as Record<string, string>)["Idempotency-Key"]).toBe(
       (retryWrite.headers as Record<string, string>)["Idempotency-Key"],
     );
-    expect(wrapper.text()).toContain("取消已記錄");
+    expect(wrapper.text()).toContain("取消已记录");
     wrapper.unmount();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -232,7 +232,7 @@ describe("BookingsView", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("缺少預約查閱能力");
+    expect(wrapper.text()).toContain("缺少预约查阅能力");
     expect(wrapper.find("button.danger-button").exists()).toBe(false);
     wrapper.unmount();
     vi.unstubAllGlobals();

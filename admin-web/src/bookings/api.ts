@@ -399,18 +399,18 @@ async function safeJson<T>(response: Response): Promise<T | null> {
 }
 
 function invalidResponse(requestId?: string) {
-  return new BookingApiError(502, "INVALID_BOOKING_RESPONSE", "預約服務回應無效。", requestId);
+  return new BookingApiError(502, "INVALID_BOOKING_RESPONSE", "预约服务响应无效。", requestId);
 }
 
 function safeErrorMessage(status: number) {
-  if (status === 401) return "登入工作階段已失效，請重新登入。";
-  if (status === 403) return "目前工作階段沒有執行此操作的伺服器能力。";
-  if (status === 404) return "找不到此預約或訂單，或目前無權查看。";
-  if (status === 409) return "預約資料已變更或時段不可用；請重新載入資料後再操作。";
+  if (status === 401) return "登录工作阶段已失效，请重新登录。";
+  if (status === 403) return "当前工作阶段没有执行此操作的服务器能力。";
+  if (status === 404) return "找不到此预约或订单，或目前无权查看。";
+  if (status === 409) return "预约资料已变更或时段不可用；请重新加载资料后再操作。";
   if (status === 400 || status === 413 || status === 415 || status === 428)
-    return "預約請求格式或版本不符合要求；請重新載入資料。";
-  if (status >= 500) return "預約服務暫時無法使用。";
-  return "預約請求無法完成。";
+    return "预约请求格式或版本不符合要求；请重新加载资料。";
+  if (status >= 500) return "预约服务暂时无法使用。";
+  return "预约请求无法完成。";
 }
 
 function requireId(value: string) {

@@ -59,7 +59,7 @@ def server_config(root, source_root, port, memory):
         'log-error=' + (root / 'server-error.log').as_posix(), 'log_error_verbosity=2']) + '\n'
 
 
-def migrate(meta, passwords):
+def admin_migration_command(meta, passwords):
     dependencies = REPO / 'backend/admin-migration-cli/target/dependency'
     require(any(dependencies.glob('*.jar')), 'MIGRATION_RUNTIME_CLASSPATH_MISSING')
     classpath = os.pathsep.join(str(REPO / item) for item in [
@@ -72,6 +72,11 @@ def migrate(meta, passwords):
         'SOUTHLEAF_ADMIN_MIGRATION_USERNAME': 'c3_migrator',
         'SOUTHLEAF_ADMIN_MIGRATION_PASSWORD': passwords['c3_migrator']}
     command = c2.java_options(meta) + ['-cp', classpath, 'cn.zhinan.adminmigration.AdminDatabaseMigrationMain']
+    return command, env
+
+
+def migrate(meta, passwords):
+    command, env = admin_migration_command(meta, passwords)
     c2.run(command + ['--migrate'], env=env, marker='ADMIN_SCHEMA_MIGRATION_PASS')
     c2.run(command + ['--validate'], env=env, marker='ADMIN_SCHEMA_VALIDATION_PASS')
 
@@ -85,10 +90,13 @@ def cli_grants():
         f"GRANT SELECT,INSERT ON `{SCHEMA}`.admin_account_command TO 'c3_cli'@'localhost';"])
 
 
-def provision():
+def provision(source_manifest=None):
     global STEP
     require(os.name == 'nt' and os.environ.get('LOCALAPPDATA'), 'WINDOWS_REQUIRED')
-    _, source_meta, source_passwords = source_fixture()
+    if source_manifest is None:
+        _, source_meta, source_passwords = source_fixture()
+    else:
+        _, source_meta, source_passwords = c2.load_manifest(source_manifest)
     source_root = Path(source_meta['root'])
     require(source_meta['status'] in ('prepared-and-cleanly-stopped', 'verified-and-cleanly-stopped'), 'C2_FIXTURE_NOT_STOPPED')
     require(all(path.is_file() for path in (c2.MYSQL, c2.SERVER, c2.JAVA, source_root / 'ca.pem', source_root / 'server-cert.pem', source_root / 'server-key.pem', source_root / 'truststore.jks')), 'REQUIRED_EXISTING_PRIVATE_TEST_MATERIAL_MISSING')
@@ -160,6 +168,15 @@ def provision():
         source_passwords.clear()
 
 
+def c3_it_environment(meta, passwords):
+    """Isolated account-CLI inputs. Trust material stays with the caller that actually connects."""
+    return {
+        'SOUTHLEAF_C3_IT_MODE': 'demo',
+        'SOUTHLEAF_C3_IT_DB_URL': f"jdbc:mysql://localhost:{meta['port']}/{SCHEMA}?sslMode=VERIFY_IDENTITY&allowPublicKeyRetrieval=false&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8",
+        'SOUTHLEAF_C3_IT_DB_USERNAME': 'c3_cli', 'SOUTHLEAF_C3_IT_DB_PASSWORD': passwords['c3_cli'],
+        'SOUTHLEAF_C3_IT_DB_SCHEMA': SCHEMA, 'SOUTHLEAF_C3_IT_DB_EXPECTED_USER': 'c3_cli@localhost'}
+
+
 def execute(manifest, meta, passwords):
     global STEP
     STEP = 'start-owned-c3-instance'
@@ -168,14 +185,12 @@ def execute(manifest, meta, passwords):
     primary_failure = None
     try:
         STEP = 'run-explicit-c3-l3-it'
-        environment = {
-            'SOUTHLEAF_C3_IT_MODE': 'demo',
-            'SOUTHLEAF_C3_IT_DB_URL': f"jdbc:mysql://localhost:{meta['port']}/{SCHEMA}?sslMode=VERIFY_IDENTITY&allowPublicKeyRetrieval=false&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8",
-            'SOUTHLEAF_C3_IT_DB_USERNAME': 'c3_cli', 'SOUTHLEAF_C3_IT_DB_PASSWORD': passwords['c3_cli'],
-            'SOUTHLEAF_C3_IT_DB_SCHEMA': SCHEMA, 'SOUTHLEAF_C3_IT_DB_EXPECTED_USER': 'c3_cli@localhost',
-            'JAVA_TOOL_OPTIONS': '-Djavax.net.ssl.trustStore=' + str(Path(meta['root']) / 'truststore.jks') + ' -Djavax.net.ssl.trustStoreType=JKS'}
+        environment = c3_it_environment(meta, passwords)
+        environment['JAVA_TOOL_OPTIONS'] = (
+            '-Djavax.net.ssl.trustStore=' + str(Path(meta['root']) / 'truststore.jks')
+            + ' -Djavax.net.ssl.trustStoreType=JKS')
         result = subprocess.run(
-            ['mvnw.cmd', '-pl', 'admin-account-cli', '-am', '-Pc3-isolated-it', 'verify'],
+            [str(REPO / 'backend' / 'mvnw.cmd'), '-pl', 'admin-account-cli', '-am', '-Pc3-isolated-it', 'verify'],
             cwd=REPO / 'backend',
             env=c2.clean_env(environment),
             stdin=subprocess.DEVNULL,

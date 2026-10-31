@@ -41,7 +41,7 @@ async function refreshCsrf(force = false, clearFeedback = true) {
   csrfLoading.value = false;
   if (!ready) {
     const error = auth.state.error;
-    message.value = "安全初始化暫時無法完成，請檢查連線後重試。";
+    message.value = "安全初始化暂时无法完成，请检查连接后重试。";
     requestId.value = error?.requestId ?? "";
   }
 }
@@ -51,23 +51,23 @@ async function renewCsrfAfterRejection() {
   const ready = await auth.prepareCsrf(true);
   csrfLoading.value = false;
   message.value = ready
-    ? "安全檢查未通過，已更新安全驗證。請重新點擊登入。"
-    : "安全檢查未通過，安全初始化仍未完成，請重試。";
+    ? "安全检查未通过，已更新安全验证。请重新点击登录。"
+    : "安全检查未通过，安全初始化仍未完成，请重试。";
 }
 
 function safeMessage(error: AdminApiError): string {
-  if (error.code === "INVALID_CREDENTIALS") return "帳號或密碼不正確，或帳號目前不可用。";
+  if (error.code === "INVALID_CREDENTIALS") return "账号或密码不正确，或账号目前不可用。";
   if (error.status === 429) {
     return error.retryAfterSeconds
-      ? `嘗試次數過多，請等待 ${error.retryAfterSeconds} 秒後再試。`
-      : "嘗試次數過多，請稍後再試。";
+      ? `尝试次数过多，请等待 ${error.retryAfterSeconds} 秒后再试。`
+      : "尝试次数过多，请稍后再试。";
   }
   if (error.code === "LOGIN_RESULT_UNCONFIRMED") {
-    return "登入結果暫時無法確認，請檢查服務狀態後重試。";
+    return "登录结果暂时无法确认，请检查服务状态后重试。";
   }
-  if (error.status === 503 || error.status === 0) return "管理服務暫時無法使用，請稍後重試。";
-  if (error.status === 403) return "安全檢查未通過，正在更新安全驗證。";
-  return "登入未能完成，請檢查資料後重試。";
+  if (error.status === 503 || error.status === 0) return "管理服务暂时无法使用，请稍后重试。";
+  if (error.status === 403) return "安全检查未通过，正在更新安全验证。";
+  return "登录未能完成，请检查资料后重试。";
 }
 
 async function submit() {
@@ -84,7 +84,7 @@ async function submit() {
     const failure =
       error instanceof AdminApiError
         ? error
-        : new AdminApiError(0, "NETWORK_ERROR", "登入未能完成。");
+        : new AdminApiError(0, "NETWORK_ERROR", "登录未能完成。");
     message.value = safeMessage(failure);
     requestId.value = failure.requestId ?? "";
     if (failure.status === 403) void renewCsrfAfterRejection();
@@ -95,7 +95,7 @@ async function submit() {
 
 onMounted(() => {
   if (route.query.status === "unavailable") {
-    message.value = "目前無法確認管理服務狀態，請重試；不會自動重送登入。";
+    message.value = "目前无法确认管理服务状态，请重试；不会自动重发登录。";
   }
   if (auth.state.status !== "authenticated" && !auth.state.csrfReady)
     void refreshCsrf(false, false);
@@ -108,32 +108,32 @@ onMounted(() => {
       <div class="brand-mark" aria-hidden="true">S</div>
       <p class="eyebrow">SOUTHLEAF · SECURE ADMIN</p>
       <h1>管理入口</h1>
-      <p class="brand-copy">使用工作帳戶登入。身份與權限由伺服器即時確認。</p>
+      <p class="brand-copy">使用工作账户登录。身份与权限由服务器即时确认。</p>
       <div class="brand-rule"></div>
-      <p class="brand-footnote">安全連線 · 短期工作階段 · 伺服器授權</p>
+      <p class="brand-footnote">安全连接 · 短期工作阶段 · 服务器授权</p>
     </section>
 
     <section class="auth-panel" aria-labelledby="login-title">
       <div class="panel-kicker">STAFF SIGN IN</div>
       <h2 id="login-title">歡迎回來</h2>
-      <p class="panel-copy">請輸入你的工作帳戶資料以繼續。</p>
+      <p class="panel-copy">请输入你的工作账户资料以继续。</p>
 
       <form class="login-form" @submit.prevent="submit">
         <div class="field-group">
-          <label for="account-id">帳號標識</label>
+          <label for="account-id">账号标识</label>
           <el-input
             id="account-id"
             v-model="accountId"
             name="username"
             autocomplete="username"
             maxlength="64"
-            placeholder="輸入工作帳戶"
+            placeholder="输入工作账户"
             :disabled="submitting"
             required
           />
         </div>
         <div class="field-group">
-          <label for="account-password">密碼</label>
+          <label for="account-password">密码</label>
           <el-input
             id="account-password"
             v-model="password"
@@ -141,7 +141,7 @@ onMounted(() => {
             type="password"
             autocomplete="current-password"
             maxlength="512"
-            placeholder="輸入密碼"
+            placeholder="输入密码"
             show-password
             :disabled="submitting"
             required
@@ -154,7 +154,7 @@ onMounted(() => {
         </div>
 
         <div v-if="!auth.state.csrfReady" class="security-status" role="status">
-          <span>{{ csrfLoading ? "正在準備安全驗證…" : "需要完成安全初始化才能登入。" }}</span>
+          <span>{{ csrfLoading ? "正在准备安全验证…" : "需要完成安全初始化才能登录。" }}</span>
           <el-button text :disabled="csrfLoading" @click="refreshCsrf(true)">重試初始化</el-button>
         </div>
 
@@ -165,12 +165,12 @@ onMounted(() => {
           :loading="submitting"
           :disabled="!canSubmit"
         >
-          {{ submitting ? "正在驗證…" : "安全登入" }}
+          {{ submitting ? "正在验证…" : "安全登录" }}
         </el-button>
       </form>
 
       <div class="panel-divider"><span>SESSION SECURITY</span></div>
-      <p class="privacy-note">工作階段由安全 Cookie 管理。此頁不會在瀏覽器儲存密碼或登入令牌。</p>
+      <p class="privacy-note">工作阶段由安全 Cookie 管理。此页不会在浏览器存储密码或登录令牌。</p>
     </section>
   </main>
 </template>

@@ -324,7 +324,7 @@ export class AdminContentApi {
     const data = await this.data<T>(response);
     const etag = response.headers.get("ETag");
     if (etag !== null && !ETAG.test(etag))
-      throw new AdminApiError(502, "INVALID_CONTENT_RESPONSE", "管理服務回應無效。");
+      throw new AdminApiError(502, "INVALID_CONTENT_RESPONSE", "管理服务响应无效。");
     return data;
   }
 
@@ -354,7 +354,7 @@ export class AdminContentApi {
       throw new AdminApiError(
         502,
         "INVALID_CONTENT_RESPONSE",
-        "管理服務回應無效。",
+        "管理服务响应无效。",
         envelope.requestId,
       );
     return envelope.data;
@@ -375,7 +375,7 @@ export class AdminContentApi {
       throw new AdminApiError(
         0,
         "NETWORK_ERROR",
-        "無法連接管理服務；結果未知時請以相同操作重試或查詢命令狀態。",
+        "无法连接管理服务；结果未知时请以相同操作重试或查询命令状态。",
       );
     }
     if (!response.ok) await this.error(response);
@@ -386,7 +386,7 @@ export class AdminContentApi {
     try {
       return await response.json();
     } catch {
-      throw new AdminApiError(502, "INVALID_CONTENT_RESPONSE", "管理服務回應無效。");
+      throw new AdminApiError(502, "INVALID_CONTENT_RESPONSE", "管理服务响应无效。");
     }
   }
 
@@ -402,7 +402,7 @@ export class AdminContentApi {
     const message =
       typeof envelope.message === "string"
         ? envelope.message.slice(0, 200)
-        : "管理服務暫時無法完成要求。";
+        : "管理服务暂时无法完成要求。";
     throw new ContentApiError(
       response.status,
       code,

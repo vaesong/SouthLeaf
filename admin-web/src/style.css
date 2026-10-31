@@ -1,15 +1,15 @@
 :root {
-  font-family: Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  color: #18251f;
-  background: #f4f7f4;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #2c241e;
+  background: #f3ebe3;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --leaf: #245c48;
-  --leaf-dark: #194535;
-  --ink-soft: #66736c;
-  --line: #e2e9e4;
-  --card: #fff;
+  --leaf: #4f6b56;
+  --leaf-dark: #3c332c;
+  --ink-soft: #8d796c;
+  --line: #e7dcd2;
+  --card: #fbf7f2;
 }
 
 * {
@@ -20,7 +20,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: radial-gradient(ellipse at 12% 10%, rgb(215 234 221 / 42%), transparent 38%), #f4f7f4;
+  background: radial-gradient(ellipse at 12% 0%, rgb(255 244 230 / 80%), transparent 42%), #f3ebe3;
 }
 
 button,
@@ -53,8 +53,8 @@ a {
   padding: clamp(36px, 6vw, 76px);
   color: #f6faf6;
   background:
-    radial-gradient(circle at 95% 7%, rgb(143 188 155 / 28%), transparent 33%),
-    linear-gradient(146deg, #194535 0%, #275e49 52%, #34705a 100%);
+    radial-gradient(circle at 95% 7%, rgb(232 196 168 / 28%), transparent 33%),
+    linear-gradient(160deg, #3c332c 0%, #5c4638 58%, #6e8b73 140%);
 }
 
 .auth-brand::after {
@@ -629,4 +629,175 @@ a {
   object-fit: cover;
   border-radius: 8px;
   background: #f3f4f6;
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 228px 1fr;
+  min-height: 100vh;
+}
+
+.admin-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 28px 18px 22px;
+  color: #f6efe8;
+  background: #3c332c;
+}
+
+.admin-mark {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 8px 18px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-leaf {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #efe2d4;
+  color: #4f6b56;
+  font-family: Palatino, "Songti SC", serif;
+  font-size: 20px;
+}
+
+.admin-mark strong {
+  display: block;
+}
+
+.admin-mark small,
+.admin-side-foot {
+  color: #cbbbae;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-nav a {
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #eadfd4;
+  text-decoration: none;
+}
+
+.admin-nav a[aria-current="page"] {
+  background: rgb(255 255 255 / 10%);
+  color: white;
+}
+
+.admin-side-foot {
+  margin-top: auto;
+}
+
+.admin-side-foot button {
+  margin: 8px 0;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: transparent;
+  color: #f6efe8;
+}
+
+.admin-main {
+  min-width: 0;
+}
+
+.admin-shell .topbar {
+  display: none;
+}
+
+.admin-shell .identity-shell {
+  min-height: auto;
+}
+
+.workbench {
+  padding: 28px 36px 56px;
+}
+
+.workbench-top,
+.workbench h1 {
+  font-family: Palatino, "Palatino Linotype", "Songti SC", serif;
+}
+
+.workbench-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.workbench h1 {
+  margin: 6px 0 0;
+  font-size: 40px;
+  font-weight: 500;
+}
+
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.workbench-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 18px;
+  margin-top: 26px;
+}
+
+.warm-card {
+  border-radius: 22px;
+  padding: 20px 22px;
+  background: var(--card);
+  box-shadow: 0 18px 50px rgb(62 44 32 / 8%);
+}
+
+.work-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.work-count {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #f3e4d8;
+  color: #8d5344;
+  font-family: Palatino, "Songti SC", serif;
+  font-size: 28px;
+}
+
+.work-row small,
+.warm-note p {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 860px) {
+  .admin-shell,
+  .workbench-grid {
+    grid-template-columns: 1fr;
+  }
 }

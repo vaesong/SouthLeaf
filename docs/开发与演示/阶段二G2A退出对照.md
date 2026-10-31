@@ -2,9 +2,10 @@
 
 判定口径取自 `docs/计划/P02_阶段二目标与实施计划.md` §7「G2A：基本功能开发完成」。每条只认**真实代码 + 真实数据库 + 真实浏览器/小程序链路**产出的证据；单元测试和 mock UI 不能单独让某条成立。
 
-- 总判定：**10 / 11 成立；第 7 条部分成立（缺两条显式竞争/恢复用例）**
+- 总判定：**11 / 11 成立**
 - 证据根目录：`docs/开发与演示/证据/`
-- 最近一次全量后端回归：`Test-BookingDatabaseIntegration.ps1` → 108 项（77 单元 + 31 集成）、BUILD SUCCESS
+- 最近一次 booking 模块隔离回归：`Test-BookingDatabaseIntegration.ps1` → 111 项（77 单元 + 34 集成）、BUILD SUCCESS、数据目录已删除
+- 最近一次全仓库验证：`Verify-StageTwoGate.ps1` → `stage-two-engineering-close.json` 为 PASS。同一次 `mvnw verify -Pc3-isolated-it` 跑完 public、security、booking、账号 CLI 四组 Failsafe
 - 最近一次契约校验：`python backend/scripts/check-openapi-contract.py` → `OPENAPI_CONTRACT_PASS`
 
 | # | G2A 要求 | 判定 | 关键证据 | 说明与限制 |
@@ -15,7 +16,7 @@
 | 4 | 本人权限可靠；不能枚举其他测试客户的预约、订单、联系方式，或冒用线下记录 | ✅ | `public-api` 61 项单测（非本人一律 404、不泄露存在性）；`verify-booking-miniapp-isolated.py`（真实小程序会话令牌，仅能读自己的申请） | 客户身份为微信侧指纹派生；同手机号/同微信永不自动合并（Q05） |
 | 5 | 多个待确认申请不占档；真实 MySQL 并发确认同档仅一笔成功、仅一张订单；重复申请/确认幂等 | ✅ | `BookingConcurrencyIT#twoConfirmationsForTheSameSlotProduceExactlyOneOrder`、`#twoConfirmationsWithTheSameIdempotencyKeyProduceExactlyOneOrder`；`stage-two-g2a-concurrency-it-d703-01.json` | 断言只看最终数据库事实（订单 1、快照 1、占用 1、占用者为胜者），不看 HTTP 成功码 |
 | 6 | 确认故障全事务回滚；套餐变更不覆盖订单快照；改期失败保留原档 | ✅ | `BookingDatabaseIT`（回滚后占档/审计/outbox 均无残留、快照不可变）、`BookingRulesTest`；`s6close05`（409 `SLOT_UNAVAILABLE` 后仍为原时段 + 修訂 2） | 改期被拒时命令账本不落行；只承诺"失败不留痕"，不承诺 exactly-once |
-| 7 | 封档/确认、取消/改期、过期/确认竞争及跨日/时区边界、任务重复和重启恢复有测试 | 🟡 | 新增 `#cancellingWhileReschedulingLeavesExactlyOneTerminalAnswer`、`#aRequestThatExpiredWhileItWaitedNeverProducesAnOrder`；`OutboxDatabaseIT`（租约唯一、`aMessageOfADeadWorkerIsRecoveredAfterTheLeaseExpires`、重试上限、死信）、`OutboxDispatcherTest`、`BookingRulesTest`（`SLOT_CLOSED` 拒绝、跨日/时区边界） | 取消/改期、过期/确认、任务重复已补齐；**仍缺两条**：①「封档瞬间确认」的显式竞争用例（现由条件更新 + 唯一占用约束兜底）；②outbox 的 worker 死亡后由租约到期回收已由 `aMessageOfADeadWorkerIsRecoveredAfterTheLeaseExpires` 覆盖，但没有逐字意义上的「进程被 kill 再重启」用例（语义等价、形式不同） |
+| 7 | 封档/确认、取消/改期、过期/确认竞争及跨日/时区边界、任务重复和重启恢复有测试 | ✅ | `BookingConcurrencyIT#aConfirmationThatWaitsOnTheSlotRowNeverBooksIt`、`#closingASlotAfterConfirmationKeepsTheOrderIntact`、`#cancellingWhileReschedulingLeavesExactlyOneTerminalAnswer`、`#aRequestThatExpiredWhileItWaitedNeverProducesAnOrder`；`OutboxProcessRecoveryIT#aProcessThatExitsWhileHoldingTheLeaseIsContinuedByTheNextProcess` | 封档与确认用档位行锁，确认在锁等待后失败且不成单。进程续跑是两个独立 JVM：第一个领取后直接退出，第二个在租约时点之后投递成功，数据库为 `SENT`、尝试次数 2。进程退出留下的租约行与进程被杀死留下的是同一份持久化事实 |
 | 8 | 线上线下共用同一申请与冲突规则；拒绝/取消/失效、通知失败和人工处理可审计 | ✅ | 小程序写入与后台确认写同一批 `booking_*` 表（`V6`/`V11`）；`s5reject04`–`s5reject06`、`s6close05`（通知失败可见 + 人工恢复） | 来源字段区分 `ONLINE`/`OFFLINE`，规则同一份 `BookingRules` |
 | 9 | 小程序完整表达申请待确认、预约确认和订单约定；未开放支付时不显示假支付入口或已支付结果 | ✅ | `stage-two-booking-miniapp-isolated-l5-mm14.json`（PASS，9 checks，runId `7023f512`）；`frontend` 65 项测试 | 真实微信开发者工具自动化驱动真实小程序：页面加载 → 选档 → 提交 → 待确认 → 运营确认 → 已确认约定（家庭写真体验 / 2026-10-27 23:09-00:09 / JP¥38,000 /「本阶段不收款」），页面数据与渲染文本均无支付字样。**本轮修出真实缺陷**：客户端只接受 `OK:200`，而接口按契约返回 201，导致提交必然失败 |
 | 10 | 阶段一公开链回归通过；后台构建、API 契约、数据库迁移、端到端和安全负向测试可复现 | ✅ | `stage-two-s2b-isolated-l5-57.json`（阶段一公开链回归）、`check-openapi-contract.py`（31+15 路径逐条对齐控制器）、`stage-two-g2a-openapi-contract-01.json`、`Test-BookingDatabaseIntegration.ps1`、admin-web 36 项、admin-runtime 90 项 | 契约版本：admin `1.3.0-s2b-content`（31 路径 / 34 操作）、public `0.4.0-booking`（15 路径 / 16 操作） |

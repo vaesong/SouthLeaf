@@ -24,7 +24,8 @@ param(
   [int]$Port = 3307,
   [string]$MySqlHome = '',
   [string]$DataRoot = '',
-  [string]$Schema = 'southleaf_booking_it'
+  [string]$Schema = 'southleaf_booking_it',
+  [switch]$StopOwned
 )
 
 $ErrorActionPreference = 'Stop'
@@ -85,6 +86,53 @@ function Test-InstanceRunning([int]$OnPort) {
 
 # Never attach to a listener that already exists: it may be a user's unrelated database.
 # This launcher only operates on the process it starts itself, and must fail closed otherwise.
+if ($StopOwned) {
+  $ownerFile = Join-Path $DataRoot 'booking-it-owner.json'
+  if (-not (Test-Path -LiteralPath $ownerFile)) {
+    throw 'Refusing to remove the isolated datadir without its ownership marker.'
+  }
+  $owner = Get-Content -LiteralPath $ownerFile -Raw | ConvertFrom-Json
+  $expectedRoot = [System.IO.Path]::GetFullPath($DataRoot)
+  if ($owner.schema -ne $Schema -or [int]$owner.port -ne $Port -or
+      -not [string]::Equals([string]$owner.dataRoot, $expectedRoot, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Refusing cleanup: booking ownership marker does not match this schema, port and data directory.'
+  }
+  $pidFile = Join-Path $DataRoot 'mysqld.pid'
+  if (Test-Path -LiteralPath $pidFile) {
+    $instancePid = [int](Get-Content -LiteralPath $pidFile -Raw)
+    $ownedProcess = Get-CimInstance Win32_Process -Filter "ProcessId = $instancePid"
+    $expectedDataDir = (Join-Path $DataRoot 'data').TrimEnd('\')
+    $commandLine = if ($ownedProcess) { $ownedProcess.CommandLine.Replace('"', '') } else { '' }
+    $ownsInstance =
+      $ownedProcess -and
+      $ownedProcess.ExecutablePath -match '\\mysqld\.exe$' -and
+      $commandLine.IndexOf("--datadir=$expectedDataDir", [StringComparison]::OrdinalIgnoreCase) -ge 0 -and
+      [int]$owner.processId -eq $instancePid
+    if ($ownsInstance) {
+      & $mysqladmin --protocol=tcp --host=127.0.0.1 --port=$Port -u root shutdown 2>&1 | Out-Null
+      for ($attempt = 0; $attempt -lt 30 -and (Get-Process -Id $instancePid -ErrorAction SilentlyContinue); $attempt++) {
+        Start-Sleep -Seconds 1
+      }
+      $remaining = Get-Process -Id $instancePid -ErrorAction SilentlyContinue
+      if ($remaining) {
+        $fresh = Get-CimInstance Win32_Process -Filter "ProcessId = $instancePid"
+        $freshCommandLine = if ($fresh) { $fresh.CommandLine.Replace('"', '') } else { '' }
+        $stillOwned = $fresh -and $fresh.ExecutablePath -match '\\mysqld\.exe$' -and
+          $freshCommandLine.IndexOf("--datadir=$expectedDataDir", [StringComparison]::OrdinalIgnoreCase) -ge 0
+        if (-not $stillOwned) { throw 'Refusing to stop a PID that no longer matches the isolated instance.' }
+        Stop-Process -Id $instancePid -Force -ErrorAction Stop
+      }
+    } elseif ($ownedProcess) {
+      throw 'Refusing to stop the PID: it is not the isolated booking database process.'
+    }
+  }
+  $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+  if ($listener) { throw "Refusing to remove the datadir while port $Port still has a listener." }
+  Remove-Item -LiteralPath $DataRoot -Recurse -Force
+  Write-Output 'BOOKING_DB_STOPPED_AND_OWNED_DATADIR_REMOVED'
+  return
+}
+
 if (Test-InstanceRunning $Port) {
   throw "Port $Port is already in use. Refusing to touch an existing database listener. Choose another port with -Port."
 }

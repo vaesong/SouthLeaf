@@ -54,11 +54,11 @@ function report(error: unknown) {
   const failure = error instanceof BookingApiError ? error : null;
   requestId.value = failure?.requestId ?? "";
   if (failure?.outcomeUnknown) {
-    notice.value = "操作結果尚未確認。請先重新載入預約核對；重試將沿用同一冪等命令。";
+    notice.value = "操作结果尚未确认。请先重新加载预约核对；重试将沿用同一幂等命令。";
   } else if (failure?.status === 409) {
-    notice.value = "預約版本或時段已變更。請重新載入資料，核對後再操作。";
+    notice.value = "预约版本或时段已变更。请重新加载资料，核对后再操作。";
   } else {
-    notice.value = failure?.message ?? "暫時無法完成預約操作，請稍後重試。";
+    notice.value = failure?.message ?? "暂时无法完成预约操作，请稍后重试。";
   }
 }
 
@@ -78,7 +78,7 @@ async function refreshPending(preserveNotice = false) {
 async function lookup(id = lookupId.value, preserveNotice = false) {
   const normalized = id.trim();
   if (!normalized) {
-    notice.value = "請輸入預約 ID。";
+    notice.value = "请输入预约 ID。";
     return;
   }
   loading.value = true;
@@ -119,7 +119,7 @@ async function loadSlots() {
     slots.value = await api.openSlots(from, to);
     slots.value = slots.value.filter((slot) => slot.id !== detail.value?.reservation.slotId);
     selectedSlot.value = slots.value[0]?.id ?? "";
-    if (slots.value.length === 0) notice.value = "目前查詢範圍內沒有可改期時段。";
+    if (slots.value.length === 0) notice.value = "目前查询范围内没有可改期时段。";
   } catch (error) {
     report(error);
   } finally {
@@ -136,7 +136,7 @@ async function loadConfirmSlots() {
   try {
     confirmSlots.value = await api.openSlots(from, to);
     confirmSlot.value = confirmSlots.value[0]?.id ?? "";
-    if (confirmSlots.value.length === 0) notice.value = "目前查詢範圍內沒有可佔用時段。";
+    if (confirmSlots.value.length === 0) notice.value = "目前查询范围内没有可占用时段。";
   } catch (error) {
     report(error);
   } finally {
@@ -150,18 +150,18 @@ async function confirmAndCreateOrder() {
   if (!slot) return;
   const reservation = detail.value.reservation;
   const reviewed = [
-    "請核對後確認（此動作會佔用時段）：",
+    "请核对后确认（此动作会占用时段）：",
     "",
-    `預約 ${reservation.id}`,
-    `狀態 ${reservation.status}`,
-    `目前修訂 ${reservation.version}`,
-    `來源 ${reservation.source}`,
-    `失效時間 ${reservation.expiresAt}`,
+    `预约 ${reservation.id}`,
+    `状态 ${reservation.status}`,
+    `目前修订 ${reservation.version}`,
+    `来源 ${reservation.source}`,
+    `失效时间 ${reservation.expiresAt}`,
     "",
-    `將要佔用的時段：${slot.startAt} — ${slot.endAt}`,
-    `業務時區 ${slot.businessZone} ${slot.displayOffset}`,
+    `将要占用的时段：${slot.startAt} — ${slot.endAt}`,
+    `业务时区 ${slot.businessZone} ${slot.displayOffset}`,
     "",
-    "確認後於同一交易內佔用時段、建立唯一訂單與不可變快照；不產生支付或定金。",
+    "确认后于同一交易内占用时段、建立唯一订单与不可变快照；不产生支付或定金。",
   ].join("\n");
   if (!window.confirm(reviewed)) return;
   await runAction("confirm", confirmSlot.value);
@@ -171,15 +171,15 @@ async function rejectReservation() {
   if (!detail.value || !canReject.value) return;
   const reservation = detail.value.reservation;
   const reviewed = [
-    "請核對後拒絕此申請（此動作不佔用時段、不建立訂單）：",
+    "请核对后拒绝此申请（此动作不占用时段、不建立订单）：",
     "",
-    `預約 ${reservation.id}`,
-    `狀態 ${reservation.status}`,
-    `目前修訂 ${reservation.version}`,
-    `來源 ${reservation.source}`,
-    `失效時間 ${reservation.expiresAt}`,
+    `预约 ${reservation.id}`,
+    `状态 ${reservation.status}`,
+    `目前修订 ${reservation.version}`,
+    `来源 ${reservation.source}`,
+    `失效时间 ${reservation.expiresAt}`,
     "",
-    "拒絕只關閉申請並留下審計與通知；不會佔用檔期，也不會產生訂單與快照。",
+    "拒绝只关闭申请并留下审计与通知；不会占用档期，也不会产生订单与快照。",
   ].join("\n");
   if (!window.confirm(reviewed)) return;
   await runAction("reject");
@@ -207,14 +207,14 @@ async function runAction(kind: "cancel" | "reschedule" | "confirm" | "reject", s
     }
     clearActionKey(keyName);
     const successNotice = result.replayed
-      ? "已核對到同一筆操作記錄；正在重新讀取預約。"
+      ? "已核对到同一笔操作记录；正在重新读取预约。"
       : kind === "cancel"
-        ? "取消已記錄；佔用時段已依交易釋放。沒有退款或支付處理。"
+        ? "取消已记录；占用时段已依交易释放。没有退款或支付处理。"
         : kind === "reject"
-          ? "拒絕已記錄；申請已關閉，未佔用任何時段、未建立訂單。"
+          ? "拒绝已记录；申请已关闭，未占用任何时段、未建立订单。"
           : kind === "reschedule"
-            ? "改期已記錄；請核對新的時段及通知待辦。"
-            : "確認已記錄；已建立唯一訂單與不可變快照，請核對訂單區塊。";
+            ? "改期已记录；请核对新的时段及通知待办。"
+            : "确认已记录；已建立唯一订单与不可变快照，请核对订单区块。";
     await lookup(target.id, true);
     await refreshPending(true);
     notice.value = successNotice;
@@ -234,10 +234,10 @@ async function runAction(kind: "cancel" | "reschedule" | "confirm" | "reject", s
         clearActionKey(keyName);
         notice.value =
           kind === "cancel"
-            ? "重新讀取後已確認預約處於取消狀態，佔用時段已釋放。"
+            ? "重新读取后已确认预约处于取消状态，占用时段已释放。"
             : kind === "reject"
-              ? "重新讀取後已確認申請已被拒絕。"
-              : "重新讀取後已確認預約目前位於所選時段。";
+              ? "重新读取后已确认申请已被拒绝。"
+              : "重新读取后已确认预约目前位于所选时段。";
         requestId.value = "";
       } else {
         report(error);
@@ -261,7 +261,7 @@ async function cancel() {
   if (!detail.value || !canCancel.value) return;
   if (
     !window.confirm(
-      "確認取消此預約？取消會釋放已佔用時段並新增訂單修訂；本地流程不處理退款或支付。",
+      "确认取消此预约？取消会释放已占用时段并新增订单修订；本地流程不处理退款或支付。",
     )
   )
     return;
@@ -272,7 +272,7 @@ async function reschedule() {
   if (!detail.value || !canReschedule.value || !selectedSlot.value) return;
   const slot = slots.value.find((candidate) => candidate.id === selectedSlot.value);
   if (!slot) return;
-  if (!window.confirm(`確認改期至 ${slot.startAt}（${slot.businessZone}）？`)) return;
+  if (!window.confirm(`确认改期至 ${slot.startAt}（${slot.businessZone}）？`)) return;
   await runAction("reschedule", selectedSlot.value);
 }
 
@@ -300,13 +300,13 @@ onMounted(() => void refreshPending());
 <template>
   <main class="identity-shell booking-shell">
     <header class="topbar">
-      <RouterLink class="wordmark" to="/" aria-label="SouthLeaf 管理首頁">
+      <RouterLink class="wordmark" to="/" aria-label="SouthLeaf 管理首页">
         <span class="wordmark-mark">S</span>
         <span>SouthLeaf <small>ADMIN</small></span>
       </RouterLink>
       <div class="topbar-status">
-        <span class="environment-badge">S6 · 本地預約工作台</span>
-        <span class="secure-label"><span class="secure-dot"></span>安全工作階段</span>
+        <span class="environment-badge">S6 · 本地预约工作台</span>
+        <span class="secure-label"><span class="secure-dot"></span>安全工作阶段</span>
       </div>
     </header>
 
@@ -314,9 +314,9 @@ onMounted(() => void refreshPending());
       <div class="booking-heading">
         <div>
           <p class="eyebrow">RESERVATION OPERATIONS</p>
-          <h1 id="booking-title">預約與訂單快照</h1>
+          <h1 id="booking-title">预约与订单快照</h1>
           <p class="panel-copy">
-            只顯示預約與不可變更的訂單快照；不顯示客戶標識、姓名或聯絡資料。取消與改期均保留審計、修訂及通知事實。
+            只显示预约与不可变更的订单快照；不显示客户标识、姓名或联络资料。取消与改期均保留审计、修订及通知事实。
           </p>
         </div>
         <button
@@ -325,13 +325,13 @@ onMounted(() => void refreshPending());
           :disabled="loading"
           @click="refreshPending()"
         >
-          重新整理待確認清單
+          重新整理待确认清单
         </button>
       </div>
 
       <div class="local-banner" role="status">
         <strong>本地 demo-only</strong>
-        <span>不會呼叫真實通知 provider；外送 exactly-once 不在保證範圍內。</span>
+        <span>不会调用真实通知 provider；外送 exactly-once 不在保证范围内。</span>
       </div>
 
       <div v-if="notice" class="booking-notice" role="alert" aria-live="assertive">
@@ -340,16 +340,16 @@ onMounted(() => void refreshPending());
       </div>
 
       <div v-if="!canRead" class="empty-state" role="status">
-        目前會話缺少預約查閱能力；伺服器仍會逐請求檢查權限。
+        当前会话缺少预约查阅能力；服务器仍会逐请求检查权限。
       </div>
       <template v-else>
         <section class="booking-section" aria-labelledby="lookup-title">
           <div class="section-title-row">
-            <h2 id="lookup-title">依預約 ID 查閱</h2>
-            <span>不以客戶資料搜尋</span>
+            <h2 id="lookup-title">依预约 ID 查阅</h2>
+            <span>不以客户资料搜寻</span>
           </div>
           <form class="lookup-form" @submit.prevent="lookup()">
-            <label for="reservation-id">預約 ID</label>
+            <label for="reservation-id">预约 ID</label>
             <input
               id="reservation-id"
               v-model="lookupId"
@@ -359,27 +359,27 @@ onMounted(() => void refreshPending());
               placeholder="例如：xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
             />
             <button class="primary-button" type="submit" :disabled="loading || !lookupId.trim()">
-              {{ loading ? "讀取中…" : "查閱預約" }}
+              {{ loading ? "读取中…" : "查阅预约" }}
             </button>
           </form>
         </section>
 
         <section class="booking-section" aria-labelledby="pending-title">
           <div class="section-title-row">
-            <h2 id="pending-title">待確認預約</h2>
-            <span>{{ pending.length }} 筆（最多 100 筆）</span>
+            <h2 id="pending-title">待确认预约</h2>
+            <span>{{ pending.length }} 笔（最多 100 笔）</span>
           </div>
           <div v-if="pending.length === 0" class="empty-state" role="status">
-            目前沒有待確認預約。已確認預約可使用上方 ID 查閱。
+            目前没有待确认预约。已确认预约可使用上方 ID 查阅。
           </div>
           <div v-else class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th scope="col">預約 ID</th>
-                  <th scope="col">狀態</th>
-                  <th scope="col">建立時間</th>
-                  <th scope="col">到期時間</th>
+                  <th scope="col">预约 ID</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">建立时间</th>
+                  <th scope="col">到期时间</th>
                   <th scope="col">版本</th>
                 </tr>
               </thead>
@@ -414,40 +414,40 @@ onMounted(() => void refreshPending());
           aria-labelledby="detail-title"
         >
           <div class="section-title-row">
-            <h2 id="detail-title">預約詳情</h2>
-            <span>修訂 {{ detail.reservation.version }}</span>
+            <h2 id="detail-title">预约详情</h2>
+            <span>修订 {{ detail.reservation.version }}</span>
           </div>
           <dl class="booking-details">
             <div>
-              <dt>預約 ID</dt>
+              <dt>预约 ID</dt>
               <dd>
                 <code>{{ detail.reservation.id }}</code>
               </dd>
             </div>
             <div>
-              <dt>狀態</dt>
+              <dt>状态</dt>
               <dd>{{ detail.reservation.status }}</dd>
             </div>
             <div>
-              <dt>來源</dt>
+              <dt>来源</dt>
               <dd>{{ detail.reservation.source }}</dd>
             </div>
             <div>
-              <dt>目前時段</dt>
-              <dd>{{ detail.reservation.slotId ?? "尚未佔用" }}</dd>
+              <dt>目前时段</dt>
+              <dd>{{ detail.reservation.slotId ?? "尚未占用" }}</dd>
             </div>
             <div>
-              <dt>建立時間</dt>
+              <dt>建立时间</dt>
               <dd>{{ detail.reservation.createdAt }}</dd>
             </div>
             <div>
-              <dt>訂單 ID</dt>
-              <dd>{{ detail.orderId ?? "尚無訂單" }}</dd>
+              <dt>订单 ID</dt>
+              <dd>{{ detail.orderId ?? "尚无订单" }}</dd>
             </div>
           </dl>
 
           <div v-if="detail.assignments.length" class="history-block">
-            <h3>時段指派歷史</h3>
+            <h3>时段指派历史</h3>
             <ol>
               <li
                 v-for="assignment in detail.assignments"
@@ -455,7 +455,7 @@ onMounted(() => void refreshPending());
               >
                 <code>{{ assignment.previousSlotId ?? "初次指派" }} → {{ assignment.slotId }}</code>
                 <span
-                  >{{ assignment.assignedAt }} · {{ assignment.reasonCode }} · 修訂
+                  >{{ assignment.assignedAt }} · {{ assignment.reasonCode }} · 修订
                   {{ assignment.revision }}</span
                 >
               </li>
@@ -473,9 +473,9 @@ onMounted(() => void refreshPending());
                 :disabled="busy || loadingConfirmSlots"
                 @click="loadConfirmSlots"
               >
-                {{ loadingConfirmSlots ? "查詢時段中…" : "查詢可佔用時段" }}
+                {{ loadingConfirmSlots ? "查询时段中…" : "查询可占用时段" }}
               </button>
-              <label v-if="confirmSlots.length" for="confirm-slot">要佔用的時段</label>
+              <label v-if="confirmSlots.length" for="confirm-slot">要占用的时段</label>
               <select
                 v-if="confirmSlots.length"
                 id="confirm-slot"
@@ -494,10 +494,10 @@ onMounted(() => void refreshPending());
                 :disabled="busy || !confirmSlot"
                 @click="confirmAndCreateOrder"
               >
-                {{ busy ? "處理中…" : "核對並確認成單" }}
+                {{ busy ? "处理中…" : "核对并确认成单" }}
               </button>
             </div>
-            <p v-else class="muted">此會話沒有確認成單能力。</p>
+            <p v-else class="muted">此会话没有确认成单能力。</p>
             <button
               v-if="canReject"
               class="danger-button"
@@ -505,10 +505,10 @@ onMounted(() => void refreshPending());
               :disabled="busy"
               @click="rejectReservation"
             >
-              {{ busy ? "處理中…" : "拒絕申請" }}
+              {{ busy ? "处理中…" : "拒绝申请" }}
             </button>
             <p class="muted">
-              待確認申請不佔檔期。確認前請核對修訂與所選時段；確認於同一交易內佔用時段、建立唯一訂單與不可變快照，且不產生支付或定金。
+              待确认申请不占档期。确认前请核对修订与所选时段；确认于同一交易内占用时段、建立唯一订单与不可变快照，且不产生支付或定金。
             </p>
           </div>
 
@@ -520,7 +520,7 @@ onMounted(() => void refreshPending());
               :disabled="busy"
               @click="cancel"
             >
-              {{ busy ? "處理中…" : "取消預約" }}
+              {{ busy ? "处理中…" : "取消预约" }}
             </button>
             <div v-if="canReschedule" class="reschedule-control">
               <button
@@ -529,9 +529,9 @@ onMounted(() => void refreshPending());
                 :disabled="busy || loadingSlots"
                 @click="loadSlots"
               >
-                {{ loadingSlots ? "查詢時段中…" : "查詢可用改期時段" }}
+                {{ loadingSlots ? "查询时段中…" : "查询可用改期时段" }}
               </button>
-              <label v-if="slots.length" for="new-slot">新時段</label>
+              <label v-if="slots.length" for="new-slot">新时段</label>
               <select v-if="slots.length" id="new-slot" v-model="selectedSlot" :disabled="busy">
                 <option v-for="slot in slots" :key="slot.id" :value="slot.id">
                   {{ slot.startAt }} — {{ slot.endAt }} · {{ slot.businessZone }}
@@ -545,11 +545,11 @@ onMounted(() => void refreshPending());
                 :disabled="busy || !selectedSlot"
                 @click="reschedule"
               >
-                {{ busy ? "處理中…" : "確認改期" }}
+                {{ busy ? "处理中…" : "确认改期" }}
               </button>
             </div>
             <span v-if="!canCancel && !canReschedule" class="muted"
-              >此會話沒有取消或改期能力。</span
+              >此会话没有取消或改期能力。</span
             >
           </div>
         </section>
@@ -560,12 +560,12 @@ onMounted(() => void refreshPending());
           aria-labelledby="order-title"
         >
           <div class="section-title-row">
-            <h2 id="order-title">訂單快照與修訂</h2>
-            <span>{{ order.lifecycle }} · 修訂 {{ order.currentRevision }}</span>
+            <h2 id="order-title">订单快照与修订</h2>
+            <span>{{ order.lifecycle }} · 修订 {{ order.currentRevision }}</span>
           </div>
           <dl class="booking-details">
             <div>
-              <dt>訂單 ID</dt>
+              <dt>订单 ID</dt>
               <dd>
                 <code>{{ order.id }}</code>
               </dd>
@@ -575,28 +575,28 @@ onMounted(() => void refreshPending());
               <dd>{{ order.snapshot.packageDisplayName }}</dd>
             </div>
             <div>
-              <dt>價格快照</dt>
+              <dt>价格快照</dt>
               <dd>
-                {{ order.snapshot.amountMinorUnits }} {{ order.snapshot.currencyCode }} 最小貨幣單位
+                {{ order.snapshot.amountMinorUnits }} {{ order.snapshot.currencyCode }} 最小货币单位
                 · {{ order.snapshot.priceVersion }}
               </dd>
             </div>
             <div>
-              <dt>原始時段</dt>
+              <dt>原始时段</dt>
               <dd>{{ order.snapshot.startAt }} — {{ order.snapshot.endAt }}</dd>
             </div>
             <div>
-              <dt>業務時區</dt>
+              <dt>业务时区</dt>
               <dd>{{ order.snapshot.businessZone }} {{ order.snapshot.displayOffset }}</dd>
             </div>
             <div>
-              <dt>快照建立時間</dt>
+              <dt>快照建立时间</dt>
               <dd>{{ order.snapshot.capturedAt }}</dd>
             </div>
           </dl>
           <ol v-if="order.revisions.length" class="revision-list">
             <li v-for="revision in order.revisions" :key="revision.revision">
-              <strong>修訂 {{ revision.revision }}</strong>
+              <strong>修订 {{ revision.revision }}</strong>
               <code>{{ revision.changedFields }}</code>
               <span>{{ revision.reasonCode }} · {{ revision.createdAt }}</span>
             </li>
@@ -605,9 +605,9 @@ onMounted(() => void refreshPending());
       </template>
 
       <p class="booking-footnote">
-        改期只在新時段可用且版本匹配時提交；取消會釋放佔檔並追加訂單修訂。失聯後先查閱同一預約再重試同一命令。此工具不建立／確認新預約，也不處理退款、支付或生產通知。
+        改期只在新时段可用且版本匹配时提交；取消会释放占档并追加订单修订。失联后先查阅同一预约再重试同一命令。此工具不建立／确认新预约，也不处理退款、支付或生产通知。
       </p>
-      <RouterLink class="back-link" to="/">返回工作台</RouterLink>
+      <RouterLink class="back-link" to="/">返回首页</RouterLink>
     </section>
   </main>
 </template>

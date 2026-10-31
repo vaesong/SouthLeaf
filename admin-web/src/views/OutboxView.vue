@@ -104,7 +104,7 @@ onMounted(() => void load());
       </RouterLink>
       <div class="topbar-status">
         <span class="environment-badge">S6 · 本地补偿工作台</span>
-        <span class="secure-label"><span class="secure-dot"></span>安全工作階段</span>
+        <span class="secure-label"><span class="secure-dot"></span>安全工作阶段</span>
       </div>
     </header>
 

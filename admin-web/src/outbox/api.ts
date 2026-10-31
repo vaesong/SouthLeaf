@@ -78,7 +78,7 @@ export class AdminOutboxApi {
       throw new OutboxApiError(
         502,
         "INVALID_OUTBOX_RESPONSE",
-        "通知待办回應無效。",
+        "通知待办响应无效。",
         envelope.requestId,
       );
     }
@@ -126,7 +126,7 @@ export class AdminOutboxApi {
           throw new OutboxApiError(
             502,
             "INVALID_OUTBOX_RESPONSE",
-            "通知待办回應無效。",
+            "通知待办响应无效。",
             envelope.requestId,
           );
         return envelope.data;
@@ -177,7 +177,7 @@ export class AdminOutboxApi {
       return response;
     } catch (error) {
       if (error instanceof OutboxApiError) throw error;
-      throw new OutboxApiError(0, "NETWORK_ERROR", "無法連接管理服務，請檢查連線後重試。");
+      throw new OutboxApiError(0, "NETWORK_ERROR", "无法连接管理服务，请检查连接后重试。");
     }
   }
 
@@ -186,7 +186,7 @@ export class AdminOutboxApi {
     try {
       return (await response.json()) as Envelope<T>;
     } catch {
-      throw new OutboxApiError(502, "INVALID_OUTBOX_RESPONSE", "管理服務回應無效。");
+      throw new OutboxApiError(502, "INVALID_OUTBOX_RESPONSE", "管理服务响应无效。");
     }
   }
 

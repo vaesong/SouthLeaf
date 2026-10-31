@@ -75,13 +75,13 @@ try {
   await page.waitForFunction(() => location.pathname === "/", null, { timeout: 20000 });
   console.log("S6_BROWSER_STAGE:authenticated");
   await page.goto(`${baseUrl}/bookings`, { waitUntil: "domcontentloaded", timeout: 20000 });
-  await page.getByRole("heading", { name: "預約與訂單快照" }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: "预约与订单快照" }).waitFor({ timeout: 15000 });
   console.log("S6_BROWSER_STAGE:bookings-page");
 
   async function lookup(reservationId) {
     await page.locator("#reservation-id").fill(reservationId);
-    await page.getByRole("button", { name: "查閱預約" }).click();
-    await page.getByRole("heading", { name: "預約詳情" }).waitFor({ timeout: 15000 });
+    await page.getByRole("button", { name: "查阅预约" }).click();
+    await page.getByRole("heading", { name: "预约详情" }).waitFor({ timeout: 15000 });
     await page.locator(".detail-section").getByText(reservationId, { exact: true }).waitFor();
   }
 
@@ -91,7 +91,7 @@ try {
   assert.match(await page.locator(".order-section").innerText(), /S6 Synthetic Test Package/);
   assert.doesNotMatch(await page.locator(".booking-card").innerText(), /S6 Synthetic Customer/);
 
-  await page.getByRole("button", { name: "查詢可用改期時段" }).click();
+  await page.getByRole("button", { name: "查询可用改期时段" }).click();
   await page.locator("#new-slot").waitFor({ timeout: 10000 });
   const slotIds = await page
     .locator("#new-slot option")
@@ -103,18 +103,18 @@ try {
   await page.locator("#new-slot").selectOption(targetSlotId);
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => {
-      assert.match(dialog.message(), /確認改期/);
+      assert.match(dialog.message(), /确认改期/);
       await dialog.accept();
     }),
-    page.getByRole("button", { name: "確認改期" }).click(),
+    page.getByRole("button", { name: "确认改期" }).click(),
   ]);
   await page
     .getByRole("alert")
-    .getByText("改期已記錄", { exact: false })
+    .getByText("改期已记录", { exact: false })
     .waitFor({ timeout: 15000 });
   console.log("S6_BROWSER_STAGE:rescheduled");
   assert.match(await page.locator(".detail-section").innerText(), new RegExp(targetSlotId));
-  assert.match(await page.locator(".revision-list").innerText(), /修訂 2/);
+  assert.match(await page.locator(".revision-list").innerText(), /修订 2/);
 
   // A refused reschedule must keep the original assignment: the target slot is already held by
   // another confirmed reservation, so the runtime answers 409 and the detail stays unchanged.
@@ -154,8 +154,8 @@ try {
   console.log("S6_BROWSER_STAGE:reschedule-refused");
   await lookup(rescheduleId);
   assert.match(await page.locator(".detail-section").innerText(), new RegExp(targetSlotId));
-  assert.match(await page.locator(".revision-list").innerText(), /修訂 2/);
-  assert.doesNotMatch(await page.locator(".revision-list").innerText(), /修訂 3/);
+  assert.match(await page.locator(".revision-list").innerText(), /修订 2/);
+  assert.doesNotMatch(await page.locator(".revision-list").innerText(), /修订 3/);
   console.log("S6_BROWSER_REFUSED_RESCHEDULE:PASS");
 
   await lookup(cancelId);
@@ -163,14 +163,14 @@ try {
   assert.match(await page.locator(".detail-section").innerText(), /CONFIRMED/);
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => {
-      assert.match(dialog.message(), /確認取消此預約/);
+      assert.match(dialog.message(), /确认取消此预约/);
       await dialog.accept();
     }),
-    page.getByRole("button", { name: "取消預約" }).click(),
+    page.getByRole("button", { name: "取消预约" }).click(),
   ]);
   await page
     .getByRole("alert")
-    .getByText("取消已記錄", { exact: false })
+    .getByText("取消已记录", { exact: false })
     .waitFor({ timeout: 15000 });
   console.log("S6_BROWSER_STAGE:cancelled");
   assert.match(await page.locator(".detail-section").innerText(), /CANCELLED/);
@@ -185,19 +185,19 @@ try {
       : await page.locator(".order-section").innerText();
   assert.doesNotMatch(pendingOrderText, /S6 Synthetic Test Package/);
 
-  await page.getByRole("button", { name: "查詢可佔用時段" }).click();
+  await page.getByRole("button", { name: "查询可占用时段" }).click();
   await page.locator("#confirm-slot").waitFor({ timeout: 15000 });
   await page.locator("#confirm-slot").selectOption(confirmSlotId);
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => {
-      assert.match(dialog.message(), /請核對後確認/);
+      assert.match(dialog.message(), /请核对后确认/);
       await dialog.accept();
     }),
-    page.getByRole("button", { name: "核對並確認成單" }).click(),
+    page.getByRole("button", { name: "核对并确认成单" }).click(),
   ]);
   await page
     .getByRole("alert")
-    .getByText("確認已記錄", { exact: false })
+    .getByText("确认已记录", { exact: false })
     .waitFor({ timeout: 15000 });
   console.log("S6_BROWSER_STAGE:confirmed");
   assert.match(await page.locator(".detail-section").innerText(), /CONFIRMED/);
@@ -209,10 +209,10 @@ try {
   assert.match(await page.locator(".detail-section").innerText(), /PENDING_CONFIRMATION/);
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => {
-      assert.match(dialog.message(), /請核對後拒絕/);
+      assert.match(dialog.message(), /请核对后拒绝/);
       await dialog.accept();
     }),
-    page.getByRole("button", { name: "拒絕申請" }).click(),
+    page.getByRole("button", { name: "拒绝申请" }).click(),
   ]);
   await page.getByRole("alert").first().waitFor({ timeout: 15000 });
   console.log(
@@ -221,7 +221,7 @@ try {
   );
   await page
     .getByRole("alert")
-    .getByText("拒絕已記錄", { exact: false })
+    .getByText("拒绝已记录", { exact: false })
     .waitFor({ timeout: 15000 });
   console.log("S6_BROWSER_STAGE:rejected");
   assert.match(await page.locator(".detail-section").innerText(), /REJECTED/);

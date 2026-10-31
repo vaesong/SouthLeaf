@@ -64,8 +64,8 @@ async function main() {
     await page.getByRole("heading", { name: "管理入口" }).waitFor({ timeout: 15000 });
     await page.locator('input[name="username"]').fill(accountId);
     await page.locator('input[name="password"]').fill(password);
-    await page.getByRole("button", { name: "安全登入" }).click();
-    await page.getByRole("heading", { name: "已安全登入" }).waitFor({ timeout: 15000 });
+    await page.getByRole("button", { name: "安全登录" }).click();
+    await page.getByRole("heading", { name: "今天先看这些。" }).waitFor({ timeout: 15000 });
     check("ui-login", true);
 
     currentCheck = "works-link";
@@ -127,7 +127,7 @@ async function main() {
     currentCheck = "publish";
     await page.getByTestId("publish").click();
     await page.waitForFunction(
-        () => document.querySelector('[data-testid="content-notice"]')?.textContent?.includes("已發布"),
+        () => document.querySelector('[data-testid="content-notice"]')?.textContent?.includes("已发布"),
         null,
         { timeout: 20000 },
     );

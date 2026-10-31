@@ -17,6 +17,24 @@ if(-not [Guid]::TryParse($env:SOUTHLEAF_SECURITY_IT_UUID,[ref]$uuid)){throw 'Inv
 if($env:SOUTHLEAF_SECURITY_IT_EXPECTED_USER -cne ($env:SOUTHLEAF_SECURITY_IT_USERNAME+'@localhost')){throw 'Isolated management identity rejected'}
 if(-not (Test-Path -LiteralPath $env:SOUTHLEAF_SECURITY_IT_TRUSTSTORE -PathType Leaf)){throw 'Isolated test truststore missing'}
 if($ValidateOnly){Write-Output 'SECURITY_IT_ENVIRONMENT_VALIDATED_NO_CONNECTION';return}
+$booking=@('SOUTHLEAF_BOOKING_IT_URL','SOUTHLEAF_BOOKING_IT_USERNAME','SOUTHLEAF_BOOKING_IT_PASSWORD','SOUTHLEAF_BOOKING_IT_INSTANCE_ID')
+$account=@('SOUTHLEAF_C3_IT_MODE','SOUTHLEAF_C3_IT_DB_URL','SOUTHLEAF_C3_IT_DB_USERNAME','SOUTHLEAF_C3_IT_DB_PASSWORD','SOUTHLEAF_C3_IT_DB_SCHEMA','SOUTHLEAF_C3_IT_DB_EXPECTED_USER')
+foreach($key in ($booking + $account)){
+ if([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($key))){
+  throw "Missing isolated fixture input: $key"
+ }
+}
+$bookingUrl=$env:SOUTHLEAF_BOOKING_IT_URL
+if($bookingUrl -notmatch '^jdbc:mysql://(127\.0\.0\.1|localhost):(?<port>[0-9]{1,5})/southleaf_booking_it(?:\?.*)?$' -or [int]$Matches.port -eq 3306){
+ throw 'Isolated booking IT URL rejected'
+}
+if($env:SOUTHLEAF_C3_IT_MODE -cne 'demo'){throw 'Isolated C3 mode rejected'}
+if($env:SOUTHLEAF_C3_IT_DB_SCHEMA -cne 'southleaf_admin_c3_it'){throw 'Isolated C3 schema rejected'}
+if($env:SOUTHLEAF_C3_IT_DB_EXPECTED_USER -cne ($env:SOUTHLEAF_C3_IT_DB_USERNAME+'@localhost')){throw 'Isolated C3 identity rejected'}
+$c3Url=$env:SOUTHLEAF_C3_IT_DB_URL
+if($c3Url -notmatch '^jdbc:mysql://localhost:(?<port>[0-9]{1,5})/southleaf_admin_c3_it\?' -or [int]$Matches.port -eq 3306){
+ throw 'Isolated C3 IT URL rejected'
+}
 $isolatedPublic=@('SOUTHLEAF_PUBLIC_IT_ISOLATED','SOUTHLEAF_PUBLIC_IT_TEST_URL','SOUTHLEAF_PUBLIC_IT_TEST_USERNAME','SOUTHLEAF_PUBLIC_IT_TEST_PASSWORD','SOUTHLEAF_PUBLIC_IT_RUNTIME_URL','SOUTHLEAF_PUBLIC_IT_RUNTIME_USERNAME','SOUTHLEAF_PUBLIC_IT_RUNTIME_PASSWORD','SOUTHLEAF_PUBLIC_IT_MEDIA_ROOT')
 $provided=@($isolatedPublic | Where-Object { -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) })
 if($provided.Count -ne 0 -and $provided.Count -ne $isolatedPublic.Count){throw 'Partial explicitly-owned public integration fixture input'}
@@ -47,7 +65,7 @@ if($provided.Count -eq $isolatedPublic.Count){
 }
 Push-Location "$PSScriptRoot/.."
 try {
- & .\mvnw.cmd verify "-DskipTests=false" "-Dmaven.test.skip=false" "-DskipITs=false"
+ & .\mvnw.cmd verify "-DskipTests=false" "-Dmaven.test.skip=false" "-DskipITs=false" "-Pc3-isolated-it"
  if($LASTEXITCODE -ne 0){throw "Database verification exit $LASTEXITCODE"}
  & python scripts/check-module-boundaries.py
  if($LASTEXITCODE -ne 0){throw "Module boundary verification exit $LASTEXITCODE"}

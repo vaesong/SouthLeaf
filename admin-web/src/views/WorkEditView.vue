@@ -104,7 +104,7 @@ async function save() {
     });
     fill(saved);
     preview.value = await api.preview(workId);
-    notice.value = `草稿已保存為 v${saved.version}。`;
+    notice.value = `草稿已保存为 v${saved.version}。`;
   } catch (error) {
     fail(error);
   } finally {
@@ -124,8 +124,8 @@ async function run(operation: Operation) {
     lastCommand.value = await call.call(api, workId, version, pending.value.key);
     pending.value = null;
     notice.value =
-      (operation === "publish" ? `已發布 v${lastCommand.value.targetVersion}` : "已撤下") +
-      (lastCommand.value.replayed ? "（已確認先前提交的結果）" : "") +
+      (operation === "publish" ? `已发布 v${lastCommand.value.targetVersion}` : "已撤下") +
+      (lastCommand.value.replayed ? "（已确认先前提交的结果）" : "") +
       "。";
     fill(await api.getWork(workId));
     preview.value = await api.preview(workId);
@@ -147,7 +147,7 @@ onMounted(load);
         <span>SouthLeaf <small>ADMIN</small></span>
       </router-link>
       <div class="topbar-status">
-        <span class="environment-badge">S2-B · 本地驗證（非生產）</span>
+        <span class="environment-badge">S2-B · 本地验证（非生产）</span>
       </div>
     </header>
 
@@ -160,7 +160,7 @@ onMounted(load);
       </div>
       <form class="content-form" @submit.prevent="save">
         <label
-          >標題（≤ 80）<el-input
+          >标题（≤ 80）<el-input
             v-model="form.title"
             maxlength="80"
             data-testid="work-title-input"
@@ -175,13 +175,13 @@ onMounted(load);
             :disabled="!canEdit"
         /></label>
         <label
-          >授權主體範圍引用<el-input
+          >授权主体范围引用<el-input
             v-model="form.subjectScopeRef"
             data-testid="work-scope-input"
             :disabled="!canEdit"
         /></label>
         <label
-          >關聯業務 ID（≤ 3，逗號分隔）<el-input
+          >关联业务 ID（≤ 3，逗號分隔）<el-input
             v-model="form.businessIds"
             data-testid="work-business-input"
             :disabled="!canEdit"
@@ -249,18 +249,18 @@ onMounted(load);
       aria-labelledby="preview-title"
       data-testid="preview"
     >
-      <h2 id="preview-title">發布預檢（伺服器判定）</h2>
+      <h2 id="preview-title">发布预检（服务器判定）</h2>
       <dl class="identity-details">
         <div>
-          <dt>可發布</dt>
+          <dt>可发布</dt>
           <dd data-testid="publishable">{{ preview.publishable ? "是" : "否" }}</dd>
         </div>
         <div>
-          <dt>阻斷原因</dt>
+          <dt>阻断原因</dt>
           <dd data-testid="blocking-reason">{{ preview.blockingReason ?? "—" }}</dd>
         </div>
         <div>
-          <dt>授權狀態</dt>
+          <dt>授权状态</dt>
           <dd>{{ preview.authorizationState ?? "—" }}</dd>
         </div>
         <div>
@@ -268,7 +268,7 @@ onMounted(load);
           <dd>{{ preview.acceptedProvenance }}</dd>
         </div>
       </dl>
-      <p class="helper-text">預檢僅供提示；發布時伺服器會在同一事務內重新校驗全部門禁。</p>
+      <p class="helper-text">预检仅供提示；发布时服务器会在同一事务内重新校验全部门禁。</p>
       <div class="identity-actions">
         <el-button
           v-if="canPublish"
@@ -277,7 +277,7 @@ onMounted(load);
           :loading="busy === 'publish'"
           :disabled="busy !== '' || !preview.publishable"
           @click="run('publish')"
-          >發布目前修訂</el-button
+          >发布当前修订</el-button
         >
         <el-button
           v-if="canPublish && work?.publicationState === 'PUBLISHED'"
@@ -298,8 +298,8 @@ onMounted(load);
       >
         <span
           >上一次{{
-            pending.operation === "publish" ? "發布" : "撤下"
-          }}結果未知；重試將沿用同一操作鍵與修訂。</span
+            pending.operation === "publish" ? "发布" : "撤下"
+          }}结果未知；重试将沿用同一操作键与修订。</span
         >
       </div>
       <p v-if="lastCommand" class="helper-text" data-testid="last-command">
@@ -307,7 +307,7 @@ onMounted(load);
       </p>
     </section>
 
-    <p v-if="busy === 'load'" role="status">載入中…</p>
+    <p v-if="busy === 'load'" role="status">加载中…</p>
     <div
       v-if="notice"
       class="form-feedback"

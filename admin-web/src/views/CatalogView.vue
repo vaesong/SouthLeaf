@@ -323,7 +323,7 @@ onMounted(load);
 <template>
   <main class="identity-shell content-shell" data-testid="catalog-screen">
     <header class="topbar">
-      <router-link class="wordmark" to="/" aria-label="管理首頁"
+      <router-link class="wordmark" to="/" aria-label="管理首页"
         ><span class="wordmark-mark">S</span
         ><span>SouthLeaf <small>ADMIN</small></span></router-link
       >

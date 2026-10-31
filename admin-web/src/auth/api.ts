@@ -143,7 +143,7 @@ export class AdminAuthApi {
       return response;
     } catch (error) {
       if (error instanceof AdminApiError) throw error;
-      throw new AdminApiError(0, "NETWORK_ERROR", "無法連接管理服務，請檢查連線後重試。");
+      throw new AdminApiError(0, "NETWORK_ERROR", "无法连接管理服务，请检查连接后重试。");
     }
   }
 
@@ -154,7 +154,7 @@ export class AdminAuthApi {
     try {
       return (await response.json()) as EnvelopeBase | IdentityEnvelope | CsrfEnvelope;
     } catch {
-      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "管理服務回應無效。");
+      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "管理服务响应无效。");
     }
   }
 
@@ -173,7 +173,7 @@ export class AdminAuthApi {
       typeof envelope.code === "string" ? envelope.code : "AUTH_REQUEST_FAILED",
       typeof envelope.message === "string"
         ? envelope.message.slice(0, 200)
-        : "管理服務暫時無法完成要求。",
+        : "管理服务暂时无法完成要求。",
       typeof envelope.requestId === "string" ? envelope.requestId : undefined,
       retryAfterSeconds,
     );

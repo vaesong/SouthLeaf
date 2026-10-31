@@ -1,142 +1,111 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
-import { useRouter } from "vue-router";
-import { AdminApiError } from "../auth/api";
+import { computed, inject, onMounted, ref } from "vue";
+import { AdminBookingApi } from "../bookings/api";
+import { requireContentApi } from "../content/inject";
+import { AdminOutboxApi } from "../outbox/api";
 import { authStoreKey } from "../auth/store";
 
-function requireAuthStore() {
-  const store = inject(authStoreKey);
-  if (!store) throw new Error("AuthStore was not provided");
-  return store;
-}
+const auth = inject(authStoreKey);
+const permissions = computed(() => auth?.state.identity?.permissions ?? []);
+const canReadContent = computed(() => permissions.value.includes("CONTENT_READ"));
+const canReadBookings = computed(() => permissions.value.includes("RESERVATION_READ"));
+const canReadOutbox = computed(() => permissions.value.includes("OUTBOX_READ"));
 
-const auth = requireAuthStore();
-const router = useRouter();
-const notice = ref("");
-const requestId = ref("");
-const identity = computed(() => auth.state.identity);
-const expiry = computed(() => {
-  const value = identity.value?.expiresAt;
-  if (!value) return "—";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("zh-HK");
-});
+const pendingCount = ref<number | null>(null);
+const failureCount = ref<number | null>(null);
+const catalogRevision = ref<number | null>(null);
 
-watch(
-  () => auth.state.status,
-  (status) => {
-    if (status === "anonymous" || status === "unavailable") {
-      void router.replace({
-        name: "login",
-        query: { status: status === "unavailable" ? "unavailable" : undefined },
-      });
+onMounted(async () => {
+  if (canReadBookings.value) {
+    try {
+      pendingCount.value = (await new AdminBookingApi().pending()).length;
+    } catch {
+      pendingCount.value = null;
     }
-  },
-);
-
-async function retryCsrf() {
-  notice.value = "";
-  const ready = await auth.prepareCsrf(true);
-  if (!ready) {
-    notice.value = "安全初始化未能完成，請檢查連線後重試。";
-    requestId.value = auth.state.error?.requestId ?? "";
   }
-}
-
-async function logout() {
-  notice.value = "";
-  requestId.value = "";
-  try {
-    await auth.logout();
-    await router.replace({ name: "login" });
-  } catch (error) {
-    const failure = error instanceof AdminApiError ? error : null;
-    notice.value = "伺服器端退出尚未確認。請重試；目前工作階段仍視為有效。";
-    requestId.value = failure?.requestId ?? "";
+  if (canReadOutbox.value) {
+    try {
+      failureCount.value = (await new AdminOutboxApi().list()).failures.length;
+    } catch {
+      failureCount.value = null;
+    }
   }
-}
+  if (canReadContent.value) {
+    try {
+      catalogRevision.value = (await requireContentApi().getCatalog()).revision;
+    } catch {
+      catalogRevision.value = null;
+    }
+  }
+});
 </script>
 
 <template>
-  <main class="identity-shell">
-    <header class="topbar">
-      <router-link class="wordmark" to="/" aria-label="SouthLeaf 管理首頁">
-        <span class="wordmark-mark">S</span>
-        <span>SouthLeaf <small>ADMIN</small></span>
-      </router-link>
-      <div class="topbar-status">
-        <span class="environment-badge">S1-D · 本地驗證（非生產）</span>
-        <span class="secure-label"><span class="secure-dot"></span>安全工作階段</span>
+  <main class="workbench">
+    <header class="workbench-top">
+      <div>
+        <p class="eyebrow">今天</p>
+        <h1 id="identity-title">今天先看这些。</h1>
       </div>
+      <p class="pill">本地工作区 · 合成资料</p>
     </header>
 
-    <section class="identity-card" aria-labelledby="identity-title">
-      <div class="identity-heading">
-        <div class="identity-symbol" aria-hidden="true">✓</div>
-        <div>
-          <p class="eyebrow">CURRENT SESSION</p>
-          <h1 id="identity-title">已安全登入</h1>
-          <p class="panel-copy">以下身份資訊由伺服器目前的工作階段回傳。</p>
-        </div>
-      </div>
-
-      <dl class="identity-details">
-        <div>
-          <dt>帳號標識</dt>
-          <dd>{{ identity?.accountId ?? "—" }}</dd>
-        </div>
-        <div>
-          <dt>工作階段到期</dt>
-          <dd>{{ expiry }}</dd>
-        </div>
-      </dl>
-
-      <section class="permission-section" aria-labelledby="permissions-title">
-        <div class="section-title-row">
-          <h2 id="permissions-title">伺服器授予的能力</h2>
-          <span>{{ identity?.permissions.length ?? 0 }}</span>
-        </div>
-        <ul v-if="identity?.permissions.length" class="permission-list">
-          <li v-for="permission in identity.permissions" :key="permission">{{ permission }}</li>
-        </ul>
-        <p v-else class="empty-permissions">目前沒有可顯示的能力項目。</p>
-        <p class="helper-text">能力摘要僅供檢視；每個請求仍由伺服器重新授權。</p>
-      </section>
-
-      <div v-if="notice" class="form-feedback" role="alert" aria-live="assertive">
-        <span>{{ notice }}</span>
-        <small v-if="requestId">Request ID: {{ requestId }}</small>
-      </div>
-
-      <div v-if="!auth.state.csrfReady" class="security-status" role="status">
-        <span>退出前需要安全初始化。</span>
-        <el-button text @click="retryCsrf">重試初始化</el-button>
-      </div>
-
-      <p v-if="identity?.permissions.includes('CONTENT_READ')" class="helper-text">
-        <router-link to="/catalog" data-testid="catalog-link">维护品牌、业务与套餐 →</router-link>
-        <span aria-hidden="true"> · </span>
-        <router-link to="/works" data-testid="works-link">前往作品与图片管理 →</router-link>
-      </p>
-      <p v-if="identity?.permissions.includes('OUTBOX_READ')" class="helper-text">
-        <router-link to="/outbox" data-testid="outbox-link">通知失败待办 →</router-link>
-      </p>
-      <p v-if="identity?.permissions.includes('RESERVATION_READ')" class="helper-text">
-        <router-link to="/bookings" data-testid="bookings-link">预约与订单快照 →</router-link>
-      </p>
-
-      <div class="identity-actions">
-        <el-button
-          type="danger"
-          plain
-          :loading="auth.state.action === 'logout'"
-          :disabled="auth.state.action !== null"
-          @click="logout"
+    <section class="workbench-grid">
+      <article class="warm-card">
+        <h2>要处理的事</h2>
+        <router-link
+          v-if="canReadBookings"
+          class="work-row"
+          to="/bookings"
+          data-testid="bookings-link"
         >
-          退出登入
-        </el-button>
-      </div>
-      <p class="identity-footnote">到期時間僅供提示，不會延長或取代伺服器授權判斷。</p>
+          <span class="work-count">{{ pendingCount ?? "—" }}</span>
+          <span>
+            <strong>待确认预约</strong>
+            <small>还没占档。确认前先核对时段。</small>
+          </span>
+        </router-link>
+        <router-link
+          v-if="canReadContent"
+          class="work-row"
+          to="/catalog"
+          data-testid="catalog-link"
+        >
+          <span class="work-count">{{ catalogRevision ?? "—" }}</span>
+          <span>
+            <strong>品牌、图片与价格</strong>
+            <small>文字、封面、套餐和联系方式都从目录发布。数字是当前草稿修订。</small>
+          </span>
+        </router-link>
+        <router-link
+          v-if="canReadContent"
+          class="work-row"
+          to="/works"
+          data-testid="works-link"
+        >
+          <span class="work-count">图</span>
+          <span>
+            <strong>作品与图片</strong>
+            <small>上传、授权、发布和撤回仍在作品页，不另造一套记录。</small>
+          </span>
+        </router-link>
+        <router-link v-if="canReadOutbox" class="work-row" to="/outbox" data-testid="outbox-link">
+          <span class="work-count">{{ failureCount ?? "—" }}</span>
+          <span>
+            <strong>通知停在待办</strong>
+            <small>失败可见，可以人工再试。不代表客户已经读到。</small>
+          </span>
+        </router-link>
+        <p v-if="!canReadContent && !canReadBookings && !canReadOutbox" class="panel-copy">
+          当前账号还没有可配置的内容能力。每个请求仍由服务器重新授权。
+        </p>
+      </article>
+      <article class="warm-card warm-note">
+        <h2>客人会看到什么</h2>
+        <p>小程序上的名称、介绍、图片和价格，来自已发布的目录和作品。</p>
+        <p>没确认的价格保持「未披露」。保存草稿不会改变公开页。</p>
+        <p>本阶段不收款，页面上不会出现支付按钮。</p>
+      </article>
     </section>
   </main>
 </template>

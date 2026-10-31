@@ -1,7 +1,7 @@
 {
   "scope": "existing private TEST public certificates/JKS/manifest only",
   "authorizedValidityDays": 30,
-  "atUtc": "2026-10-24T03:46:48.703859+00:00",
+  "atUtc": "2026-10-31T16:20:11.840130+00:00",
   "newPrivateKeysWritten": false,
   "plaintextPasswordsWritten": false,
   "systemOrProductionTrustChanged": false,
@@ -11,22 +11,22 @@
   "existingKeyBindingsValidated": true,
   "previousCertificateDates": {
     "ca": {
-      "notBefore": "2026-10-18T13:41:35+00:00",
-      "notAfter": "2026-10-20T13:41:35+00:00"
+      "notBefore": "2026-10-24T07:16:54+00:00",
+      "notAfter": "2026-10-26T07:16:54+00:00"
     },
     "server": {
-      "notBefore": "2026-10-18T13:41:35+00:00",
-      "notAfter": "2026-10-20T13:41:35+00:00"
+      "notBefore": "2026-10-24T07:16:54+00:00",
+      "notAfter": "2026-10-26T07:16:54+00:00"
     }
   },
   "newCertificateDates": {
     "ca": {
-      "notBefore": "2026-10-24T03:46:49+00:00",
-      "notAfter": "2026-11-23T03:46:49+00:00"
+      "notBefore": "2026-10-31T16:20:12+00:00",
+      "notAfter": "2026-11-30T16:20:12+00:00"
     },
     "server": {
-      "notBefore": "2026-10-24T03:46:49+00:00",
-      "notAfter": "2026-11-23T03:46:49+00:00"
+      "notBefore": "2026-10-31T16:20:12+00:00",
+      "notAfter": "2026-11-30T16:20:12+00:00"
     }
   },
   "status": "RENEWED",
@@ -35,10 +35,10 @@
   "databaseConfigurationUnchanged": true,
   "credentialStoreDecrypted": true,
   "publicFixtureBackupCreated": true,
-  "caFingerprintBefore": "905e3e789d0c5901eeb4beadcca3b034d80a9dd0eb01d6d64a94a9f43055f0c3",
-  "caFingerprintAfter": "ddea14db176128e76af77fad5d65bff3358e1e5a14feb1672e7959b20265c3ea",
-  "truststoreFingerprintBefore": "7c7c005075c73f00f762d77a92e478d7164535ef0b15957856d758c2f1bea4a9",
-  "truststoreFingerprintAfter": "53b3147b61adf61b5ca5efee8ef2ceeb6da050f34a2ae8861e45bc367980d134",
+  "caFingerprintBefore": "bafb1dabaa4eec56c0e8f4163e81fd0c69cbdc87aef2fc5541ed861b6859cf74",
+  "caFingerprintAfter": "f393bc0d6ae0f201976b6bcea97205f2299c811c5db2fb84b7064219debe73b4",
+  "truststoreFingerprintBefore": "0d85ec41b5d583acc1b75a263ff4cbaca44ff949d0cbe9c8a3813ff6cb720785",
+  "truststoreFingerprintAfter": "a9e688753e4dee9820356b1770f87dc343195bcea93dfa37c7bf320d8045a591",
   "strictChainAndLocalhostValid": true,
   "hostnameMismatchStillRejected": true,
   "manifestFingerprintsUpdated": true,

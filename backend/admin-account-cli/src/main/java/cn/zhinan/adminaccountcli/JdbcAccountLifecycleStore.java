@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -289,6 +290,7 @@ final class JdbcAccountLifecycleStore implements AccountLifecycleStore {
       long resultVersion,
       byte[] fingerprint,
       Instant occurredAt) {
+    Instant storedAt = occurredAt.truncatedTo(ChronoUnit.MICROS);
     jdbc.update(
         "INSERT INTO admin_account_command(command_id,command_type,target_account_id,expected_security_version,result_security_version,payload_sha256,execution_identity,occurred_at) VALUES(?,?,?,?,?,?,?,?)",
         commandId.toString(),
@@ -298,8 +300,8 @@ final class JdbcAccountLifecycleStore implements AccountLifecycleStore {
         resultVersion,
         fingerprint,
         executionIdentity,
-        utc(occurredAt));
-    return new AccountLifecycleResult(commandId, operation, accountId, resultVersion, occurredAt);
+        utc(storedAt));
+    return new AccountLifecycleResult(commandId, operation, accountId, resultVersion, storedAt);
   }
 
   private void replacePermissions(String accountId, Set<AdminPermission> permissions) {

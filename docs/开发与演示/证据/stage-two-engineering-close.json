@@ -1,0 +1,23 @@
+﻿{
+    "kind":  "STAGE_TWO_ENGINEERING_CLOSE",
+    "status":  "PASS",
+    "failedStep":  null,
+    "failure":  null,
+    "bookingFixtureInjected":  true,
+    "c3FixtureInjected":  true,
+    "sameMavenVerify":  true,
+    "mavenProfile":  "c3-isolated-it",
+    "adminSchemaValidationPass":  true,
+    "publicMigrationSeedDemo":  false,
+    "publicUnseededMigrationPass":  true,
+    "c3FixtureRemoved":  true,
+    "consoleShutdownProbe":  "NOT_RUN",
+    "secretsRecorded":  false,
+    "realOrProductionDataUsed":  false,
+    "originalServerTouched":  false,
+    "publicApiJar":  "backend/public-api/target/uniapp-api-0.1.0-SNAPSHOT.jar",
+    "adminRuntimeJar":  "backend/admin-runtime/target/admin-runtime-0.1.0-SNAPSHOT.jar",
+    "publicApiPackage":  "mvnw -pl public-api -am package -DskipTests",
+    "adminRuntimePackage":  "mvnw -pl admin-runtime -am package -DskipTests; npm run build; build-admin-runtime.py",
+    "bookingDatadirRemoved":  true
+}

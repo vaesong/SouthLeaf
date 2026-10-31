@@ -363,7 +363,7 @@ class BookingConcurrencyIT {
         new cn.zhinan.adminbooking.adapter.jdbc.JdbcBookingAudit(connections),
         new cn.zhinan.adminbooking.adapter.jdbc.JdbcBookingAudit(connections),
         new JdbcTransactionRunner(connections),
-        java.time.Clock.systemUTC());
+        java.time.Clock.fixed(NOW, java.time.ZoneOffset.UTC));
   }
 
   private void insertCustomer(String customerId) throws SQLException {
@@ -795,7 +795,12 @@ class BookingConcurrencyIT {
         "create-key-0000000000000004",
         java.time.Duration.ofHours(48));
 
-    // One queued message, two workers racing for the lease.
+    // One queued message, two workers racing for the lease. The reservation command also writes
+    // its own outbox row; remove it so this race has exactly the row inserted below.
+    try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        Statement clear = connection.createStatement()) {
+      clear.execute("DELETE FROM booking_notification_outbox");
+    }
     try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
         PreparedStatement statement =
             connection.prepareStatement(

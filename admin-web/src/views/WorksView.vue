@@ -66,7 +66,7 @@ async function upload(file: File) {
     const result = await api.upload(file, file.name, uploadIntent.value.key);
     uploadIntent.value = null;
     media.value = [result.media, ...media.value.filter((m) => m.mediaId !== result.media.mediaId)];
-    notice.value = result.replayed ? "已確認先前的上傳結果。" : "圖片已安全處理並保存。";
+    notice.value = result.replayed ? "已确认先前的上传结果。" : "圖片已安全處理並保存。";
   } catch (error) {
     if (!fail(error)) uploadIntent.value = null;
   } finally {
@@ -90,12 +90,12 @@ onMounted(load);
 <template>
   <main class="identity-shell content-shell">
     <header class="topbar">
-      <router-link class="wordmark" to="/" aria-label="SouthLeaf 管理首頁">
+      <router-link class="wordmark" to="/" aria-label="SouthLeaf 管理首页">
         <span class="wordmark-mark">S</span>
         <span>SouthLeaf <small>ADMIN</small></span>
       </router-link>
       <div class="topbar-status">
-        <span class="environment-badge">S2-B · 本地驗證（非生產）</span>
+        <span class="environment-badge">S2-B · 本地验证（非生产）</span>
       </div>
     </header>
 
@@ -112,14 +112,14 @@ onMounted(load);
           >新建作品</el-button
         >
       </div>
-      <p v-if="loading" role="status">載入中…</p>
+      <p v-if="loading" role="status">加载中…</p>
       <table v-else-if="works.length" class="content-table" data-testid="works-table">
         <thead>
           <tr>
-            <th>標題</th>
+            <th>标题</th>
             <th>草稿修訂</th>
-            <th>發布狀態</th>
-            <th>更新時間</th>
+            <th>发布状态</th>
+            <th>更新时间</th>
           </tr>
         </thead>
         <tbody>
@@ -155,10 +155,10 @@ onMounted(load);
           />
         </label>
       </div>
-      <p class="helper-text">JPEG/PNG，≤ 4 MiB。伺服器重新編碼並移除中繼資料，不保留原檔。</p>
+      <p class="helper-text">JPEG/PNG，≤ 4 MiB。服务器重新编码并移除元数据，不保留原档。</p>
       <div v-if="uploadIntent && busy === ''" class="security-status" role="status">
         <span>上一次上傳結果未知。</span>
-        <el-button text data-testid="retry-upload" @click="retryUpload">以同一操作鍵重試</el-button>
+        <el-button text data-testid="retry-upload" @click="retryUpload">以同一操作键重试</el-button>
       </div>
       <ul class="media-grid" data-testid="media-grid">
         <li v-for="item in media" :key="item.mediaId" :data-media-id="item.mediaId">

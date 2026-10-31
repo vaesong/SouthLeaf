@@ -21,7 +21,7 @@ export interface AuthStore {
 
 function asApiError(error: unknown): AdminApiError {
   if (error instanceof AdminApiError) return error;
-  return new AdminApiError(0, "NETWORK_ERROR", "無法連接管理服務，請檢查連線後重試。");
+  return new AdminApiError(0, "NETWORK_ERROR", "无法连接管理服务，请检查连接后重试。");
 }
 
 export function createAuthStore(api: AdminAuthApi): AuthStore {
@@ -95,7 +95,7 @@ export function createAuthStore(api: AdminAuthApi): AuthStore {
           const unconfirmed = new AdminApiError(
             503,
             "LOGIN_RESULT_UNCONFIRMED",
-            "登入結果暫時無法確認，請檢查服務狀態後重試。",
+            "登录结果暂时无法确认，请检查服务状态后重试。",
             failure.requestId,
           );
           mutable.error = unconfirmed;

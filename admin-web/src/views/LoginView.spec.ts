@@ -112,7 +112,7 @@ describe("LoginView", () => {
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("帳號或密碼不正確，或帳號目前不可用。");
+    expect(wrapper.text()).toContain("账号或密码不正确，或账号目前不可用。");
     expect(wrapper.text()).not.toContain("synthetic secret details");
     expect(password.element.value).toBe("");
     wrapper.unmount();

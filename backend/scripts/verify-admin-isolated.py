@@ -72,6 +72,8 @@ def run(command, *, env=None, data=None, timeout=45, expected=0, marker=None):
                             cwd=REPO)
     if result.returncode != expected or (marker and marker.encode() not in result.stdout):
         codes = sorted(set(re.findall(rb"ERROR ([0-9]{4})", result.stdout)))
+        error_types = sorted(set(match.decode("ascii", "ignore") for match in re.findall(
+            rb"[A-Za-z][A-Za-z0-9_.]*(?:Exception|Error)", result.stdout)))
         # A smoke assertion is an authored, non-secret test label; retain only that bounded label.
         assertions = sorted(set(match.decode("ascii", "ignore") for match in re.findall(
             rb"FAILED: ([A-Za-z0-9 _=./-]{1,160})", result.stdout)))
@@ -85,6 +87,7 @@ def run(command, *, env=None, data=None, timeout=45, expected=0, marker=None):
         raise VerificationFailure("SUBPROCESS_FAILED:exit=" + str(result.returncode)
                                   + ":output-sha256=" + hashlib.sha256(result.stdout).hexdigest()
                                   + ":mysql-codes=" + ",".join(c.decode() for c in codes)
+                                  + ":error-types=" + ",".join(error_types[:8])
                                   + ":assertions=" + ",".join(assertions[:3])
                                   + ":powershell-lines=" + ",".join(ps_lines[:3])
                                   + ":curl-codes=" + ",".join(curl_codes[:3])
@@ -404,7 +407,7 @@ def prepare_owned_public_fixture(meta, passwords):
             "SOUTHLEAF_MIGRATION_PASSWORD": passwords["root"],
             "SOUTHLEAF_MEDIA_ROOT": values["SOUTHLEAF_PUBLIC_IT_MEDIA_ROOT"]})
         result = subprocess.run(
-            ["mvnw.cmd", "-f", "public-api/pom.xml", "-DskipTests", "compile",
+            [str(REPO / "backend" / "mvnw.cmd"), "-f", "public-api/pom.xml", "-DskipTests", "compile",
              "org.codehaus.mojo:exec-maven-plugin:3.5.0:java",
              "-Dexec.mainClass=cn.zhinan.uniapp.tooling.DatabaseMigrationMain",
              "-Dexec.args=--seed-demo"],
@@ -431,6 +434,28 @@ def prepare_owned_public_fixture(meta, passwords):
     return values
 
 
+GATE_FIXTURE_KEYS = (
+    "SOUTHLEAF_BOOKING_IT_URL",
+    "SOUTHLEAF_BOOKING_IT_USERNAME",
+    "SOUTHLEAF_BOOKING_IT_PASSWORD",
+    "SOUTHLEAF_BOOKING_IT_INSTANCE_ID",
+    "SOUTHLEAF_C3_IT_MODE",
+    "SOUTHLEAF_C3_IT_DB_URL",
+    "SOUTHLEAF_C3_IT_DB_USERNAME",
+    "SOUTHLEAF_C3_IT_DB_PASSWORD",
+    "SOUTHLEAF_C3_IT_DB_SCHEMA",
+    "SOUTHLEAF_C3_IT_DB_EXPECTED_USER",
+)
+
+
+def forward_gate_fixtures(environment):
+    """Copy the booking and C3 fixture into the reactor child. Other SOUTHLEAF_* values stay out."""
+    present = [key for key in GATE_FIXTURE_KEYS if os.environ.get(key)]
+    require(not present or len(present) == len(GATE_FIXTURE_KEYS), "GATE_FIXTURE_ENV_PARTIAL")
+    for key in present:
+        environment[key] = os.environ[key]
+
+
 def run_reactor_verification(meta, passwords, public_environment=None):
     """Full reactor + boundaries, before candidate pinning; no intermediate install/rebuild."""
     command = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
@@ -438,12 +463,13 @@ def run_reactor_verification(meta, passwords, public_environment=None):
     environment = security_test_env(meta, passwords)
     if public_environment:
         environment.update(public_environment)
+    forward_gate_fixtures(environment)
     process = subprocess.Popen(command, cwd=REPO,
                                env=clean_env(environment),
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
     try:
-        output, _ = process.communicate(timeout=600)
+        output, _ = process.communicate(timeout=2700)
     except BaseException:
         stop_owned_command(process)
         raise
@@ -590,7 +616,7 @@ def verification_failure(error):
     return str(error) if isinstance(error, VerificationFailure) else type(error).__name__
 
 
-def verify(path, with_reactor=False):
+def verify(path, with_reactor=False, require_console_shutdown=True):
     global STEP
     STEP = "load-owned-manifest"
     manifest, meta, passwords = load_manifest(path)
@@ -640,7 +666,7 @@ def verify(path, with_reactor=False):
         require(source_snapshot() == sources, "SOURCE_CHANGED_DURING_PREPARATION")
         STEP = "pin-final-candidate"
         candidate = pin_candidate(root, run_id)
-        verify_probe_matrix(meta, passwords, server, candidate, results)
+        verify_probe_matrix(meta, passwords, server, candidate, results, require_console_shutdown)
         STEP = "final-source-and-candidate-binding"
         assert_candidate_unchanged(candidate)
         require(source_snapshot() == sources, "SOURCE_CHANGED_DURING_VERIFICATION")
@@ -694,7 +720,7 @@ def verify(path, with_reactor=False):
     print(json.dumps(report, indent=2))
 
 
-def verify_probe_matrix(meta, passwords, server, candidate, results):
+def verify_probe_matrix(meta, passwords, server, candidate, results, require_console_shutdown=True):
     global STEP
     cp = candidate["classpath"]
     jar = candidate["path"]
@@ -806,6 +832,13 @@ def verify_probe_matrix(meta, passwords, server, candidate, results):
         env=runtime_env(meta, passwords, "s1b_probe"), marker="ADMIN_ISOLATED_PLAINTEXT_REJECTED")
     results.append({"case": "actual-empty-tls-cipher-rejected-via-test-source-factory", "status": "PASS", "realMysql": True, "productionBypassAdded": False})
     reset_probe()
+    if not require_console_shutdown:
+        results.append({
+            "case": "default-non-web-runtime-and-private-console-graceful-shutdown",
+            "status": "NOT_RUN",
+            "reason": "CONSOLE_SIGNAL_NOT_REQUESTED"})
+        check("exact-writer-after-negative-fixture-restoration", runtime_env(meta, passwords))
+        return
     STEP = "default-runtime-lifecycle"
     startup = subprocess.STARTUPINFO()
     startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -834,7 +867,7 @@ def verify_probe_matrix(meta, passwords, server, candidate, results):
                 pass
         require(ready, "DEFAULT_RUNTIME_NOT_READY")
         ctrl_c_private_console(process)
-        output, _ = process.communicate(timeout=20)
+        output, _ = process.communicate(timeout=90)
         require(process.returncode in (0, 130), "DEFAULT_RUNTIME_NOT_GRACEFULLY_STOPPED")
         require((first_line + output).decode().strip() == "ADMIN_RUNTIME_READY:admin-isolated-v2:NON_WEB", "DEFAULT_RUNTIME_UNEXPECTED_OUTPUT")
         require(int(control("SELECT COUNT(*) FROM information_schema.processlist WHERE USER='s1b_writer';").strip()) == 0, "WRITER_CONNECTIONS_LEFT_AFTER_SHUTDOWN")

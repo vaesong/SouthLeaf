@@ -125,13 +125,13 @@ async function main() {
     const alert = page.getByRole("alert");
     const alertVisible = (await alert.count()) > 0;
     const alertText = alertVisible ? ((await alert.first().textContent()) ?? "") : "";
-    const uiState = alertText.includes("安全初始化暫時無法完成")
+    const uiState = alertText.includes("安全初始化暂时无法完成")
       ? "csrf"
-      : alertText.includes("目前無法確認管理服務狀態")
+      : alertText.includes("目前无法确认管理服务状态")
         ? "session"
         : alertVisible
           ? "alert"
-          : statusText.includes("正在準備安全驗證")
+          : statusText.includes("正在准备安全验证")
             ? "pending"
             : statusText.includes("需要完成安全初始化")
               ? "unready"
@@ -261,7 +261,7 @@ async function main() {
     (response) => response.url().endsWith(loginPath) && response.request().method() === "POST",
     { timeout: 15000 },
   );
-  await page.getByRole("button", { name: "安全登入" }).click();
+  await page.getByRole("button", { name: "安全登录" }).click();
   const wrongLogin = await wrongLoginWait;
   const wrongLoginBody = await json(wrongLogin);
   check(
@@ -276,7 +276,7 @@ async function main() {
     (response) => response.url().endsWith(loginPath) && response.request().method() === "POST",
     { timeout: 20000 },
   );
-  await page.getByRole("button", { name: "安全登入" }).click();
+  await page.getByRole("button", { name: "安全登录" }).click();
   const goodLogin = await goodLoginWait;
   check("login-accepted", goodLogin.status() === 200);
   const identityEnvelope = await json(goodLogin);
@@ -288,7 +288,7 @@ async function main() {
       identityEnvelope.data.permissions.includes("STAFF_ACCESS_MANAGE") &&
       typeof identityEnvelope?.data?.expiresAt === "string",
   );
-  await page.getByRole("heading", { name: "已安全登入" }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: "今天先看这些。" }).waitFor({ timeout: 15000 });
   check("identity-rendered-by-spa", (await page.locator("body").innerText()).includes(accountId));
   check(
     "permission-rendered-by-spa",
@@ -337,7 +337,7 @@ async function main() {
     (response) => response.url().endsWith(logoutPath) && response.request().method() === "POST",
     { timeout: 20000 },
   );
-  await page.getByRole("button", { name: "退出登入" }).click();
+  await page.getByRole("button", { name: "退出登录" }).click();
   const logoutResponse = await logoutWait;
   check("logout-endpoint", logoutResponse.status() === 204);
   await page.getByRole("heading", { name: "管理入口" }).waitFor({ timeout: 15000 });
