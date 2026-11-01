@@ -11,11 +11,12 @@ defineProps<{
   disabled?: boolean;
   testId?: string;
   uploading?: boolean;
+  notice?: string;
 }>();
 
 const emit = defineEmits<{
   "update:modelValue": [string | null];
-  upload: [File];
+  upload: [File[]];
 }>();
 
 const open = ref(false);
@@ -28,7 +29,17 @@ function choose(id: string) {
 
 <template>
   <div class="media-field">
-    <MediaThumb :media-id="modelValue" :preview-id="modelValue ?? undefined" />
+    <button
+      v-if="!modelValue"
+      class="media-open"
+      type="button"
+      data-testid="media-field-empty"
+      :disabled="disabled"
+      @click="open = true"
+    >
+      <MediaThumb :media-id="null" />
+    </button>
+    <MediaThumb v-else :media-id="modelValue" :preview-id="modelValue" />
     <div class="media-field-actions">
       <button
         v-if="modelValue"
@@ -64,6 +75,7 @@ function choose(id: string) {
       :media="media"
       :model-value="modelValue"
       :uploading="uploading"
+      :notice="notice"
       @close="open = false"
       @choose="choose"
       @upload="emit('upload', $event)"
@@ -87,5 +99,15 @@ function choose(id: string) {
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+}
+.media-open {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.media-open:disabled {
+  cursor: not-allowed;
 }
 </style>

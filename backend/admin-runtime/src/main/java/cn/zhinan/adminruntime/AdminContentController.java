@@ -244,7 +244,9 @@ class AdminContentController {
           if (bytes.length > ContentRules.MAX_UPLOAD_BYTES)
             throw new ContentException(ContentFailure.MEDIA_TOO_LARGE, "MEDIA_TOO_LARGE");
           String declared = part.getContentType() == null ? "" : part.getContentType().trim();
-          var result = content.upload(principal.accountId(), key, bytes, declared);
+          var result =
+              content.upload(
+                  principal.accountId(), key, bytes, declared, part.getSubmittedFileName());
           var asset =
               content
                   .mediaAsset(result.mediaId())
@@ -261,7 +263,9 @@ class AdminContentController {
         (principal, requestId) ->
             ok(
                 requestId,
-                content.recentMedia().stream().map(AdminContentController::media).toList()));
+                content.listMedia(request.getParameter("q")).stream()
+                    .map(AdminContentController::media)
+                    .toList()));
   }
 
   @GetMapping("/media/{mediaId}")
@@ -709,6 +713,7 @@ class AdminContentController {
         asset.sourceWidth(),
         asset.sourceHeight(),
         asset.createdAt().toString(),
+        asset.sourceFileName(),
         asset.variants().stream()
             .map(
                 v ->
@@ -757,6 +762,7 @@ class AdminContentController {
       int sourceWidth,
       int sourceHeight,
       String createdAt,
+      String sourceFileName,
       List<VariantView> variants) {}
 
   record UploadView(MediaView media, boolean replayed) {}

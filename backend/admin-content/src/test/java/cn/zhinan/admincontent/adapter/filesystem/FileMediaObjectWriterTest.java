@@ -34,6 +34,23 @@ class FileMediaObjectWriterTest {
   }
 
   @Test
+  void readsFourMegabyteObjectAndRejectsOneExtraByte() throws Exception {
+    var writer = new FileMediaObjectWriter(root);
+    byte[] atLimit = new byte[ContentRules.MAX_STORED_OBJECT_BYTES];
+    atLimit[0] = 7;
+    String limitKey = ContentRules.sha256(atLimit) + ".jpg";
+    Files.write(root.resolve(limitKey), atLimit);
+    assertThat(writer.read(limitKey)).hasSize(ContentRules.MAX_STORED_OBJECT_BYTES);
+
+    String overKey = "b".repeat(64) + ".png";
+    Files.write(root.resolve(overKey), new byte[ContentRules.MAX_STORED_OBJECT_BYTES + 1]);
+    assertThatThrownBy(() -> writer.read(overKey))
+        .isInstanceOf(ContentException.class)
+        .extracting(ex -> ((ContentException) ex).reason())
+        .isEqualTo("OBJECT_MISSING");
+  }
+
+  @Test
   void rejectsRelativeRoot() {
     assertThatThrownBy(() -> new FileMediaObjectWriter(Path.of("relative")))
         .isInstanceOf(IllegalArgumentException.class);

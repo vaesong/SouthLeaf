@@ -9,9 +9,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Pure S2 synthetic-profile limits and canonical digests (D-302 §13, D-507 §12). */
+/** Pure S2 limits and canonical digests (D-302 §13, D-507 §12). */
 public final class ContentRules {
-  public static final int MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+  /** Selected JPEG/PNG before derivatives are generated. The original is not stored. */
+  public static final int MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+
+  /** Thumbnail and preview objects, and any file read back from the private root. */
+  public static final int MAX_STORED_OBJECT_BYTES = 4 * 1024 * 1024;
+
+  public static final int MAX_SOURCE_FILE_NAME = 120;
   public static final int MAX_EDGE = 8192;
   public static final long MAX_PIXELS = 24_000_000L;
   public static final int THUMBNAIL_EDGE = 480;
@@ -72,5 +78,39 @@ public final class ContentRules {
 
   public static String sha256(String text) {
     return sha256(text.getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Display name for admin search. Takes the last path segment, drops separators and control
+   * characters, and keeps at most {@link #MAX_SOURCE_FILE_NAME} characters. Not an object key.
+   * Empty results are {@code null}.
+   */
+  public static String sourceFileName(String submitted) {
+    if (submitted == null) return null;
+    int separator = Math.max(submitted.lastIndexOf('/'), submitted.lastIndexOf('\\'));
+    String base = separator >= 0 ? submitted.substring(separator + 1) : submitted;
+    var cleaned = new StringBuilder(base.length());
+    base.codePoints()
+        .filter(cp -> cp != '/' && cp != '\\' && !Character.isISOControl(cp))
+        .forEach(cleaned::appendCodePoint);
+    int start = 0;
+    int end = cleaned.length();
+    while (start < end && Character.isWhitespace(cleaned.charAt(start))) start++;
+    while (end > start && Character.isWhitespace(cleaned.charAt(end - 1))) end--;
+    if (start >= end) return null;
+    int keep = Math.min(MAX_SOURCE_FILE_NAME, cleaned.codePointCount(start, end));
+    return cleaned.substring(start, cleaned.offsetByCodePoints(start, keep));
+  }
+
+  /**
+   * Bounded contains-pattern for a display-name search. Backslash, percent and underscore are
+   * escaped so they match literally. Null when the query is blank or longer than a stored name.
+   */
+  public static String likeContains(String query) {
+    if (query == null) return null;
+    String trimmed = query.trim();
+    if (trimmed.isEmpty() || trimmed.codePointCount(0, trimmed.length()) > MAX_SOURCE_FILE_NAME)
+      return null;
+    return trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 }

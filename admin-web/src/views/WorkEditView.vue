@@ -15,6 +15,12 @@ import {
   type PreviewView,
   type WorkView,
 } from "../content/api";
+import {
+  rememberUploadedMedia,
+  uploadFailureText,
+  uploadFilesSequentially,
+} from "../content/uploadFiles";
+import { addWorkMedia, WORK_MEDIA_LIMIT_TEXT } from "../content/workMedia";
 import { catalogStoreKey } from "../content/catalogStore";
 import { requireContentApi } from "../content/inject";
 import {
@@ -48,7 +54,6 @@ const pending = ref<{ operation: Operation; version: number; key: string } | nul
 const pickerOpen = ref(false);
 const withdrawOpen = ref(false);
 const uploading = ref(false);
-let uploadKey: string | null = null;
 
 const businessChoices = computed(() =>
   FIXED_BUSINESSES.map((id) => {
@@ -140,30 +145,36 @@ function toggleBusiness(id: string) {
 }
 
 function chooseMedia(mediaId: string) {
-  if (!form.selected.includes(mediaId) && form.selected.length < 9) {
-    form.selected.push(mediaId);
+  const outcome = addWorkMedia(form.selected, mediaId);
+  if (outcome === "added") {
     form.alt[mediaId] ??= "";
     if (!form.cover) form.cover = mediaId;
+  } else if (outcome === "full") {
+    notice.value = WORK_MEDIA_LIMIT_TEXT;
   }
   pickerOpen.value = false;
 }
 
-async function uploadMedia(file: File) {
+async function uploadMedia(files: File[]) {
   uploading.value = true;
-  uploadKey ??= newIdempotencyKey();
-  try {
-    const result = await api.upload(file, file.name, uploadKey);
-    uploadKey = null;
-    library.value = [
-      result.media,
-      ...library.value.filter((item) => item.mediaId !== result.media.mediaId),
-    ];
-    chooseMedia(result.media.mediaId);
-  } catch (error) {
-    if (!fail(error)) uploadKey = null;
-  } finally {
-    uploading.value = false;
+  notice.value = "";
+  let blocked = false;
+  const failure = await uploadFilesSequentially(files, async (file, key) => {
+    const result = await api.upload(file, file.name, key);
+    library.value = rememberUploadedMedia(library.value, result.media);
+    const outcome = addWorkMedia(form.selected, result.media.mediaId);
+    if (outcome === "added") {
+      form.alt[result.media.mediaId] ??= "";
+      if (!form.cover) form.cover = result.media.mediaId;
+    } else if (outcome === "full") blocked = true;
+  });
+  if (failure) {
+    notice.value = uploadFailureText(failure.file.name, failure.error);
+    requestId.value = describeFailure(failure.error).requestId;
+  } else if (blocked) {
+    notice.value = WORK_MEDIA_LIMIT_TEXT;
   }
+  uploading.value = false;
 }
 
 function toggle(mediaId: string) {
@@ -171,10 +182,9 @@ function toggle(mediaId: string) {
   if (index >= 0) {
     form.selected.splice(index, 1);
     if (form.cover === mediaId) form.cover = "";
-  } else if (form.selected.length < 9) {
-    form.selected.push(mediaId);
-    form.alt[mediaId] ??= "";
+    return;
   }
+  if (addWorkMedia(form.selected, mediaId) === "added") form.alt[mediaId] ??= "";
 }
 
 async function save() {
@@ -373,7 +383,9 @@ onMounted(() => {
       <MediaPicker
         :open="pickerOpen"
         :media="library"
+        :extra-alts="form.alt"
         :uploading="uploading"
+        :notice="notice"
         @close="pickerOpen = false"
         @choose="chooseMedia"
         @upload="uploadMedia"

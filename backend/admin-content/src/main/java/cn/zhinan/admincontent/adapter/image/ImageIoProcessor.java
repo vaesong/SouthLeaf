@@ -151,7 +151,7 @@ public final class ImageIoProcessor implements ImageProcessor {
       }
     }
     byte[] bytes = format.equals("PNG") ? writePng(scaled) : writeJpeg(scaled);
-    if (bytes.length > ContentRules.MAX_UPLOAD_BYTES) reject("MEDIA_DERIVATIVE_TOO_LARGE");
+    if (bytes.length > ContentRules.MAX_STORED_OBJECT_BYTES) reject("MEDIA_DERIVATIVE_TOO_LARGE");
     String sha = ContentRules.sha256(bytes);
     String extension = format.equals("PNG") ? ".png" : ".jpg";
     String contentType = format.equals("PNG") ? "image/png" : "image/jpeg";

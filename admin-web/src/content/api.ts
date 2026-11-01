@@ -15,6 +15,7 @@ export interface MediaView {
   sourceWidth: number;
   sourceHeight: number;
   createdAt: string;
+  sourceFileName: string | null;
   variants: VariantView[];
 }
 
@@ -241,8 +242,14 @@ export class AdminContentApi {
     });
   }
 
-  listMedia(): Promise<MediaView[]> {
-    return this.read<MediaView[]>("/media");
+  listMedia(query = ""): Promise<MediaView[]> {
+    const q = query.trim();
+    const path = q ? `/media?q=${encodeURIComponent(q)}` : "/media";
+    return this.read<MediaView[]>(path);
+  }
+
+  getMedia(mediaId: string): Promise<MediaView> {
+    return this.read<MediaView>(`/media/${encodeURIComponent(mediaId)}`);
   }
 
   async upload(

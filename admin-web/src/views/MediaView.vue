@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, shallowRef } from "vue";
+import { computed, inject, onMounted, ref, shallowRef, watch } from "vue";
 import { authStoreKey } from "../auth/store";
 import { referencedMediaIds } from "../content/catalogDraft";
 import { catalogStoreKey } from "../content/catalogStore";
 import { mediaContentPath, newIdempotencyKey, type MediaView } from "../content/api";
 import { requireContentApi } from "../content/inject";
+import { searchMedia } from "../content/mediaSearch";
 import { describeFailure } from "../content/messages";
+import {
+  rememberUploadedMedia,
+  uploadFailureText,
+  uploadFilesSequentially,
+} from "../content/uploadFiles";
 import StatusChip from "../components/StatusChip.vue";
 import { mediaStatusLabel } from "../content/format";
 
@@ -40,57 +46,105 @@ function setAlt(id: string, value: string) {
 
 const visible = computed(() =>
   media.value.filter((item) => {
-    const alt = altOf(item.mediaId);
-    if (filter.value === "missing" && !(referenced(item.mediaId) && alt.trim().length === 0))
+    if (
+      filter.value === "missing" &&
+      !(referenced(item.mediaId) && altOf(item.mediaId).trim().length === 0)
+    )
       return false;
-    if (keyword.value && !alt.includes(keyword.value)) return false;
     return true;
   }),
 );
 
+let searchToken = 0;
+
 async function load() {
+  const token = ++searchToken;
   loading.value = true;
   notice.value = "";
   try {
     if (catalog) await catalog.load();
-    media.value = await api.listMedia();
+    const rows = await api.listMedia();
+    if (token !== searchToken) return;
+    media.value = rows;
   } catch (error) {
+    if (token !== searchToken) return;
     const failure = describeFailure(error);
     notice.value = failure.text;
     requestId.value = failure.requestId;
   } finally {
-    loading.value = false;
+    if (token === searchToken) loading.value = false;
   }
 }
 
-async function upload(file: File) {
-  busy.value = true;
-  notice.value = "";
-  if (!uploadIntent.value || uploadIntent.value.file !== file)
-    uploadIntent.value = { key: newIdempotencyKey(), file };
+async function applySearch() {
+  const query = keyword.value.trim();
+  if (!query) {
+    await load();
+    return;
+  }
+  const token = ++searchToken;
   try {
-    const result = await api.upload(file, file.name, uploadIntent.value.key);
-    uploadIntent.value = null;
-    media.value = [
-      result.media,
-      ...media.value.filter((item) => item.mediaId !== result.media.mediaId),
-    ];
-    notice.value = result.replayed ? "已确认先前的上传结果。" : "图片已处理并保存。";
+    if (catalog && !catalog.state.draft) await catalog.load();
+    const found = await searchMedia(
+      api,
+      query,
+      catalog?.state.draft?.mediaAltTexts ?? {},
+      {},
+      media.value,
+    );
+    if (token !== searchToken) return;
+    media.value = found;
   } catch (error) {
+    if (token !== searchToken) return;
     const failure = describeFailure(error);
     notice.value = failure.text;
     requestId.value = failure.requestId;
-    if (!failure.unknown) uploadIntent.value = null;
-  } finally {
-    busy.value = false;
-    if (fileInput.value) fileInput.value.value = "";
   }
+}
+
+async function upload(files: File[], reuse?: { key: string; file: File }) {
+  busy.value = true;
+  notice.value = "";
+  const batch = reuse ? [reuse.file] : files;
+  let replayed = false;
+  const failure = await uploadFilesSequentially(
+    batch,
+    async (file, key) => {
+      const result = await api.upload(file, file.name, key);
+      replayed = result.replayed;
+      media.value = rememberUploadedMedia(media.value, result.media);
+    },
+    (file) => (reuse && reuse.file === file ? reuse.key : newIdempotencyKey()),
+  );
+  if (failure) {
+    const described = describeFailure(failure.error);
+    notice.value = uploadFailureText(failure.file.name, failure.error);
+    requestId.value = described.requestId;
+    uploadIntent.value = described.unknown ? { key: failure.key, file: failure.file } : null;
+  } else {
+    uploadIntent.value = null;
+    notice.value = batch.length === 1 && replayed ? "已确认先前的上传结果。" : "图片已处理并保存。";
+  }
+  busy.value = false;
+  if (fileInput.value) fileInput.value.value = "";
+}
+
+function retryUpload() {
+  const intent = uploadIntent.value;
+  if (intent) void upload([intent.file], intent);
 }
 
 function onFile(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) void upload(file);
+  const input = event.target as HTMLInputElement;
+  const files = Array.from(input.files ?? []);
+  input.value = "";
+  uploadIntent.value = null;
+  if (files.length > 0) void upload(files);
 }
+
+watch(keyword, () => {
+  void applySearch();
+});
 
 onMounted(load);
 </script>
@@ -116,6 +170,7 @@ onMounted(load);
           data-testid="media-file"
           type="file"
           accept="image/jpeg,image/png"
+          multiple
           hidden
           @change="onFile"
         />
@@ -124,7 +179,7 @@ onMounted(load);
     <div class="note" style="margin-bottom: 18px">
       <b>说明</b>
       <span
-        >单张不超过 4MB，只接受 JPEG 或
+        >单张不超过 30MB，只接受 JPEG 或
         PNG。页面里用到的图片都要写描述。作品里的图片描述在编辑作品时填写。</span
       >
     </div>
@@ -135,7 +190,7 @@ onMounted(load);
         class="btn btn-ghost btn-sm"
         type="button"
         data-testid="retry-upload"
-        @click="upload(uploadIntent.file)"
+        @click="retryUpload"
       >
         再试一次
       </button>
@@ -150,7 +205,11 @@ onMounted(load);
         </button>
       </div>
       <div class="search" style="margin-left: auto">
-        <input v-model="keyword" placeholder="按描述搜索" />
+        <input
+          v-model="keyword"
+          placeholder="按文件名或描述搜索"
+          data-testid="media-library-search"
+        />
       </div>
     </div>
     <p v-if="loading">正在读取图片…</p>
@@ -160,6 +219,7 @@ onMounted(load);
           <img :src="mediaContentPath(item.mediaId, 'thumbnail')" alt="" />
         </div>
         <div class="m">
+          <span v-if="item.sourceFileName">{{ item.sourceFileName }}</span>
           {{ item.sourceWidth }}×{{ item.sourceHeight }}
           <StatusChip
             :tone="item.status === 'READY' ? 'live' : 'draft'"

@@ -18,7 +18,8 @@ export function describeFailure(error: unknown): {
     IDEMPOTENCY_KEY_REUSE: "这次提交和上次内容不一致，请重新保存。",
     NOT_PUBLISHED: "这组作品还没发布，不用撤下。",
     PRECONDITION_REQUIRED: "页面内容已过期，请重新加载。",
-    MEDIA_TOO_LARGE: "图片超过 4MB。",
+    MEDIA_TOO_LARGE: "图片超过 30MB。",
+    MEDIA_TYPE_UNSUPPORTED: "只支持 JPEG 或 PNG 图片。",
     MEDIA_UNSUPPORTED_TYPE: "只支持 JPEG 或 PNG 图片。",
     MEDIA_REJECTED: "这张图片无法使用，请换一张。",
     MEDIA_NOT_READY: "这张图片还在处理，请稍后再选。",
@@ -28,6 +29,13 @@ export function describeFailure(error: unknown): {
     NETWORK_ERROR: "网络中断，结果未知。请再试一次。",
   };
   const byReason: Record<string, string> = {
+    MEDIA_DIMENSIONS: "图片边长或像素超过上限。",
+    MEDIA_DERIVATIVE_TOO_LARGE: "处理后的预览图超过 4MB，无法保存。",
+    MEDIA_SIGNATURE: "这张图片已损坏或不是有效的 JPEG / PNG。",
+    MEDIA_DECODE: "这张图片已损坏或不是有效的 JPEG / PNG。",
+    MEDIA_FORMAT_MISMATCH: "这张图片已损坏或不是有效的 JPEG / PNG。",
+    MEDIA_INTEGRITY: "这张图片已损坏或不是有效的 JPEG / PNG。",
+    MEDIA_EMPTY: "没有读到图片内容。",
     MEDIA_ALT_INVALID: "用到的图片都要写上描述后才能保存。",
     MEDIA_ALT_SET_MISMATCH: "图片描述和当前用到的图片对不上，请重新加载后再保存。",
     MEDIA_ALT_CONFLICT: "图片描述和图片库里的记录不一致，请重新加载后再保存。",

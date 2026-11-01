@@ -1,5 +1,6 @@
 package cn.zhinan.adminruntime;
 
+import cn.zhinan.admincontent.domain.ContentRules;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 final class AdminOriginFilter extends OncePerRequestFilter {
   static final String UPLOAD_PATH = "/api/admin/v1/media/uploads";
-  static final long MAX_UPLOAD_REQUEST_BYTES = 4L * 1024 * 1024 + 64 * 1024;
+  static final long MAX_UPLOAD_REQUEST_BYTES = ContentRules.MAX_UPLOAD_BYTES + 64L * 1024;
   private static final long MAX_PUT_BYTES = 16 * 1024;
   private final AdminOriginPolicy originPolicy;
 

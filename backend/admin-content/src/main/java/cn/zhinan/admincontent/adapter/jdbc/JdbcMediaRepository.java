@@ -22,7 +22,12 @@ import org.springframework.dao.DuplicateKeyException;
 /** Business-writer adapter for media facts in the management schema. */
 public final class JdbcMediaRepository implements MediaRepository {
   private static final String ASSET_COLUMNS =
-      "media_id,status,source_format,source_width,source_height,created_at";
+      "media_id,status,source_format,source_width,source_height,created_at,source_file_name";
+  private static final String FILE_NAME_MATCH =
+      "WHERE media_id IN (SELECT media_id FROM ("
+          + "SELECT media_id FROM admin_media_asset "
+          + "WHERE LOWER(source_file_name) LIKE CONCAT('%', LOWER(:pattern), '%') ESCAPE '\\\\' "
+          + "ORDER BY created_at DESC, media_id LIMIT :limit) matched)";
   private final ContentJdbc db;
 
   public JdbcMediaRepository(DataSource businessWriter) {
@@ -55,12 +60,13 @@ public final class JdbcMediaRepository implements MediaRepository {
       String requestSha256,
       String mediaId,
       ProcessedImage image,
+      String sourceFileName,
       Instant now) {
     try {
       return db.write(
           () -> {
             db.jdbc.update(
-                "INSERT INTO admin_media_asset (media_id,status,source_format,source_sha256,source_byte_length,source_width,source_height,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO admin_media_asset (media_id,status,source_format,source_sha256,source_byte_length,source_width,source_height,source_file_name,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
                 mediaId,
                 "READY",
                 image.sourceFormat(),
@@ -68,6 +74,7 @@ public final class JdbcMediaRepository implements MediaRepository {
                 image.sourceByteLength(),
                 image.sourceWidth(),
                 image.sourceHeight(),
+                sourceFileName,
                 actorId,
                 ContentJdbc.ts(now));
             for (var encoded : image.variants()) {
@@ -143,6 +150,16 @@ public final class JdbcMediaRepository implements MediaRepository {
                     .values()));
   }
 
+  @Override
+  public List<MediaAsset> searchByFileName(String escapedContains, int limit) {
+    if (escapedContains == null || escapedContains.isEmpty() || limit < 1) return List.of();
+    return db.read(
+        () ->
+            List.copyOf(
+                load(FILE_NAME_MATCH, Map.of("pattern", escapedContains, "limit", limit))
+                    .values()));
+  }
+
   private Map<String, MediaAsset> load(String where, Map<String, ?> parameters) {
     var assets =
         db.named.queryForList(
@@ -172,6 +189,7 @@ public final class JdbcMediaRepository implements MediaRepository {
               ((Number) row.get("source_width")).intValue(),
               ((Number) row.get("source_height")).intValue(),
               ContentJdbc.instant(row.get("created_at")),
+              (String) row.get("source_file_name"),
               own));
     }
     return result;

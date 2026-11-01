@@ -260,6 +260,49 @@ describe("AdminContentApi", () => {
     expect((init.body as FormData).getAll("file")).toHaveLength(1);
     expect(init.headers).not.toHaveProperty("Content-Type");
   });
+
+  it("searches media by an encoded filename query and reads one asset", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(200, { code: "OK", requestId: "r", data: [] }))
+      .mockResolvedValueOnce(response(200, { code: "OK", requestId: "r", data: { mediaId: "m" } }));
+    const api = new AdminContentApi(fetcher as unknown as typeof fetch);
+
+    await api.listMedia("a%_b");
+    await api.getMedia("id/1");
+
+    expect(fetcher.mock.calls[0]?.[0]).toBe("/api/admin/v1/media?q=a%25_b");
+    expect(fetcher.mock.calls[1]?.[0]).toBe("/api/admin/v1/media/id%2F1");
+  });
+
+  it("explains oversized, unsupported and damaged images", () => {
+    expect(
+      describeFailure(
+        new ContentApiError(413, "MEDIA_TOO_LARGE", "too big", "r", "MEDIA_TOO_LARGE"),
+      ).text,
+    ).toBe("图片超过 30MB。");
+    expect(
+      describeFailure(
+        new ContentApiError(
+          415,
+          "MEDIA_TYPE_UNSUPPORTED",
+          "Only JPEG and PNG are accepted.",
+          "r",
+          undefined,
+        ),
+      ).text,
+    ).toBe("只支持 JPEG 或 PNG 图片。");
+    expect(
+      describeFailure(
+        new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_DIMENSIONS"),
+      ).text,
+    ).toBe("图片边长或像素超过上限。");
+    expect(
+      describeFailure(
+        new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_SIGNATURE"),
+      ).text,
+    ).toBe("这张图片已损坏或不是有效的 JPEG / PNG。");
+  });
 });
 
 describe("helpers", () => {

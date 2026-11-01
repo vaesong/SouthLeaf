@@ -11,7 +11,12 @@ import SideDrawer from "../components/SideDrawer.vue";
 import TagListEditor from "../components/TagListEditor.vue";
 import MiniAboutPreview from "../components/MiniAboutPreview.vue";
 import PhonePreview from "../components/PhonePreview.vue";
-import { mediaContentPath, newIdempotencyKey, type MediaView } from "../content/api";
+import { mediaContentPath, type MediaView } from "../content/api";
+import {
+  rememberUploadedMedia,
+  uploadFailureText,
+  uploadFilesSequentially,
+} from "../content/uploadFiles";
 import { CHANNEL_PLATFORMS, QR_STATUSES, moveItem } from "../content/catalogDraft";
 import { countLabel } from "../content/format";
 import { requireContentApi } from "../content/inject";
@@ -27,7 +32,6 @@ const mediaError = ref("");
 const uploading = ref(false);
 const editingIndex = ref<number | null>(null);
 const removeMemberOpen = ref(false);
-let uploadKey: string | null = null;
 
 const draft = computed(() => store.state.draft);
 const editingMember = computed(() =>
@@ -91,22 +95,15 @@ function addMember() {
   editingIndex.value = value.team.length - 1;
 }
 
-async function uploadMedia(file: File) {
+async function uploadMedia(files: File[]) {
   uploading.value = true;
-  uploadKey ??= newIdempotencyKey();
-  try {
-    const result = await api.upload(file, file.name, uploadKey);
-    uploadKey = null;
-    media.value = [
-      result.media,
-      ...media.value.filter((item) => item.mediaId !== result.media.mediaId),
-    ];
-  } catch (error) {
-    mediaError.value = describeFailure(error).text;
-    if (!describeFailure(error).unknown) uploadKey = null;
-  } finally {
-    uploading.value = false;
-  }
+  mediaError.value = "";
+  const failure = await uploadFilesSequentially(files, async (file, key) => {
+    const result = await api.upload(file, file.name, key);
+    media.value = rememberUploadedMedia(media.value, result.media);
+  });
+  if (failure) mediaError.value = uploadFailureText(failure.file.name, failure.error);
+  uploading.value = false;
 }
 
 function moveEditing(offset: number) {
@@ -195,6 +192,7 @@ onMounted(async () => {
             :media="media"
             :model-value="draft.brand.logoMediaId"
             :uploading="uploading"
+            :notice="mediaError"
             @close="logoOpen = false"
             @choose="chooseLogo"
             @upload="uploadMedia"
@@ -370,6 +368,7 @@ onMounted(async () => {
             test-id="catalog-team-portrait-media"
             :disabled="!canEdit"
             :uploading="uploading"
+            :notice="mediaError"
             @upload="uploadMedia"
           />
           <div class="grid-2">
@@ -584,6 +583,7 @@ onMounted(async () => {
             :media="media"
             :model-value="qrOpen === null ? null : (draft.channels[qrOpen]?.qrMediaId ?? null)"
             :uploading="uploading"
+            :notice="mediaError"
             @close="qrOpen = null"
             @choose="chooseQr"
             @upload="uploadMedia"

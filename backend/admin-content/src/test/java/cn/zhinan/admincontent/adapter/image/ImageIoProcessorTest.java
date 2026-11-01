@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import cn.zhinan.admincontent.domain.ContentException;
 import cn.zhinan.admincontent.domain.ContentFailure;
+import cn.zhinan.admincontent.domain.ContentRules;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -75,8 +76,14 @@ class ImageIoProcessorTest {
     expect(() -> processor.process(png, "image/gif"), ContentFailure.MEDIA_UNSUPPORTED_TYPE);
     expect(() -> processor.process(new byte[0], "image/png"), ContentFailure.MEDIA_REJECTED);
     expect(
-        () -> processor.process(new byte[4 * 1024 * 1024 + 1], "image/png"),
+        () -> processor.process(new byte[ContentRules.MAX_UPLOAD_BYTES + 1], "image/png"),
         ContentFailure.MEDIA_TOO_LARGE);
+    assertThatThrownBy(
+            () ->
+                processor.process(new byte[ContentRules.MAX_STORED_OBJECT_BYTES + 1], "image/png"))
+        .isInstanceOf(ContentException.class)
+        .extracting(e -> ((ContentException) e).failure())
+        .isEqualTo(ContentFailure.MEDIA_REJECTED);
   }
 
   @Test

@@ -10,7 +10,12 @@ import SegmentedControl from "../components/SegmentedControl.vue";
 import TagListEditor from "../components/TagListEditor.vue";
 import AppIcon from "../components/AppIcon.vue";
 import StatusChip from "../components/StatusChip.vue";
-import { newIdempotencyKey, type MediaView } from "../content/api";
+import { type MediaView } from "../content/api";
+import {
+  rememberUploadedMedia,
+  uploadFailureText,
+  uploadFilesSequentially,
+} from "../content/uploadFiles";
 import { BUSINESS_IDS, PRICE_TYPES, priceNeedsAmount } from "../content/catalogDraft";
 import { countLabel, formatPackagePrice } from "../content/format";
 import { requireContentApi } from "../content/inject";
@@ -27,7 +32,6 @@ const mediaError = ref("");
 const uploading = ref(false);
 const selectedId = ref<string>(BUSINESS_IDS[0]);
 const expandedPackageId = ref<string | null>(null);
-let uploadKey: string | null = null;
 
 const draft = computed(() => store.state.draft);
 const businesses = computed(() => {
@@ -70,22 +74,15 @@ function moveVisiblePackage(globalIndex: number, offset: number) {
   value.packages[target.index] = swapped!;
 }
 
-async function uploadMedia(file: File) {
+async function uploadMedia(files: File[]) {
   uploading.value = true;
-  uploadKey ??= newIdempotencyKey();
-  try {
-    const result = await api.upload(file, file.name, uploadKey);
-    uploadKey = null;
-    media.value = [
-      result.media,
-      ...media.value.filter((item) => item.mediaId !== result.media.mediaId),
-    ];
-  } catch (error) {
-    mediaError.value = describeFailure(error).text;
-    if (!describeFailure(error).unknown) uploadKey = null;
-  } finally {
-    uploading.value = false;
-  }
+  mediaError.value = "";
+  const failure = await uploadFilesSequentially(files, async (file, key) => {
+    const result = await api.upload(file, file.name, key);
+    media.value = rememberUploadedMedia(media.value, result.media);
+  });
+  if (failure) mediaError.value = uploadFailureText(failure.file.name, failure.error);
+  uploading.value = false;
 }
 
 function addPackage() {
@@ -185,6 +182,7 @@ onMounted(async () => {
               test-id="catalog-business-cover-media"
               :disabled="!canEdit"
               :uploading="uploading"
+              :notice="mediaError"
               @upload="uploadMedia"
             />
             <div class="stack">
@@ -359,6 +357,7 @@ onMounted(async () => {
                     test-id="catalog-package-cover-media"
                     :disabled="!canEdit"
                     :uploading="uploading"
+                    :notice="mediaError"
                     @upload="uploadMedia"
                   />
                 </div>

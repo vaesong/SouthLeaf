@@ -107,4 +107,24 @@ class ContentDomainTest {
         .isInstanceOf(ContentException.class);
     assertThatThrownBy(() -> ContentRules.uuid("../etc")).isInstanceOf(ContentException.class);
   }
+
+  @Test
+  void sourceFileNameKeepsADisplayBasenameOnly() {
+    assertThat(ContentRules.MAX_UPLOAD_BYTES).isEqualTo(30 * 1024 * 1024);
+    assertThat(ContentRules.MAX_STORED_OBJECT_BYTES).isEqualTo(4 * 1024 * 1024);
+    assertThat(ContentRules.sourceFileName(null)).isNull();
+    assertThat(ContentRules.sourceFileName("   ")).isNull();
+    assertThat(ContentRules.sourceFileName("C:\\dir\\a.jpg")).isEqualTo("a.jpg");
+    assertThat(ContentRules.sourceFileName("dir/a.jpg")).isEqualTo("a.jpg");
+    assertThat(ContentRules.sourceFileName("a/b\\c.jpg")).isEqualTo("c.jpg");
+    assertThat(ContentRules.sourceFileName("a\u0000b.jpg")).isEqualTo("ab.jpg");
+    assertThat(ContentRules.sourceFileName("  photo.jpg  ")).isEqualTo("photo.jpg");
+    assertThat(ContentRules.sourceFileName("/")).isNull();
+    assertThat(ContentRules.sourceFileName("a".repeat(130))).hasSize(120);
+    assertThat(ContentRules.likeContains(null)).isNull();
+    assertThat(ContentRules.likeContains("   ")).isNull();
+    assertThat(ContentRules.likeContains("x".repeat(121))).isNull();
+    assertThat(ContentRules.likeContains("  AbC  ")).isEqualTo("AbC");
+    assertThat(ContentRules.likeContains("100%_a\\b")).isEqualTo("100\\%\\_a\\\\b");
+  }
 }

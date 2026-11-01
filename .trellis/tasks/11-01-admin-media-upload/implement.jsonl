@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "迁移只追加 V14，不改已应用的 V5"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "媒体读取必须有界，公开快照不带原图"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "上传限制从页面、请求体、领域和数据库一起改"}
+{"file": "docs/设计笔记集/02_通用后端/05_文件与对象存储设计.md", "reason": "公开媒体只有 thumbnail 和 preview"}

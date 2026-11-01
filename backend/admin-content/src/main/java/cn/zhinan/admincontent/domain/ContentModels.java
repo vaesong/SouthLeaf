@@ -37,6 +37,7 @@ public final class ContentModels {
       int sourceWidth,
       int sourceHeight,
       Instant createdAt,
+      String sourceFileName,
       List<Variant> variants) {
     public MediaAsset {
       variants = List.copyOf(variants);

@@ -62,10 +62,16 @@ public final class ContentApplication {
   }
 
   public UploadResult upload(
-      String actorId, String idempotencyKey, byte[] bytes, String declaredContentType) {
+      String actorId,
+      String idempotencyKey,
+      byte[] bytes,
+      String declaredContentType,
+      String submittedFileName) {
     ContentRules.idempotencyKey(idempotencyKey);
+    // The display name is not part of the digest, so a retry of the same bytes stays stable.
     String requestSha256 =
         ContentRules.sha256(ContentRules.sha256(bytes) + "\n" + declaredContentType);
+    String sourceFileName = ContentRules.sourceFileName(submittedFileName);
     var stored = media.findUpload(actorId, idempotencyKey);
     if (stored.isPresent())
       return replay(stored.get().requestSha256(), requestSha256, stored.get().result());
@@ -83,7 +89,13 @@ public final class ContentApplication {
       objects.write(variant.metadata().objectKey(), variant.bytes());
     try {
       return media.saveReady(
-          actorId, idempotencyKey, requestSha256, ContentRules.newId(), processed, clock.instant());
+          actorId,
+          idempotencyKey,
+          requestSha256,
+          ContentRules.newId(),
+          processed,
+          sourceFileName,
+          clock.instant());
     } catch (ContentException race) {
       if (!"IDEMPOTENCY_RACE".equals(race.reason())) throw race;
       var winner =
@@ -107,8 +119,17 @@ public final class ContentApplication {
     return media.find(ContentRules.uuid(mediaId));
   }
 
-  public List<MediaAsset> recentMedia() {
-    return media.recent(50);
+  /**
+   * Recent 50 when {@code query} is blank. A non-blank query is a case-insensitive contains match
+   * on the display file name, at most 50 rows. A query longer than a stored name matches nothing.
+   */
+  public List<MediaAsset> listMedia(String query) {
+    String pattern = ContentRules.likeContains(query);
+    if (pattern == null) {
+      if (query != null && !query.trim().isEmpty()) return List.of();
+      return media.recent(50);
+    }
+    return media.searchByFileName(pattern, 50);
   }
 
   /** Private admin preview of a READY derivative; never exposes object keys. */

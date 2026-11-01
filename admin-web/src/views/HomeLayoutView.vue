@@ -12,7 +12,6 @@ import PhonePreview from "../components/PhonePreview.vue";
 import StatusChip from "../components/StatusChip.vue";
 import {
   mediaContentPath,
-  newIdempotencyKey,
   type HeroSlideInput,
   type HeroTargetType,
   type MediaView,
@@ -29,6 +28,11 @@ import {
 import { countLabel } from "../content/format";
 import { requireContentApi } from "../content/inject";
 import { describeFailure } from "../content/messages";
+import {
+  rememberUploadedMedia,
+  uploadFilesSequentially,
+  uploadFailureText,
+} from "../content/uploadFiles";
 import { useCatalogAccess, useCatalogLeaveGuard } from "../content/useCatalog";
 
 const api = requireContentApi();
@@ -44,7 +48,6 @@ const packageDrawer = ref(false);
 const workDrawer = ref(false);
 const limitHint = ref("");
 const editingSlideId = ref<string | null>(null);
-let uploadKey: string | null = null;
 const draft = computed(() => store.state.draft);
 const heroTargets = [
   { value: "WORK", label: "作品" },
@@ -117,22 +120,15 @@ async function refreshMedia() {
   }
 }
 
-async function uploadMedia(file: File) {
+async function uploadMedia(files: File[]) {
   uploading.value = true;
-  uploadKey ??= newIdempotencyKey();
-  try {
-    const result = await api.upload(file, file.name, uploadKey);
-    uploadKey = null;
-    media.value = [
-      result.media,
-      ...media.value.filter((item) => item.mediaId !== result.media.mediaId),
-    ];
-  } catch (error) {
-    mediaError.value = describeFailure(error).text;
-    if (!describeFailure(error).unknown) uploadKey = null;
-  } finally {
-    uploading.value = false;
-  }
+  mediaError.value = "";
+  const failure = await uploadFilesSequentially(files, async (file, key) => {
+    const result = await api.upload(file, file.name, key);
+    media.value = rememberUploadedMedia(media.value, result.media);
+  });
+  if (failure) mediaError.value = uploadFailureText(failure.file.name, failure.error);
+  uploading.value = false;
 }
 
 function heroTargetLabel(type: string) {
@@ -327,6 +323,7 @@ onMounted(async () => {
                   :media="media"
                   :disabled="!canEdit"
                   :uploading="uploading"
+                  :notice="mediaError"
                   test-id="catalog-hero-media"
                   @update:model-value="setSlideMedia(slide, $event)"
                   @upload="uploadMedia"

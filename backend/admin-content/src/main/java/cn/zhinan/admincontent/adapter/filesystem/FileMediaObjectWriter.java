@@ -69,7 +69,7 @@ public final class FileMediaObjectWriter implements MediaObjectWriter {
     Path target = root.resolve(objectKey);
     try {
       if (!Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS)
-          || Files.size(target) > ContentRules.MAX_UPLOAD_BYTES)
+          || Files.size(target) > ContentRules.MAX_STORED_OBJECT_BYTES)
         throw new ContentException(ContentFailure.STORAGE_UNAVAILABLE, "OBJECT_MISSING");
       return Files.readAllBytes(target);
     } catch (IOException ex) {

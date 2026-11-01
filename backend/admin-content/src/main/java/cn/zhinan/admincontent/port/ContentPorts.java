@@ -41,6 +41,7 @@ public final class ContentPorts {
         String requestSha256,
         String mediaId,
         ProcessedImage image,
+        String sourceFileName,
         Instant now);
 
     UploadResult saveRejected(
@@ -53,6 +54,9 @@ public final class ContentPorts {
     Optional<Variant> variant(String mediaId, String variant);
 
     List<MediaAsset> recent(int limit);
+
+    /** Case-insensitive contains match. {@code escapedContains} already escapes LIKE wildcards. */
+    List<MediaAsset> searchByFileName(String escapedContains, int limit);
   }
 
   public record StoredUpload(String requestSha256, UploadResult result) {}

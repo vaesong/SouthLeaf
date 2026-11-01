@@ -277,6 +277,7 @@ export function mockAdminApi(): Plugin {
     sourceWidth: 800,
     sourceHeight: 600,
     createdAt: "2026-11-01T01:00:00Z",
+    sourceFileName: `mock-${index + 1}.png`,
     variants: [],
   }));
   const workPlan = [
@@ -575,7 +576,23 @@ export function mockAdminApi(): Plugin {
           return;
         }
         if (path === "/api/admin/v1/media" && method === "GET") {
-          send(res, 200, envelope(media));
+          const q = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
+          const rows = q
+            ? media
+                .filter((item) => (item.sourceFileName ?? "").toLowerCase().includes(q))
+                .slice(0, 50)
+            : media.slice(0, 50);
+          send(res, 200, envelope(rows));
+          return;
+        }
+        const mediaItem = path.match(/^\/api\/admin\/v1\/media\/([^/]+)$/);
+        if (mediaItem && method === "GET") {
+          const found = media.find((item) => item.mediaId === decodeURIComponent(mediaItem[1]));
+          if (!found) {
+            send(res, 404, JSON.stringify({ code: "RESOURCE_UNAVAILABLE", requestId: "mock" }));
+            return;
+          }
+          send(res, 200, envelope(found));
           return;
         }
         if (path === "/api/admin/v1/media/uploads" && method === "POST") {
@@ -586,6 +603,7 @@ export function mockAdminApi(): Plugin {
             sourceWidth: 640,
             sourceHeight: 480,
             createdAt: new Date().toISOString(),
+            sourceFileName: null,
             variants: [],
           };
           media.unshift(created);
