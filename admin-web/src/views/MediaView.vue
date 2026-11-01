@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, shallowRef, watch } from "vue";
 import { authStoreKey } from "../auth/store";
-import { referencedMediaIds } from "../content/catalogDraft";
-import { catalogStoreKey } from "../content/catalogStore";
 import { mediaContentPath, newIdempotencyKey, type MediaView } from "../content/api";
 import { requireContentApi } from "../content/inject";
 import { searchMedia } from "../content/mediaSearch";
@@ -17,43 +15,15 @@ import { mediaStatusLabel } from "../content/format";
 
 const api = requireContentApi();
 const auth = inject(authStoreKey);
-const catalog = inject(catalogStoreKey);
 const media = ref<MediaView[]>([]);
 const loading = ref(true);
 const busy = ref(false);
 const notice = ref("");
 const requestId = ref("");
-const filter = ref("all");
 const keyword = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
 const uploadIntent = shallowRef<{ key: string; file: File } | null>(null);
 const canEdit = computed(() => auth?.state.identity?.permissions.includes("CONTENT_EDIT") ?? false);
-
-function altOf(id: string) {
-  return catalog?.state.draft?.mediaAltTexts[id] ?? "";
-}
-
-function referenced(id: string) {
-  const draft = catalog?.state.draft;
-  return !!draft && referencedMediaIds(draft).includes(id);
-}
-
-function setAlt(id: string, value: string) {
-  const draft = catalog?.state.draft;
-  if (!draft || !referenced(id)) return;
-  draft.mediaAltTexts[id] = value;
-}
-
-const visible = computed(() =>
-  media.value.filter((item) => {
-    if (
-      filter.value === "missing" &&
-      !(referenced(item.mediaId) && altOf(item.mediaId).trim().length === 0)
-    )
-      return false;
-    return true;
-  }),
-);
 
 let searchToken = 0;
 
@@ -62,7 +32,6 @@ async function load() {
   loading.value = true;
   notice.value = "";
   try {
-    if (catalog) await catalog.load();
     const rows = await api.listMedia();
     if (token !== searchToken) return;
     media.value = rows;
@@ -84,14 +53,7 @@ async function applySearch() {
   }
   const token = ++searchToken;
   try {
-    if (catalog && !catalog.state.draft) await catalog.load();
-    const found = await searchMedia(
-      api,
-      query,
-      catalog?.state.draft?.mediaAltTexts ?? {},
-      {},
-      media.value,
-    );
+    const found = await searchMedia(api, query, media.value);
     if (token !== searchToken) return;
     media.value = found;
   } catch (error) {
@@ -154,7 +116,7 @@ onMounted(load);
     <div class="page-head">
       <div>
         <h1>图片库</h1>
-        <p>作品、封面、团队照片和二维码都从这里选。补上描述后，记得在内容页保存。</p>
+        <p>作品、封面、团队照片和二维码都从这里选。</p>
       </div>
       <div class="actions">
         <button
@@ -178,10 +140,7 @@ onMounted(load);
     </div>
     <div class="note" style="margin-bottom: 18px">
       <b>说明</b>
-      <span
-        >单张不超过 30MB，只接受 JPEG 或
-        PNG。页面里用到的图片都要写描述。作品里的图片描述在编辑作品时填写。</span
-      >
+      <span>单张不超过 30MB，只接受 JPEG 或 PNG。</span>
     </div>
     <p v-if="notice" class="notice-line" role="alert" data-testid="content-notice">
       {{ notice }}
@@ -196,25 +155,14 @@ onMounted(load);
       </button>
     </p>
     <div class="toolbar">
-      <div class="seg">
-        <button type="button" :class="{ on: filter === 'all' }" @click="filter = 'all'">
-          全部 {{ media.length }}
-        </button>
-        <button type="button" :class="{ on: filter === 'missing' }" @click="filter = 'missing'">
-          缺描述
-        </button>
-      </div>
+      <span>全部 {{ media.length }}</span>
       <div class="search" style="margin-left: auto">
-        <input
-          v-model="keyword"
-          placeholder="按文件名或描述搜索"
-          data-testid="media-library-search"
-        />
+        <input v-model="keyword" placeholder="按文件名搜索" data-testid="media-library-search" />
       </div>
     </div>
     <p v-if="loading">正在读取图片…</p>
     <div v-else class="media-grid" data-testid="media-grid">
-      <article v-for="item in visible" :key="item.mediaId" class="media">
+      <article v-for="item in media" :key="item.mediaId" class="media">
         <div class="ph">
           <img :src="mediaContentPath(item.mediaId, 'thumbnail')" alt="" />
         </div>
@@ -225,18 +173,6 @@ onMounted(load);
             :tone="item.status === 'READY' ? 'live' : 'draft'"
             :text="mediaStatusLabel(item.status)"
           />
-        </div>
-        <div class="alt" :class="{ miss: !altOf(item.mediaId) }">
-          <input
-            v-if="referenced(item.mediaId)"
-            class="input"
-            maxlength="120"
-            :value="altOf(item.mediaId)"
-            :disabled="!canEdit"
-            :data-testid="`catalog-media-alt-${item.mediaId}`"
-            @input="setAlt(item.mediaId, ($event.target as HTMLInputElement).value)"
-          />
-          <span v-else>{{ altOf(item.mediaId) || "未在页面中使用" }}</span>
         </div>
       </article>
     </div>

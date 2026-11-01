@@ -1,7 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import type { MediaView } from "../content/api";
-import { catalogStoreKey } from "../content/catalogStore";
 import { contentApiKey } from "../content/inject";
 import MediaPicker from "./MediaPicker.vue";
 
@@ -22,27 +21,20 @@ const beach = asset("beach", "beach-sunset.jpg");
 const other = asset("other", "studio.png");
 const described = asset("described", "plain.jpg");
 
-function mountPicker(extraAlts: Record<string, string> = {}) {
+function mountPicker() {
   const listMedia = vi.fn(async (query = "") => {
     if (query === "beach") return [beach];
     return [];
   });
-  const getMedia = vi.fn(async (id: string) => {
-    if (id === "described") return described;
-    throw new Error("missing");
-  });
   const wrapper = mount(MediaPicker, {
-    props: { open: true, media: [beach, other], extraAlts },
+    props: { open: true, media: [beach, other, described] },
     global: {
       provide: {
-        [contentApiKey as symbol]: { listMedia, getMedia },
-        [catalogStoreKey as symbol]: {
-          state: { draft: { mediaAltTexts: { described: "海边日落" } } },
-        },
+        [contentApiKey as symbol]: { listMedia },
       },
     },
   });
-  return { wrapper, listMedia, getMedia };
+  return { wrapper, listMedia };
 }
 
 describe("MediaPicker", () => {
@@ -72,10 +64,10 @@ describe("MediaPicker", () => {
     expect(emitted.map((file) => file.name)).toEqual(["a.jpg", "b.png"]);
   });
 
-  it("shows only filename or description matches", async () => {
-    const { wrapper, getMedia } = mountPicker();
+  it("shows only filename matches", async () => {
+    const { wrapper, listMedia } = mountPicker();
 
-    expect(wrapper.findAll("[data-testid=media-picker-item]")).toHaveLength(2);
+    expect(wrapper.findAll("[data-testid=media-picker-item]")).toHaveLength(3);
     await wrapper.get("[data-testid=media-picker-search]").setValue("beach");
     await flushPromises();
 
@@ -84,27 +76,21 @@ describe("MediaPicker", () => {
         .findAll("[data-testid=media-picker-item]")
         .map((item) => item.attributes("data-media-id")),
     ).toEqual(["beach"]);
-    expect(getMedia).not.toHaveBeenCalled();
 
     await wrapper.get("[data-testid=media-picker-search]").setValue("日落");
     await flushPromises();
-    expect(
-      wrapper
-        .findAll("[data-testid=media-picker-item]")
-        .map((item) => item.attributes("data-media-id")),
-    ).toEqual(["described"]);
+    expect(wrapper.findAll("[data-testid=media-picker-item]")).toHaveLength(0);
+    expect(listMedia).toHaveBeenCalledWith("日落");
   });
 
-  it("matches a description typed on the current work", async () => {
-    const work = asset("work", null);
+  it("does not match a description typed on the current work", async () => {
+    const work = asset("work", "studio-window.jpg");
     const listMedia = vi.fn(async () => []);
-    const getMedia = vi.fn(async () => work);
     const wrapper = mount(MediaPicker, {
-      props: { open: true, media: [beach], extraAlts: { work: "窗边光" } },
+      props: { open: true, media: [beach, work] },
       global: {
         provide: {
-          [contentApiKey as symbol]: { listMedia, getMedia },
-          [catalogStoreKey as symbol]: { state: { draft: { mediaAltTexts: {} } } },
+          [contentApiKey as symbol]: { listMedia },
         },
       },
     });
@@ -112,7 +98,8 @@ describe("MediaPicker", () => {
     await wrapper.get("[data-testid=media-picker-search]").setValue("窗边");
     await flushPromises();
 
-    expect(wrapper.find("[data-media-id=work]").exists()).toBe(true);
+    expect(wrapper.find("[data-media-id=work]").exists()).toBe(false);
     expect(wrapper.find("[data-media-id=beach]").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("缺描述");
   });
 });

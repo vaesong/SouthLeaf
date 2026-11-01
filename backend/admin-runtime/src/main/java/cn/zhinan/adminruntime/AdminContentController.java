@@ -127,7 +127,7 @@ class AdminContentController {
         (principal, requestId) -> {
           int expected = catalogIfMatch(request);
           byte[] bytes = body(request, MAX_CATALOG_BYTES);
-          CatalogDraft draft = parseCatalog(bytes);
+          CatalogDraft draft = parseCatalog(bytes).validated();
           String json;
           try {
             json = CATALOG_JSON.writeValueAsString(draft);

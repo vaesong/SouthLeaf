@@ -98,6 +98,23 @@ describe("catalog draft helpers", () => {
     expect(value.mediaAltTexts.m1).toBe("");
   });
 
+  it("clears a previously stored image description for every referenced picture", () => {
+    const value = draft({
+      brand: {
+        name: "甲",
+        englishName: "A",
+        discoveryHeading: "发现",
+        shareTitle: "分享",
+        tagline: "一句",
+        description: "故事",
+        logoMediaId: "logo-1",
+      },
+      mediaAltTexts: { "logo-1": "旧描述", extra: "不要留下" },
+    });
+    normalizeDraft(value);
+    expect(value.mediaAltTexts).toEqual({ "logo-1": "" });
+  });
+
   it("describes the unpublished hint only from this session", () => {
     expect(unpublishedHint(true, true)).toBe("有修改尚未保存");
     expect(unpublishedHint(false, true)).toBe("已保存，尚未发布");

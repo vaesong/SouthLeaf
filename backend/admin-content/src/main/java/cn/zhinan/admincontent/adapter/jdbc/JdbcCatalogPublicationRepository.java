@@ -354,14 +354,21 @@ public final class JdbcCatalogPublicationRepository implements CatalogPublicatio
     return variants;
   }
 
+  private static CatalogMediaReference publishedWithoutAlt(CatalogMediaReference reference) {
+    if ("".equals(reference.altText())) return reference;
+    return new CatalogMediaReference(
+        reference.mediaId(), "", reference.ownerType(), reference.ownerId(), reference.position());
+  }
+
   private void projectMedia(
       String releaseId,
       List<CatalogMediaReference> references,
       Map<String, List<VariantRow>> qualifiedMedia) {
     var byId = new java.util.LinkedHashMap<String, CatalogMediaReference>();
     for (var reference : references) {
-      CatalogMediaReference previous = byId.putIfAbsent(reference.mediaId(), reference);
-      if (previous != null && !previous.altText().equals(reference.altText()))
+      CatalogMediaReference published = publishedWithoutAlt(reference);
+      CatalogMediaReference previous = byId.putIfAbsent(published.mediaId(), published);
+      if (previous != null && !previous.altText().equals(published.altText()))
         throw new ContentException(ContentFailure.INVALID_REQUEST, "MEDIA_ALT_CONFLICT");
     }
     byId.forEach(

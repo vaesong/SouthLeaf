@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { MediaView } from "./api";
-import { MEDIA_SEARCH_LIMIT, altMatchIds, searchMedia } from "./mediaSearch";
+import { MEDIA_SEARCH_LIMIT, searchMedia } from "./mediaSearch";
 
 function asset(id: string, sourceFileName: string | null): MediaView {
   return {
@@ -16,77 +16,44 @@ function asset(id: string, sourceFileName: string | null): MediaView {
 }
 
 describe("searchMedia", () => {
-  it("matches a filename or a catalog description and skips unrelated pictures", async () => {
+  it("matches a filename and skips pictures that only match a description", async () => {
     const beach = asset("beach", "beach-sunset.jpg");
     const other = asset("other", "studio.png");
     const described = asset("described", "plain.jpg");
-    const getMedia = vi.fn(async (id: string) => {
-      if (id === "described") return described;
-      throw new Error(`missing ${id}`);
-    });
     const listMedia = vi.fn(async (query = "") => (query === "beach" ? [beach] : []));
-    const api = { listMedia, getMedia };
+    const api = { listMedia };
 
-    const byName = await searchMedia(api, "beach", { described: "门口" }, {}, [beach, other]);
+    const byName = await searchMedia(api, "beach", [beach, other, described]);
     expect(byName.map((item) => item.mediaId)).toEqual(["beach"]);
-    expect(getMedia).not.toHaveBeenCalled();
 
-    const byAlt = await searchMedia(api, "门口", { described: "门口" }, {}, [beach, other]);
-    expect(byAlt.map((item) => item.mediaId)).toEqual(["described"]);
-    expect(getMedia).toHaveBeenCalledTimes(1);
+    const byAlt = await searchMedia(api, "门口", [beach, other, described]);
+    expect(byAlt).toEqual([]);
+    expect(listMedia).toHaveBeenLastCalledWith("门口");
   });
 
-  it("uses the current work description without requiring it in the catalog", async () => {
+  it("does not search the current work description", async () => {
     const work = asset("work", null);
-    const api = {
-      listMedia: vi.fn(async () => []),
-      getMedia: vi.fn(async () => work),
-    };
+    const listMedia = vi.fn(async () => []);
 
-    const found = await searchMedia(api, "窗边", {}, { work: "窗边光" });
+    const found = await searchMedia({ listMedia }, "窗边", [work]);
 
-    expect(found.map((item) => item.mediaId)).toEqual(["work"]);
-    expect(altMatchIds("窗边", {}, { work: "窗边光" })).toEqual(["work"]);
+    expect(found).toEqual([]);
+    expect(listMedia).toHaveBeenCalledWith("窗边");
   });
 
-  it("stops at 50 and does not fetch descriptions past the cap", async () => {
+  it("stops at 50", async () => {
     const named = Array.from({ length: MEDIA_SEARCH_LIMIT }, (_, index) =>
       asset(`named-${index}`, `file-${index}.jpg`),
     );
-    const getMedia = vi.fn();
-    const found = await searchMedia({ listMedia: async () => named, getMedia }, "file", {
-      extra: "file note",
-    });
+    const found = await searchMedia({ listMedia: async () => named }, "file");
 
     expect(found).toHaveLength(MEDIA_SEARCH_LIMIT);
-    expect(getMedia).not.toHaveBeenCalled();
   });
 
-  it("loads missing description matches one at a time", async () => {
-    let releaseFirst: () => void = () => {};
-    let releaseSecond: () => void = () => {};
-    const firstGate = new Promise<void>((resolve) => {
-      releaseFirst = resolve;
-    });
-    const secondGate = new Promise<void>((resolve) => {
-      releaseSecond = resolve;
-    });
-    const calls: string[] = [];
-    const api = {
-      listMedia: async () => [],
-      getMedia: async (id: string) => {
-        calls.push(id);
-        if (id === "first") await firstGate;
-        if (id === "second") await secondGate;
-        return asset(id, null);
-      },
-    };
+  it("adds a loaded picture whose filename matches when the server page omitted it", async () => {
+    const local = asset("local", "window-light.jpg");
+    const found = await searchMedia({ listMedia: async () => [] }, "window", [local]);
 
-    const running = searchMedia(api, "光", { first: "光一", second: "光二" });
-    await vi.waitFor(() => expect(calls).toEqual(["first"]));
-    releaseFirst();
-    await vi.waitFor(() => expect(calls).toEqual(["first", "second"]));
-    releaseSecond();
-    await expect(running).resolves.toHaveLength(2);
+    expect(found.map((item) => item.mediaId)).toEqual(["local"]);
   });
 });

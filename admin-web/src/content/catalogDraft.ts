@@ -62,10 +62,7 @@ export function referencedMediaIds(draft: CatalogDraftInput): string[] {
 }
 
 export function syncMediaAltTexts(draft: CatalogDraftInput): void {
-  const before = draft.mediaAltTexts ?? {};
-  draft.mediaAltTexts = Object.fromEntries(
-    referencedMediaIds(draft).map((id) => [id, before[id] ?? ""]),
-  );
+  draft.mediaAltTexts = Object.fromEntries(referencedMediaIds(draft).map((id) => [id, ""]));
 }
 
 /** Keeps at most `max` ids. Adding a selected id removes it; a fourth id is ignored. */

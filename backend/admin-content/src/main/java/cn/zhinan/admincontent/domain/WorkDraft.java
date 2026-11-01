@@ -42,15 +42,19 @@ public record WorkDraft(
       if (!ContentRules.businessId(id) || !seenBusiness.add(id)) invalid("DRAFT_BUSINESS_INVALID");
     var seenMedia = new HashSet<String>();
     for (MediaBinding binding : media) {
-      if (binding == null
-          || binding.altText() == null
-          || binding.altText().length() > ContentRules.MAX_ALT
-          || hasControl(binding.altText())) invalid("DRAFT_MEDIA_INVALID");
+      if (binding == null) invalid("DRAFT_MEDIA_INVALID");
       ContentRules.uuid(binding.mediaId());
       if (!seenMedia.add(binding.mediaId())) invalid("DRAFT_MEDIA_DUPLICATE");
     }
     if (coverMediaId != null && !seenMedia.contains(coverMediaId)) invalid("DRAFT_COVER_UNBOUND");
-    return this;
+    var cleared = new java.util.ArrayList<MediaBinding>(media.size());
+    boolean changed = false;
+    for (MediaBinding binding : media) {
+      if (!"".equals(binding.altText())) changed = true;
+      cleared.add(new MediaBinding(binding.mediaId(), ""));
+    }
+    if (!changed) return this;
+    return new WorkDraft(title, summary, subjectScopeRef, businessIds, cleared, coverMediaId);
   }
 
   /** Publication completeness (never silently filled with defaults). */
@@ -61,8 +65,7 @@ public record WorkDraft(
         || subjectScopeRef.isEmpty()
         || businessIds.isEmpty()
         || media.isEmpty()
-        || coverMediaId == null
-        || media.stream().anyMatch(m -> m.altText().isBlank()))
+        || coverMediaId == null)
       throw new ContentException(ContentFailure.DRAFT_INCOMPLETE, "DRAFT_INCOMPLETE");
   }
 

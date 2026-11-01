@@ -160,25 +160,78 @@ class CatalogDraftTest {
         .satisfies(
             ref -> {
               assertThat(ref.mediaId()).isEqualTo("media-synthetic");
-              assertThat(ref.altText()).isEqualTo("Synthetic logo");
+              assertThat(ref.altText()).isEmpty();
               assertThat(ref.ownerType()).isEqualTo("BRAND");
             });
-    var missingAlt =
+    assertThat(withLogo.validated().mediaAltTexts())
+        .containsExactly(java.util.Map.entry("media-synthetic", ""));
+  }
+
+  @Test
+  void blankMediaAltValidatesAndClearsEveryReferencedDescription() {
+    var draft = base();
+    var brand =
+        new CatalogDraft.Brand(
+            draft.brand().name(),
+            draft.brand().englishName(),
+            draft.brand().discoveryHeading(),
+            draft.brand().shareTitle(),
+            draft.brand().tagline(),
+            draft.brand().description(),
+            "media-synthetic");
+    var missing =
         new CatalogDraft(
-            withLogo.brand(),
-            withLogo.contact(),
-            withLogo.team(),
-            withLogo.channels(),
-            withLogo.businesses(),
-            withLogo.packages(),
-            withLogo.featuredBusinessIds(),
-            withLogo.featuredPackageIds(),
-            withLogo.featuredWorkIds(),
+            brand,
+            draft.contact(),
+            draft.team(),
+            draft.channels(),
+            draft.businesses(),
+            draft.packages(),
+            draft.featuredBusinessIds(),
+            draft.featuredPackageIds(),
+            draft.featuredWorkIds(),
             java.util.Map.of(),
             List.of());
-    assertThatThrownBy(missingAlt::validated)
+    assertThat(missing.validated().mediaAltTexts())
+        .containsExactly(java.util.Map.entry("media-synthetic", ""));
+    var legacy = new java.util.LinkedHashMap<String, String>();
+    legacy.put("media-synthetic", "x".repeat(121));
+    legacy.put("unused-media", "Synthetic extra");
+    var stored =
+        new CatalogDraft(
+            brand,
+            draft.contact(),
+            draft.team(),
+            draft.channels(),
+            draft.businesses(),
+            draft.packages(),
+            draft.featuredBusinessIds(),
+            draft.featuredPackageIds(),
+            draft.featuredWorkIds(),
+            legacy,
+            List.of());
+    assertThat(stored.validated().mediaReferences())
+        .singleElement()
+        .extracting(CatalogDraft.MediaReference::altText)
+        .isEqualTo("");
+    assertThat(stored.validated().mediaAltTexts())
+        .containsExactly(java.util.Map.entry("media-synthetic", ""));
+    assertThatThrownBy(
+            () ->
+                new CatalogDraft(
+                    brand,
+                    draft.contact(),
+                    draft.team(),
+                    draft.channels(),
+                    draft.businesses(),
+                    draft.packages(),
+                    draft.featuredBusinessIds(),
+                    draft.featuredPackageIds(),
+                    draft.featuredWorkIds(),
+                    null,
+                    List.of()))
         .isInstanceOf(ContentException.class)
-        .hasMessageContaining("MEDIA_ALT_SET_MISMATCH");
+        .hasMessageContaining("MEDIA_ALT_TEXTS_REQUIRED");
   }
 
   @Test
@@ -296,7 +349,7 @@ class CatalogDraftTest {
   }
 
   @Test
-  void heroSlidesRejectASixthItemDuplicatePositionAndMissingDescription() {
+  void heroSlidesRejectASixthItemAndDuplicatePosition() {
     var slides = new java.util.ArrayList<CatalogDraft.HeroSlide>();
     var alts = new java.util.LinkedHashMap<String, String>();
     for (int i = 0; i < 6; i++) {
@@ -315,9 +368,7 @@ class CatalogDraftTest {
                     .validated())
         .isInstanceOf(ContentException.class)
         .hasMessageContaining("HERO_POSITION_DUPLICATE");
-    assertThatThrownBy(() -> withHeroes(five, Map.of()).validated())
-        .isInstanceOf(ContentException.class)
-        .hasMessageContaining("MEDIA_ALT_SET_MISMATCH");
+    assertThat(withHeroes(five, Map.of()).validated().mediaAltTexts().values()).containsOnly("");
     assertThatThrownBy(
             () ->
                 withHeroes(

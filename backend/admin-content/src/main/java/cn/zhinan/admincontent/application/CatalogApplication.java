@@ -54,9 +54,9 @@ public final class CatalogApplication {
 
   public Preview preview(CatalogDraft draft) {
     try {
-      draft.publishable();
-      publications.validateWorkReferences(draft.publicationWorkIds(), clock.instant());
-      publications.validateMedia(toPortMedia(draft));
+      CatalogDraft ready = draft.publishable();
+      publications.validateWorkReferences(ready.publicationWorkIds(), clock.instant());
+      publications.validateMedia(toPortMedia(ready));
       return new Preview(true, null);
     } catch (ContentException blocked) {
       return new Preview(false, blocked.reason());
@@ -76,9 +76,9 @@ public final class CatalogApplication {
     String digest = ContentRules.sha256("publish|" + expectedRevision);
     var replay = publications.findReplay(actorId, key, digest);
     if (replay.isPresent()) return replay.get();
-    draft.publishable();
+    CatalogDraft ready = draft.publishable();
     validateJson(canonicalPayload);
-    var media = toPortMedia(draft);
+    var media = toPortMedia(ready);
     return publications.publish(
         new PublishCommand(
             actorId,
@@ -87,7 +87,7 @@ public final class CatalogApplication {
             digest,
             canonicalPayload,
             media,
-            draft.publicationWorkIds(),
+            ready.publicationWorkIds(),
             clock.instant()));
   }
 

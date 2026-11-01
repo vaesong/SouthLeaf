@@ -39,10 +39,6 @@ const todaySlots = computed(() => {
   });
 });
 
-const missingAltCount = computed(
-  () =>
-    Object.values(catalog?.state.draft?.mediaAltTexts ?? {}).filter((text) => !text.trim()).length,
-);
 const unpublishedBusinesses = computed(
   () => catalog?.state.draft?.businesses.filter((item) => !item.published).length ?? 0,
 );
@@ -128,9 +124,9 @@ onMounted(async () => {
             todaySlots.map((slot) => formatClock(slot.startAt)).join(" · ") || "今天没有可约时段"
           }}</span>
         </RouterLink>
-        <RouterLink v-if="canReadContent" class="card stat" to="/media">
-          <small>图片缺描述</small><b>{{ missingAltCount }}</b>
-          <span>张，未上架业务 {{ unpublishedBusinesses }} 个</span>
+        <RouterLink v-if="canReadContent" class="card stat" to="/businesses">
+          <small>未上架业务</small><b>{{ unpublishedBusinesses }}</b>
+          <span>还没公开到小程序</span>
         </RouterLink>
         <RouterLink v-if="canReadOutbox" class="card stat" to="/notifications">
           <small>消息没发出去</small><b>{{ failureCount ?? "—" }}</b>

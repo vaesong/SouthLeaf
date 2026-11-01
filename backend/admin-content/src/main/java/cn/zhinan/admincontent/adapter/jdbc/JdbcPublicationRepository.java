@@ -199,7 +199,7 @@ public final class JdbcPublicationRepository implements PublicationRepository {
           releaseId,
           binding.mediaId(),
           i,
-          binding.altText());
+          "");
       for (Variant x : variants.get(binding.mediaId()))
         db.jdbc.update(
             "INSERT INTO "

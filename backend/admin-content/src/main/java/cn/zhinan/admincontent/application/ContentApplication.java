@@ -187,15 +187,15 @@ public final class ContentApplication {
   }
 
   public int saveDraft(String actorId, String workId, int expectedVersion, WorkDraft draft) {
-    draft.validated();
-    var assets = media.findAll(draft.mediaIds());
-    for (String id : draft.mediaIds()) {
+    WorkDraft ready = draft.validated();
+    var assets = media.findAll(ready.mediaIds());
+    for (String id : ready.mediaIds()) {
       MediaAsset asset = assets.get(id);
       if (asset == null || !"READY".equals(asset.status()))
         throw new ContentException(ContentFailure.MEDIA_NOT_READY, "MEDIA_NOT_READY");
     }
     return works.saveDraft(
-        ContentRules.uuid(workId), expectedVersion, draft, actorId, clock.instant());
+        ContentRules.uuid(workId), expectedVersion, ready, actorId, clock.instant());
   }
 
   /** Read-only publishability summary; the publish transaction re-checks everything. */

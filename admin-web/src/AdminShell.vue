@@ -9,7 +9,6 @@ import ConfirmDialog from "./components/ConfirmDialog.vue";
 import { mediaContentPath } from "./content/api";
 import { catalogStoreKey } from "./content/catalogStore";
 import { formatDateTime, shopReason } from "./content/format";
-import MediaThumb from "./components/MediaThumb.vue";
 
 const auth = inject(authStoreKey);
 const catalog = inject(catalogStoreKey);
@@ -40,11 +39,6 @@ const loadedBrand = computed(() => catalog?.state.draft?.brand.name?.trim() || "
 const brandName = computed(() => loadedBrand.value || "工作室后台");
 const logoMediaId = computed(() => catalog?.state.draft?.brand.logoMediaId || null);
 const brandMark = computed(() => loadedBrand.value.slice(0, 1) || "枝");
-const missingAlts = computed(() =>
-  Object.entries(catalog?.state.draft?.mediaAltTexts ?? {})
-    .filter(([, text]) => !text.trim())
-    .map(([id]) => id),
-);
 const title = computed(() => String(route.meta.title ?? "工作室后台"));
 const contentRoute = computed(() =>
   ["about", "home-layout", "businesses", "releases", "works", "work-edit", "media"].includes(
@@ -336,17 +330,6 @@ onMounted(async () => {
       :confirm-disabled="!publishAllowed"
       @cancel="publishOpen = false"
       @confirm="confirmPublish"
-    >
-      <div v-if="missingAlts.length" class="stack" style="margin-top: 14px">
-        <p>还有 {{ missingAlts.length }} 张图片没有描述。</p>
-        <div v-for="id in missingAlts" :key="id" class="list-row">
-          <MediaThumb :media-id="id" quiet />
-          <span>还没有描述</span>
-        </div>
-        <RouterLink class="btn btn-secondary btn-sm" to="/media" @click="publishOpen = false"
-          >去图片库补充</RouterLink
-        >
-      </div>
-    </ConfirmDialog>
+    />
   </div>
 </template>

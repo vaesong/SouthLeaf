@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from "vue";
 import { mediaContentPath, type MediaView } from "../content/api";
-import { catalogStoreKey } from "../content/catalogStore";
 import { contentApiKey } from "../content/inject";
 import { searchMedia } from "../content/mediaSearch";
 import SideDrawer from "./SideDrawer.vue";
@@ -11,7 +10,6 @@ const props = defineProps<{
   media: MediaView[];
   modelValue?: string | null;
   uploading?: boolean;
-  extraAlts?: Record<string, string>;
   notice?: string;
 }>();
 
@@ -22,7 +20,6 @@ const emit = defineEmits<{
 }>();
 
 const api = inject(contentApiKey);
-const catalog = inject(catalogStoreKey);
 const fileInput = ref<HTMLInputElement | null>(null);
 const keyword = ref("");
 const results = ref<MediaView[] | null>(null);
@@ -32,14 +29,7 @@ let searchSerial = 0;
 const shown = computed(() => (keyword.value.trim() ? (results.value ?? []) : props.media));
 
 watch(
-  () =>
-    [
-      props.open,
-      keyword.value,
-      props.media,
-      props.extraAlts,
-      catalog?.state.draft?.mediaAltTexts,
-    ] as const,
+  () => [props.open, keyword.value, props.media] as const,
   () => {
     void refresh();
   },
@@ -60,13 +50,7 @@ async function refresh() {
   }
   searching.value = true;
   try {
-    const found = await searchMedia(
-      api,
-      query,
-      catalog?.state.draft?.mediaAltTexts ?? {},
-      props.extraAlts ?? {},
-      props.media,
-    );
+    const found = await searchMedia(api, query, props.media);
     if (token !== searchSerial) return;
     results.value = found;
   } catch {
@@ -92,7 +76,7 @@ function onFile(event: Event) {
         v-model="keyword"
         class="input"
         type="search"
-        placeholder="按文件名或描述搜索"
+        placeholder="按文件名搜索"
         data-testid="media-picker-search"
       />
       <button

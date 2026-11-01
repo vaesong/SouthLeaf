@@ -36,8 +36,6 @@ export function describeFailure(error: unknown): {
     MEDIA_FORMAT_MISMATCH: "这张图片已损坏或不是有效的 JPEG / PNG。",
     MEDIA_INTEGRITY: "这张图片已损坏或不是有效的 JPEG / PNG。",
     MEDIA_EMPTY: "没有读到图片内容。",
-    MEDIA_ALT_INVALID: "用到的图片都要写上描述后才能保存。",
-    MEDIA_ALT_SET_MISMATCH: "图片描述和当前用到的图片对不上，请重新加载后再保存。",
     MEDIA_ALT_CONFLICT: "图片描述和图片库里的记录不一致，请重新加载后再保存。",
     HOME_FEATURE_LIMIT: "精选最多 3 个业务、3 个套餐、6 个作品。",
     CHANNEL_UNCONFIRMED: "要公开的社交账号需要已上传的二维码、名称和账号。",

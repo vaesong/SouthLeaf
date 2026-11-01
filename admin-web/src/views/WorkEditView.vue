@@ -68,7 +68,6 @@ const form = reactive({
   subjectScopeRef: "",
   businessIds: "",
   selected: [] as string[],
-  alt: {} as Record<string, string>,
   cover: "" as string,
 });
 
@@ -109,7 +108,6 @@ function fill(view: WorkView) {
   form.subjectScopeRef = view.subjectScopeRef ?? "";
   form.businessIds = view.businessIds.join(", ");
   form.selected = view.media.map((m) => m.mediaId);
-  form.alt = Object.fromEntries(view.media.map((m) => [m.mediaId, m.altText]));
   form.cover = view.coverMediaId ?? "";
 }
 
@@ -147,7 +145,6 @@ function toggleBusiness(id: string) {
 function chooseMedia(mediaId: string) {
   const outcome = addWorkMedia(form.selected, mediaId);
   if (outcome === "added") {
-    form.alt[mediaId] ??= "";
     if (!form.cover) form.cover = mediaId;
   } else if (outcome === "full") {
     notice.value = WORK_MEDIA_LIMIT_TEXT;
@@ -164,7 +161,6 @@ async function uploadMedia(files: File[]) {
     library.value = rememberUploadedMedia(library.value, result.media);
     const outcome = addWorkMedia(form.selected, result.media.mediaId);
     if (outcome === "added") {
-      form.alt[result.media.mediaId] ??= "";
       if (!form.cover) form.cover = result.media.mediaId;
     } else if (outcome === "full") blocked = true;
   });
@@ -184,7 +180,7 @@ function toggle(mediaId: string) {
     if (form.cover === mediaId) form.cover = "";
     return;
   }
-  if (addWorkMedia(form.selected, mediaId) === "added") form.alt[mediaId] ??= "";
+  addWorkMedia(form.selected, mediaId);
 }
 
 async function save() {
@@ -204,7 +200,7 @@ async function save() {
         .split(/[,\s]+/)
         .map((id) => id.trim())
         .filter((id) => id.length > 0),
-      media: form.selected.map((mediaId) => ({ mediaId, altText: form.alt[mediaId] ?? "" })),
+      media: form.selected.map((mediaId) => ({ mediaId, altText: "" })),
       coverMediaId: form.cover || null,
     });
     fill(saved);
@@ -346,14 +342,6 @@ onMounted(() => {
                   </button>
                 </div>
               </div>
-              <input
-                v-model="form.alt[mediaId]"
-                class="input"
-                maxlength="120"
-                placeholder="图片描述"
-                :disabled="!canEdit"
-                data-testid="media-alt"
-              />
             </div>
             <button
               v-if="form.selected.length < 9"
@@ -383,7 +371,6 @@ onMounted(() => {
       <MediaPicker
         :open="pickerOpen"
         :media="library"
-        :extra-alts="form.alt"
         :uploading="uploading"
         :notice="notice"
         @close="pickerOpen = false"

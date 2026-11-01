@@ -37,6 +37,26 @@ class ContentDomainTest {
   }
 
   @Test
+  void blankAltTextDoesNotBlockACompleteWork() {
+    var draft =
+        new WorkDraft(
+            "Synthetic work",
+            "Synthetic summary",
+            "synthetic-subject-1",
+            List.of("biz-1"),
+            List.of(new WorkDraft.MediaBinding(M1, "")),
+            M1);
+    draft.requireComplete();
+    assertThat(draft.validated().media())
+        .singleElement()
+        .extracting(WorkDraft.MediaBinding::altText)
+        .isEqualTo("");
+    assertThat(complete().validated().media())
+        .extracting(WorkDraft.MediaBinding::altText)
+        .containsExactly("", "");
+  }
+
+  @Test
   void draftShapeAndCompleteness() {
     complete().requireComplete();
     WorkDraft.empty().validated();

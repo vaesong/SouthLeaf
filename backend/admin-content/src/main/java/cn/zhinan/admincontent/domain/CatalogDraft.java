@@ -194,17 +194,11 @@ public record CatalogDraft(
         throw invalid("PACKAGE_BUSINESS_UNAVAILABLE");
     }
     validateHeroSlides();
-    Set<String> referencedMedia =
-        mediaReferences().stream()
-            .map(MediaReference::mediaId)
-            .collect(java.util.stream.Collectors.toSet());
-    if (!referencedMedia.equals(mediaAltTexts.keySet())) throw invalid("MEDIA_ALT_SET_MISMATCH");
-    mediaAltTexts.forEach(
-        (id, alt) -> {
-          requireId(id);
-          if (alt == null || alt.isBlank() || alt.length() > 120)
-            throw invalid("MEDIA_ALT_INVALID");
-        });
+    var clearedAlts = new java.util.LinkedHashMap<String, String>();
+    for (var reference : mediaReferences()) {
+      requireId(reference.mediaId());
+      clearedAlts.putIfAbsent(reference.mediaId(), "");
+    }
     requireUnique(featuredBusinessIds, "FEATURED_BUSINESS_DUPLICATE");
     requireUnique(featuredPackageIds, "FEATURED_PACKAGE_DUPLICATE");
     requireUnique(featuredWorkIds, "FEATURED_WORK_DUPLICATE");
@@ -218,12 +212,24 @@ public record CatalogDraft(
     for (String id : featuredPackageIds)
       if (packages.stream().noneMatch(p -> p.id().equals(id) && p.published()))
         throw invalid("HOME_PACKAGE_UNAVAILABLE");
-    return this;
+    if (clearedAlts.equals(mediaAltTexts)) return this;
+    return new CatalogDraft(
+        brand,
+        contact,
+        team,
+        channels,
+        businesses,
+        packages,
+        featuredBusinessIds,
+        featuredPackageIds,
+        featuredWorkIds,
+        clearedAlts,
+        heroSlides);
   }
 
   /** Validate the complete snapshot before it becomes public. */
   public CatalogDraft publishable() {
-    validated();
+    CatalogDraft ready = validated();
     brand.require("BRAND_REQUIRED");
     if (brand.name().isBlank() || brand.englishName().isBlank() || brand.shareTitle().isBlank())
       throw invalid("BRAND_REQUIRED");
@@ -252,7 +258,7 @@ public record CatalogDraft(
         default -> {}
       }
     }
-    return this;
+    return ready;
   }
 
   private void validateHeroSlides() {

@@ -189,7 +189,7 @@ describe("AdminContentApi", () => {
     expect(described.unknown).toBe(false);
   });
 
-  it("explains a catalog validation reason in Chinese", () => {
+  it("does not describe a blank image description as a save blocker", () => {
     const described = describeFailure(
       new ContentApiError(
         400,
@@ -199,7 +199,8 @@ describe("AdminContentApi", () => {
         "MEDIA_ALT_INVALID",
       ),
     );
-    expect(described.text).toBe("用到的图片都要写上描述后才能保存。");
+    expect(described.text).not.toContain("写上描述");
+    expect(described.text).not.toContain("才能保存");
     expect(described.text).not.toContain("MEDIA_ALT");
   });
 
