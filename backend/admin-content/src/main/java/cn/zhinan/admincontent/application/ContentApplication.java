@@ -5,6 +5,7 @@ import cn.zhinan.admincontent.domain.ContentException;
 import cn.zhinan.admincontent.domain.ContentFailure;
 import cn.zhinan.admincontent.domain.ContentMode;
 import cn.zhinan.admincontent.domain.ContentModels.MediaAsset;
+import cn.zhinan.admincontent.domain.ContentModels.MediaFolder;
 import cn.zhinan.admincontent.domain.ContentModels.ProcessedImage;
 import cn.zhinan.admincontent.domain.ContentModels.PublicationResult;
 import cn.zhinan.admincontent.domain.ContentModels.PublicationState;
@@ -66,7 +67,9 @@ public final class ContentApplication {
       String idempotencyKey,
       byte[] bytes,
       String declaredContentType,
-      String submittedFileName) {
+      String submittedFileName,
+      String folderId) {
+    String folder = existingFolder(folderId);
     ContentRules.idempotencyKey(idempotencyKey);
     // The display name is not part of the digest, so a retry of the same bytes stays stable.
     String requestSha256 =
@@ -95,6 +98,7 @@ public final class ContentApplication {
           ContentRules.newId(),
           processed,
           sourceFileName,
+          folder,
           clock.instant());
     } catch (ContentException race) {
       if (!"IDEMPOTENCY_RACE".equals(race.reason())) throw race;
@@ -120,16 +124,53 @@ public final class ContentApplication {
   }
 
   /**
-   * Recent 50 when {@code query} is blank. A non-blank query is a case-insensitive contains match
-   * on the display file name, at most 50 rows. A query longer than a stored name matches nothing.
+   * Images in one folder, at most 500. A blank folder lists the root. A file-name query searches
+   * every folder and ignores the folder argument.
    */
-  public List<MediaAsset> listMedia(String query) {
+  public List<MediaAsset> listMedia(String query, String folderId) {
     String pattern = ContentRules.likeContains(query);
-    if (pattern == null) {
-      if (query != null && !query.trim().isEmpty()) return List.of();
-      return media.recent(50);
+    if (pattern != null) return media.searchByFileName(pattern, 100);
+    if (query != null && !query.trim().isEmpty()) return List.of();
+    String folder = existingFolder(folderId);
+    return media.listInFolder(folder, 500);
+  }
+
+  public List<MediaFolder> folders() {
+    return media.folders();
+  }
+
+  public MediaFolder createFolder(String parentId, String name) {
+    String parent = existingFolder(parentId);
+    int depth = 0;
+    String cursor = parent;
+    while (cursor != null) {
+      depth++;
+      if (depth >= ContentRules.MAX_FOLDER_DEPTH)
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_TOO_DEEP");
+      cursor = media.folderParent(cursor).orElse(null);
     }
-    return media.searchByFileName(pattern, 50);
+    return media.createFolder(
+        ContentRules.newId(), parent, ContentRules.folderName(name), clock.instant());
+  }
+
+  public void deleteFolder(String folderId) {
+    media.deleteFolder(ContentRules.uuid(folderId));
+  }
+
+  public void moveMedia(String mediaId, String folderId) {
+    String folder = existingFolder(folderId);
+    media.move(ContentRules.uuid(mediaId), folder);
+  }
+
+  public void deleteMedia(String mediaId) {
+    media.deleteAsset(ContentRules.uuid(mediaId));
+  }
+
+  private String existingFolder(String folderId) {
+    if (folderId == null || folderId.isBlank()) return null;
+    String id = ContentRules.uuid(folderId);
+    media.folderParent(id);
+    return id;
   }
 
   /** Private admin preview of a READY derivative; never exposes object keys. */

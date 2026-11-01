@@ -55,9 +55,10 @@ SECRET_METADATA = b"S2B-SECRET-METADATA-MUST-NOT-SURVIVE"
 
 # Mirrors AdminContentGrantPolicy exactly; the runtime also refuses to start on any drift.
 BUSINESS_GRANTS = {
-    "admin_media_asset": "SELECT, INSERT",
-    "admin_media_variant": "SELECT, INSERT",
-    "admin_media_upload_command": "SELECT, INSERT",
+    "admin_media_asset": "SELECT, INSERT, UPDATE, DELETE",
+    "admin_media_variant": "SELECT, INSERT, DELETE",
+    "admin_media_upload_command": "SELECT, INSERT, DELETE",
+    "admin_media_folder": "SELECT, INSERT, UPDATE, DELETE",
     "admin_work_case": "SELECT, INSERT, UPDATE",
     "admin_work_version": "SELECT, INSERT",
     "admin_work_version_business": "SELECT, INSERT",
@@ -832,7 +833,7 @@ def grant_checks(state: dict[str, object], c: Checks) -> None:
     negative = [
         ("s2b_content", f"SELECT COUNT(*) FROM `{public}`.public_work_release;"),
         ("s2b_content", f"INSERT INTO `{admin}`.admin_work_publication_state (work_id) VALUES ('x');"),
-        ("s2b_content", f"DELETE FROM `{admin}`.admin_media_asset WHERE 1=0;"),
+        ("s2b_content", f"DELETE FROM `{admin}`.admin_account WHERE 1=0;"),
         ("s2b_content", f"SELECT COUNT(*) FROM `{admin}`.admin_session;"),
         ("s2b_content", f"SELECT COUNT(*) FROM `{admin}`.admin_work_authorization_gate;"),
         ("s2b_publisher", f"SELECT COUNT(*) FROM `{public}`.public_work_release;"),

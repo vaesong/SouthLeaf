@@ -18,6 +18,8 @@ public final class ContentRules {
   public static final int MAX_STORED_OBJECT_BYTES = 4 * 1024 * 1024;
 
   public static final int MAX_SOURCE_FILE_NAME = 120;
+  public static final int MAX_FOLDER_NAME = 40;
+  public static final int MAX_FOLDER_DEPTH = 3;
   public static final int MAX_EDGE = 8192;
   public static final long MAX_PIXELS = 24_000_000L;
   public static final int THUMBNAIL_EDGE = 480;
@@ -112,5 +114,22 @@ public final class ContentRules {
     if (trimmed.isEmpty() || trimmed.codePointCount(0, trimmed.length()) > MAX_SOURCE_FILE_NAME)
       return null;
     return trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+  }
+
+  /** Display name of a media folder. Slashes and control characters are rejected. */
+  public static String folderName(String value) {
+    if (value == null) throw folderNameInvalid();
+    String trimmed = value.trim();
+    int length = trimmed.codePointCount(0, trimmed.length());
+    if (length < 1
+        || length > MAX_FOLDER_NAME
+        || trimmed.indexOf('/') >= 0
+        || trimmed.indexOf('\\') >= 0
+        || trimmed.chars().anyMatch(c -> c < 0x20 || c == 0x7f)) throw folderNameInvalid();
+    return trimmed;
+  }
+
+  private static ContentException folderNameInvalid() {
+    return new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_NAME_INVALID");
   }
 }

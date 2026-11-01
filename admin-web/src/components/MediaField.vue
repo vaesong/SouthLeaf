@@ -16,7 +16,7 @@ defineProps<{
 
 const emit = defineEmits<{
   "update:modelValue": [string | null];
-  upload: [File[]];
+  upload: [File[], string | null];
 }>();
 
 const open = ref(false);
@@ -78,7 +78,7 @@ function choose(id: string) {
       :notice="notice"
       @close="open = false"
       @choose="choose"
-      @upload="emit('upload', $event)"
+      @upload="(files, folderId) => emit('upload', files, folderId)"
     />
   </div>
 </template>

@@ -270,6 +270,7 @@ export function mockAdminApi(): Plugin {
   let revision = 3;
   const versions = [{ revision: 3, updatedBy: "mock-operator", updatedAt: "2026-11-01T01:00:00Z" }];
   const commands = new Map<string, unknown>();
+  const folders: { folderId: string; parentId: string | null; name: string }[] = [];
   const media = MEDIA.map((mediaId, index) => ({
     mediaId,
     status: index === 18 ? "PROCESSING" : "READY",
@@ -278,6 +279,7 @@ export function mockAdminApi(): Plugin {
     sourceHeight: 600,
     createdAt: "2026-11-01T01:00:00Z",
     sourceFileName: `mock-${index + 1}.png`,
+    folderId: null,
     variants: [],
   }));
   const workPlan = [
@@ -575,13 +577,20 @@ export function mockAdminApi(): Plugin {
           send(res, 200, envelope(found));
           return;
         }
+        if (path === "/api/admin/v1/media/folders" && method === "GET") {
+          send(res, 200, envelope(folders));
+          return;
+        }
         if (path === "/api/admin/v1/media" && method === "GET") {
           const q = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
+          const folderId = url.searchParams.get("folderId");
           const rows = q
             ? media
                 .filter((item) => (item.sourceFileName ?? "").toLowerCase().includes(q))
-                .slice(0, 50)
-            : media.slice(0, 50);
+                .slice(0, 100)
+            : media
+                .filter((item) => (item.folderId ?? null) === (folderId || null))
+                .slice(0, 500);
           send(res, 200, envelope(rows));
           return;
         }
@@ -604,6 +613,7 @@ export function mockAdminApi(): Plugin {
             sourceHeight: 480,
             createdAt: new Date().toISOString(),
             sourceFileName: null,
+            folderId: url.searchParams.get("folderId"),
             variants: [],
           };
           media.unshift(created);

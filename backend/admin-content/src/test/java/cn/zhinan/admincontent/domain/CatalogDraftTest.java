@@ -49,6 +49,35 @@ class CatalogDraftTest {
   }
 
   @Test
+  void acceptsAddedAndRemovedBusinesses() {
+    var kept =
+        CatalogDraft.empty().businesses().stream()
+            .filter(business -> !business.id().equals("id-photo"))
+            .toList();
+    var added = new java.util.ArrayList<>(kept);
+    added.add(new CatalogDraft.Business("biz-studio", "棚拍", "", null, 20, false));
+    var draft =
+        new CatalogDraft(
+            CatalogDraft.empty().brand(),
+            CatalogDraft.empty().contact(),
+            List.of(),
+            List.of(),
+            added,
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            Map.of(),
+            List.of());
+    assertThat(draft.validated().businesses())
+        .extracting(CatalogDraft.Business::id)
+        .contains("biz-studio");
+    assertThat(draft.validated().businesses())
+        .extracting(CatalogDraft.Business::id)
+        .doesNotContain("id-photo");
+  }
+
+  @Test
   void emptyCatalogIsNotPublishableUntilRequiredBrandAndContactAreExplicit() {
     assertThatThrownBy(() -> CatalogDraft.empty().publishable())
         .isInstanceOf(ContentException.class)

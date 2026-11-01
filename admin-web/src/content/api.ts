@@ -8,6 +8,12 @@ export interface VariantView {
   contentType: string;
 }
 
+export interface MediaFolder {
+  folderId: string;
+  parentId: string | null;
+  name: string;
+}
+
 export interface MediaView {
   mediaId: string;
   status: string;
@@ -16,6 +22,7 @@ export interface MediaView {
   sourceHeight: number;
   createdAt: string;
   sourceFileName: string | null;
+  folderId: string | null;
   variants: VariantView[];
 }
 
@@ -242,10 +249,36 @@ export class AdminContentApi {
     });
   }
 
-  listMedia(query = ""): Promise<MediaView[]> {
+  listMedia(query = "", folderId: string | null = null): Promise<MediaView[]> {
+    const params = new URLSearchParams();
     const q = query.trim();
-    const path = q ? `/media?q=${encodeURIComponent(q)}` : "/media";
-    return this.read<MediaView[]>(path);
+    if (q) params.set("q", q);
+    else if (folderId) params.set("folderId", folderId);
+    const search = params.toString();
+    return this.read<MediaView[]>(search ? `/media?${search}` : "/media");
+  }
+
+  listFolders(): Promise<MediaFolder[]> {
+    return this.read<MediaFolder[]>("/media/folders");
+  }
+
+  createFolder(name: string, parentId: string | null): Promise<MediaFolder> {
+    return this.write("/media/folders", { method: "POST", json: { name, parentId } });
+  }
+
+  deleteFolder(folderId: string): Promise<{ deleted: boolean }> {
+    return this.write(`/media/folders/${encodeURIComponent(folderId)}`, { method: "DELETE" });
+  }
+
+  deleteMedia(mediaId: string): Promise<{ deleted: boolean }> {
+    return this.write(`/media/${encodeURIComponent(mediaId)}`, { method: "DELETE" });
+  }
+
+  moveMedia(mediaId: string, folderId: string | null): Promise<{ moved: boolean }> {
+    return this.write(`/media/${encodeURIComponent(mediaId)}/folder`, {
+      method: "PUT",
+      json: { folderId },
+    });
   }
 
   getMedia(mediaId: string): Promise<MediaView> {
@@ -256,10 +289,14 @@ export class AdminContentApi {
     file: Blob,
     fileName: string,
     key: string,
+    folderId: string | null = null,
   ): Promise<{ media: MediaView; replayed: boolean }> {
     const form = new FormData();
     form.append("file", file, fileName);
-    return this.write("/media/uploads", { method: "POST", body: form, key });
+    const path = folderId
+      ? `/media/uploads?folderId=${encodeURIComponent(folderId)}`
+      : "/media/uploads";
+    return this.write(path, { method: "POST", body: form, key });
   }
 
   listWorks(): Promise<WorkView[]> {

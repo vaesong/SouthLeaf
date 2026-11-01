@@ -16,7 +16,7 @@ import {
   uploadFailureText,
   uploadFilesSequentially,
 } from "../content/uploadFiles";
-import { BUSINESS_IDS, PRICE_TYPES, priceNeedsAmount } from "../content/catalogDraft";
+import { PRICE_TYPES, priceNeedsAmount } from "../content/catalogDraft";
 import { countLabel, formatPackagePrice } from "../content/format";
 import { requireContentApi } from "../content/inject";
 import { describeFailure } from "../content/messages";
@@ -30,21 +30,79 @@ const leaveOpen = leave.open;
 const media = ref<MediaView[]>([]);
 const mediaError = ref("");
 const uploading = ref(false);
-const selectedId = ref<string>(BUSINESS_IDS[0]);
+const selectedId = ref("");
+const businessNotice = ref("");
 const expandedPackageId = ref<string | null>(null);
 
 const draft = computed(() => store.state.draft);
 const businesses = computed(() => {
   const value = draft.value;
   if (!value) return [];
-  return BUSINESS_IDS.map((id) => value.businesses.find((item) => item.id === id)).filter(
-    (item): item is NonNullable<typeof item> => !!item,
-  );
+  return [...value.businesses].sort((a, b) => a.position - b.position);
 });
 const selected = computed(
   () =>
     businesses.value.find((item) => item.id === selectedId.value) ?? businesses.value[0] ?? null,
 );
+
+function reindexBusinesses() {
+  const value = draft.value;
+  if (!value) return;
+  [...value.businesses]
+    .sort((a, b) => a.position - b.position)
+    .forEach((item, index) => {
+      item.position = index;
+    });
+}
+
+function addBusiness() {
+  const value = draft.value;
+  if (!value || value.businesses.length >= 30) return;
+  const id = `biz-${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+  value.businesses.push({
+    id,
+    name: "",
+    summary: "",
+    coverMediaId: null,
+    position: value.businesses.length,
+    published: false,
+  });
+  reindexBusinesses();
+  selectedId.value = id;
+  businessNotice.value = "";
+}
+
+function removeSelected() {
+  const value = draft.value;
+  const current = selected.value;
+  if (!value || !current) return;
+  if (packagesOf(current.id).length > 0) {
+    businessNotice.value = "这个业务下面还有套餐，先移走或删除套餐再删除业务。";
+    return;
+  }
+  value.businesses = value.businesses.filter((item) => item.id !== current.id);
+  value.featuredBusinessIds = value.featuredBusinessIds.filter((id) => id !== current.id);
+  value.heroSlides = value.heroSlides.filter(
+    (slide) => !(slide.target.type === "BUSINESS" && slide.target.id === current.id),
+  );
+  reindexBusinesses();
+  selectedId.value = value.businesses[0]?.id ?? "";
+  businessNotice.value = "";
+}
+
+function moveSelected(offset: number) {
+  const value = draft.value;
+  const current = selected.value;
+  if (!value || !current) return;
+  const ordered = [...value.businesses].sort((a, b) => a.position - b.position);
+  const index = ordered.findIndex((item) => item.id === current.id);
+  const neighbor = ordered[index + offset];
+  if (!neighbor) return;
+  const position = current.position;
+  current.position = neighbor.position;
+  neighbor.position = position;
+  reindexBusinesses();
+}
 
 function packagesOf(businessId: string) {
   return (
@@ -74,11 +132,11 @@ function moveVisiblePackage(globalIndex: number, offset: number) {
   value.packages[target.index] = swapped!;
 }
 
-async function uploadMedia(files: File[]) {
+async function uploadMedia(files: File[], folderId: string | null = null) {
   uploading.value = true;
   mediaError.value = "";
   const failure = await uploadFilesSequentially(files, async (file, key) => {
-    const result = await api.upload(file, file.name, key);
+    const result = await api.upload(file, file.name, key, folderId);
     media.value = rememberUploadedMedia(media.value, result.media);
   });
   if (failure) mediaError.value = uploadFailureText(failure.file.name, failure.error);
@@ -132,12 +190,16 @@ onMounted(async () => {
     <div class="page-head">
       <div>
         <h1>业务与套餐</h1>
-        <p>6 个固定业务，每个业务下可以有多个套餐。价格只作展示，本阶段不收款。</p>
+        <p>业务可以新增、改名、排序和上下架。还有套餐或作品挂着时不能删除。价格只作展示，本阶段不收款。</p>
       </div>
       <div class="actions">
+        <button class="btn btn-secondary" type="button" :disabled="!canEdit" @click="addBusiness">
+          新增业务
+        </button>
         <CatalogSaveButtons :disabled="!canEdit" />
       </div>
     </div>
+    <p v-if="businessNotice" class="notice-line" role="alert">{{ businessNotice }}</p>
     <div class="biz-layout">
       <div class="card biz-list">
         <button
@@ -166,6 +228,30 @@ onMounted(async () => {
           <div class="card-head">
             <h2>{{ selected.name || "未命名" }}</h2>
             <div class="right switch-row">
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                :disabled="!canEdit"
+                @click="moveSelected(-1)"
+              >
+                上移
+              </button>
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                :disabled="!canEdit"
+                @click="moveSelected(1)"
+              >
+                下移
+              </button>
+              <button
+                class="btn btn-danger-ghost btn-sm"
+                type="button"
+                :disabled="!canEdit"
+                @click="removeSelected"
+              >
+                删除
+              </button>
               在小程序上架
               <AppSwitch
                 v-model="selected.published"

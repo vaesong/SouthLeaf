@@ -2,6 +2,7 @@ package cn.zhinan.admincontent.port;
 
 import cn.zhinan.admincontent.domain.AuthorizationGate;
 import cn.zhinan.admincontent.domain.ContentModels.MediaAsset;
+import cn.zhinan.admincontent.domain.ContentModels.MediaFolder;
 import cn.zhinan.admincontent.domain.ContentModels.ProcessedImage;
 import cn.zhinan.admincontent.domain.ContentModels.PublicationResult;
 import cn.zhinan.admincontent.domain.ContentModels.PublicationState;
@@ -42,7 +43,26 @@ public final class ContentPorts {
         String mediaId,
         ProcessedImage image,
         String sourceFileName,
+        String folderId,
         Instant now);
+
+    List<MediaFolder> folders();
+
+    /** Empty when the folder is at the root. Throws when the folder does not exist. */
+    Optional<String> folderParent(String folderId);
+
+    MediaFolder createFolder(String folderId, String parentId, String name, Instant now);
+
+    void deleteFolder(String folderId);
+
+    void move(String mediaId, String folderId);
+
+    /**
+     * Removes the library row. Object files stay, so an already published page can still read them.
+     */
+    void deleteAsset(String mediaId);
+
+    boolean mediaInUse(String mediaId);
 
     UploadResult saveRejected(
         String actorId, String idempotencyKey, String requestSha256, String code, Instant now);
@@ -54,6 +74,8 @@ public final class ContentPorts {
     Optional<Variant> variant(String mediaId, String variant);
 
     List<MediaAsset> recent(int limit);
+
+    List<MediaAsset> listInFolder(String folderId, int limit);
 
     /** Case-insensitive contains match. {@code escapedContains} already escapes LIKE wildcards. */
     List<MediaAsset> searchByFileName(String escapedContains, int limit);

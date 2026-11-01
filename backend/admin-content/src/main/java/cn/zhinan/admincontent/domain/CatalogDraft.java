@@ -21,9 +21,10 @@ public record CatalogDraft(
     Map<String, String> mediaAltTexts,
     List<HeroSlide> heroSlides) {
   private static final Pattern ID = Pattern.compile("[A-Za-z0-9_-]{1,128}");
-  private static final List<String> BUSINESS_IDS =
+  private static final int MAX_BUSINESSES = 30;
+  private static final List<String> INITIAL_BUSINESS_IDS =
       List.of("child", "family", "wedding", "portrait", "maternity", "id-photo");
-  private static final List<String> BUSINESS_NAMES =
+  private static final List<String> INITIAL_BUSINESS_NAMES =
       List.of("儿童", "亲子全家福", "婚纱", "写真", "孕照", "证件照");
 
   public CatalogDraft {
@@ -47,9 +48,16 @@ public record CatalogDraft(
 
   public static CatalogDraft empty() {
     var businesses =
-        java.util.stream.IntStream.range(0, BUSINESS_IDS.size())
+        java.util.stream.IntStream.range(0, INITIAL_BUSINESS_IDS.size())
             .mapToObj(
-                i -> new Business(BUSINESS_IDS.get(i), BUSINESS_NAMES.get(i), "", null, i, false))
+                i ->
+                    new Business(
+                        INITIAL_BUSINESS_IDS.get(i),
+                        INITIAL_BUSINESS_NAMES.get(i),
+                        "",
+                        null,
+                        i,
+                        false))
             .toList();
     return new CatalogDraft(
         new Brand("", "", "", "", "", "", null),
@@ -172,19 +180,16 @@ public record CatalogDraft(
         channels.stream().map(Channel::position).toList(), "CHANNEL_POSITION_DUPLICATE");
     requireUniquePositions(
         packages.stream().map(Package::position).toList(), "PACKAGE_POSITION_DUPLICATE");
-    if (businesses.size() != BUSINESS_IDS.size()) throw invalid("BUSINESS_SET_INCOMPLETE");
+    if (businesses.size() > MAX_BUSINESSES) throw invalid("BUSINESS_LIMIT");
     var byBusiness = new java.util.HashMap<String, Business>();
     Set<String> businessIds = new HashSet<>();
     Set<Integer> businessPositions = new HashSet<>();
     for (var businessValue : businesses) {
       var business = businessValue.validate();
-      if (!BUSINESS_IDS.contains(business.id())
-          || !businessIds.add(business.id())
-          || !businessPositions.add(business.position()))
+      if (!businessIds.add(business.id()) || !businessPositions.add(business.position()))
         throw invalid("BUSINESS_IDENTITY_INVALID");
       byBusiness.put(business.id(), business);
     }
-    if (!businessIds.equals(Set.copyOf(BUSINESS_IDS))) throw invalid("BUSINESS_SET_INCOMPLETE");
     for (var member : team) member.validate();
     for (var channel : channels) channel.validate();
     for (var item : packages) {

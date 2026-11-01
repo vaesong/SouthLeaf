@@ -129,6 +129,11 @@ class CatalogApplicationHeroTest {
       public int save(int expectedRevision, String payloadJson, String actorId, Instant now) {
         return 0;
       }
+
+      @Override
+      public java.util.Set<String> currentWorkBusinessIds() {
+        return java.util.Set.of();
+      }
     };
   }
 }

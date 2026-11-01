@@ -120,11 +120,11 @@ async function refreshMedia() {
   }
 }
 
-async function uploadMedia(files: File[]) {
+async function uploadMedia(files: File[], folderId: string | null = null) {
   uploading.value = true;
   mediaError.value = "";
   const failure = await uploadFilesSequentially(files, async (file, key) => {
-    const result = await api.upload(file, file.name, key);
+    const result = await api.upload(file, file.name, key, folderId);
     media.value = rememberUploadedMedia(media.value, result.media);
   });
   if (failure) mediaError.value = uploadFailureText(failure.file.name, failure.error);

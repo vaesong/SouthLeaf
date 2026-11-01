@@ -134,6 +134,11 @@ class AdminWebSecurityConfiguration {
     var routes = PathPatternRequestMatcher.withDefaults();
     return new OrRequestMatcher(
         routes.matcher(HttpMethod.GET, "/api/admin/v1/media"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/media/folders"),
+        routes.matcher(HttpMethod.POST, "/api/admin/v1/media/folders"),
+        routes.matcher(HttpMethod.DELETE, "/api/admin/v1/media/folders/{folderId}"),
+        routes.matcher(HttpMethod.PUT, "/api/admin/v1/media/{mediaId}/folder"),
+        routes.matcher(HttpMethod.DELETE, "/api/admin/v1/media/{mediaId}"),
         routes.matcher(HttpMethod.POST, "/api/admin/v1/media/uploads"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/media/{mediaId}"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/media/{mediaId}/{variant}/content"),

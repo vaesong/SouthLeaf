@@ -3,6 +3,7 @@ package cn.zhinan.admincontent.port;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /** M3 versioned content editor and atomic public catalog publisher ports. */
 public final class CatalogPorts {
@@ -47,6 +48,9 @@ public final class CatalogPorts {
     Optional<DraftRevision> version(int revision);
 
     int save(int expectedRevision, String payloadJson, String actorId, Instant now);
+
+    /** Business ids attached to the current revision of any work. */
+    Set<String> currentWorkBusinessIds();
   }
 
   public interface CatalogPublicationRepository {

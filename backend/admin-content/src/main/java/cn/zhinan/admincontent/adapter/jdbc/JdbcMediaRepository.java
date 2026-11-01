@@ -3,6 +3,7 @@ package cn.zhinan.admincontent.adapter.jdbc;
 import cn.zhinan.admincontent.domain.ContentException;
 import cn.zhinan.admincontent.domain.ContentFailure;
 import cn.zhinan.admincontent.domain.ContentModels.MediaAsset;
+import cn.zhinan.admincontent.domain.ContentModels.MediaFolder;
 import cn.zhinan.admincontent.domain.ContentModels.ProcessedImage;
 import cn.zhinan.admincontent.domain.ContentModels.UploadResult;
 import cn.zhinan.admincontent.domain.ContentModels.Variant;
@@ -22,7 +23,7 @@ import org.springframework.dao.DuplicateKeyException;
 /** Business-writer adapter for media facts in the management schema. */
 public final class JdbcMediaRepository implements MediaRepository {
   private static final String ASSET_COLUMNS =
-      "media_id,status,source_format,source_width,source_height,created_at,source_file_name";
+      "media_id,status,source_format,source_width,source_height,created_at,source_file_name,folder_id";
   private static final String FILE_NAME_MATCH =
       "WHERE media_id IN (SELECT media_id FROM ("
           + "SELECT media_id FROM admin_media_asset "
@@ -61,12 +62,13 @@ public final class JdbcMediaRepository implements MediaRepository {
       String mediaId,
       ProcessedImage image,
       String sourceFileName,
+      String folderId,
       Instant now) {
     try {
       return db.write(
           () -> {
             db.jdbc.update(
-                "INSERT INTO admin_media_asset (media_id,status,source_format,source_sha256,source_byte_length,source_width,source_height,source_file_name,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO admin_media_asset (media_id,status,source_format,source_sha256,source_byte_length,source_width,source_height,source_file_name,folder_id,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 mediaId,
                 "READY",
                 image.sourceFormat(),
@@ -75,6 +77,7 @@ public final class JdbcMediaRepository implements MediaRepository {
                 image.sourceWidth(),
                 image.sourceHeight(),
                 sourceFileName,
+                folderId,
                 actorId,
                 ContentJdbc.ts(now));
             for (var encoded : image.variants()) {
@@ -190,9 +193,114 @@ public final class JdbcMediaRepository implements MediaRepository {
               ((Number) row.get("source_height")).intValue(),
               ContentJdbc.instant(row.get("created_at")),
               (String) row.get("source_file_name"),
+              (String) row.get("folder_id"),
               own));
     }
     return result;
+  }
+
+  @Override
+  public List<MediaAsset> listInFolder(String folderId, int limit) {
+    String where =
+        folderId == null
+            ? "WHERE media_id IN (SELECT media_id FROM (SELECT media_id FROM admin_media_asset WHERE folder_id IS NULL ORDER BY created_at DESC, media_id LIMIT :limit) picked)"
+            : "WHERE media_id IN (SELECT media_id FROM (SELECT media_id FROM admin_media_asset WHERE folder_id=:folder ORDER BY created_at DESC, media_id LIMIT :limit) picked)";
+    var params = new java.util.HashMap<String, Object>();
+    params.put("limit", limit);
+    if (folderId != null) params.put("folder", folderId);
+    return db.read(() -> List.copyOf(load(where, params).values()));
+  }
+
+  @Override
+  public List<MediaFolder> folders() {
+    return db.read(
+        () ->
+            db.jdbc.query(
+                "SELECT folder_id,parent_id,name FROM admin_media_folder ORDER BY name, folder_id",
+                (rs, n) -> new MediaFolder(rs.getString(1), rs.getString(2), rs.getString(3))));
+  }
+
+  @Override
+  public MediaFolder createFolder(String folderId, String parentId, String name, Instant now) {
+    try {
+      db.jdbc.update(
+          "INSERT INTO admin_media_folder (folder_id,parent_id,name,created_at) VALUES (?,?,?,?)",
+          folderId,
+          parentId,
+          name,
+          ContentJdbc.ts(now));
+    } catch (DuplicateKeyException taken) {
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_NAME_TAKEN");
+    } catch (DataAccessException ex) {
+      throw ContentJdbc.storage(ex);
+    }
+    return new MediaFolder(folderId, parentId, name);
+  }
+
+  @Override
+  public void deleteFolder(String folderId) {
+    Integer children =
+        db.jdbc.queryForObject(
+            "SELECT COUNT(*) FROM admin_media_folder WHERE parent_id=?", Integer.class, folderId);
+    Integer images =
+        db.jdbc.queryForObject(
+            "SELECT COUNT(*) FROM admin_media_asset WHERE folder_id=?", Integer.class, folderId);
+    if ((children != null && children > 0) || (images != null && images > 0))
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_NOT_EMPTY");
+    if (db.jdbc.update("DELETE FROM admin_media_folder WHERE folder_id=?", folderId) != 1)
+      throw new ContentException(ContentFailure.NOT_FOUND, "FOLDER_UNKNOWN");
+  }
+
+  @Override
+  public void move(String mediaId, String folderId) {
+    if (db.jdbc.update(
+            "UPDATE admin_media_asset SET folder_id=? WHERE media_id=?", folderId, mediaId)
+        != 1) throw new ContentException(ContentFailure.NOT_FOUND, "MEDIA_UNKNOWN");
+  }
+
+  @Override
+  public boolean mediaInUse(String mediaId) {
+    Integer works =
+        db.jdbc.queryForObject(
+            "SELECT COUNT(*) FROM admin_work_version_media WHERE media_id=?",
+            Integer.class,
+            mediaId);
+    if (works != null && works > 0) return true;
+    List<String> payloads =
+        db.jdbc.query(
+            "SELECT r.payload_json FROM admin_catalog_draft_revision r JOIN admin_catalog_draft d ON d.current_revision=r.revision WHERE d.singleton_id=1",
+            (rs, n) -> rs.getString(1));
+    String needle = "\"" + mediaId + "\"";
+    return payloads.stream().anyMatch(json -> json != null && json.contains(needle));
+  }
+
+  @Override
+  public void deleteAsset(String mediaId) {
+    try {
+      db.write(
+          () -> {
+            if (mediaInUse(mediaId))
+              throw new ContentException(ContentFailure.INVALID_REQUEST, "MEDIA_IN_USE");
+            db.jdbc.update("DELETE FROM admin_media_upload_command WHERE media_id=?", mediaId);
+            db.jdbc.update("DELETE FROM admin_media_variant WHERE media_id=?", mediaId);
+            if (db.jdbc.update("DELETE FROM admin_media_asset WHERE media_id=?", mediaId) != 1)
+              throw new ContentException(ContentFailure.NOT_FOUND, "MEDIA_UNKNOWN");
+            return null;
+          });
+    } catch (DataAccessException ex) {
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "MEDIA_IN_USE");
+    }
+  }
+
+  @Override
+  public Optional<String> folderParent(String folderId) {
+    List<String> rows =
+        db.jdbc.query(
+            "SELECT parent_id FROM admin_media_folder WHERE folder_id=?",
+            (rs, n) -> rs.getString(1),
+            folderId);
+    if (rows.isEmpty()) throw new ContentException(ContentFailure.NOT_FOUND, "FOLDER_UNKNOWN");
+    return Optional.ofNullable(rows.get(0));
   }
 
   @Override

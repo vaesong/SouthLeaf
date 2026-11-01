@@ -6,8 +6,10 @@ import cn.zhinan.admincontent.port.CatalogPorts.CatalogDraftRepository;
 import cn.zhinan.admincontent.port.CatalogPorts.DraftRevision;
 import cn.zhinan.admincontent.port.CatalogPorts.DraftVersion;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.sql.DataSource;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -118,5 +120,16 @@ public final class JdbcCatalogDraftRepository implements CatalogDraftRepository 
     } catch (DuplicateKeyException race) {
       throw new ContentException(ContentFailure.VERSION_CONFLICT, "CATALOG_REVISION_CONFLICT");
     }
+  }
+
+  @Override
+  public Set<String> currentWorkBusinessIds() {
+    return jdbc.read(
+        () ->
+            new HashSet<>(
+                jdbc.jdbc.query(
+                    "SELECT DISTINCT b.business_id FROM admin_work_version_business b"
+                        + " JOIN admin_work_case c ON c.work_id=b.work_id AND c.current_version=b.version",
+                    (rs, row) -> rs.getString(1))));
   }
 }

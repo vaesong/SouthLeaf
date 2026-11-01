@@ -13,6 +13,7 @@ function asset(id: string, sourceFileName: string | null): MediaView {
     sourceHeight: 3,
     createdAt: "2026-11-01T00:00:00Z",
     sourceFileName,
+    folderId: null,
     variants: [],
   };
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from "vue";
-import { mediaContentPath, type MediaView } from "../content/api";
+import { mediaContentPath, type MediaFolder, type MediaView } from "../content/api";
 import { contentApiKey } from "../content/inject";
 import { searchMedia } from "../content/mediaSearch";
 import SideDrawer from "./SideDrawer.vue";
@@ -16,24 +16,47 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
   choose: [string];
-  upload: [File[]];
+  upload: [File[], string | null];
 }>();
 
 const api = inject(contentApiKey);
 const fileInput = ref<HTMLInputElement | null>(null);
 const keyword = ref("");
 const results = ref<MediaView[] | null>(null);
+const folders = ref<MediaFolder[]>([]);
+const folderId = ref<string | null>(null);
+const loaded = ref<MediaView[] | null>(null);
 const searching = ref(false);
 let searchSerial = 0;
 
-const shown = computed(() => (keyword.value.trim() ? (results.value ?? []) : props.media));
+const shown = computed(() =>
+  keyword.value.trim() ? (results.value ?? []) : (loaded.value ?? props.media),
+);
+const childFolders = computed(() =>
+  folders.value.filter((folder) => folder.parentId === folderId.value),
+);
 
 watch(
-  () => [props.open, keyword.value, props.media] as const,
+  () => [props.open, keyword.value, props.media, folderId.value] as const,
   () => {
     void refresh();
   },
 );
+
+async function loadBrowser() {
+  if (!props.open || !api?.listFolders) {
+    loaded.value = null;
+    folders.value = [];
+    return;
+  }
+  folders.value = await api.listFolders();
+  loaded.value = await api.listMedia("", folderId.value);
+}
+
+function openFolder(id: string | null) {
+  keyword.value = "";
+  folderId.value = id;
+}
 
 async function refresh() {
   const query = keyword.value.trim();
@@ -41,6 +64,7 @@ async function refresh() {
   if (!props.open || !query) {
     results.value = null;
     searching.value = false;
+    if (!query) void loadBrowser();
     return;
   }
   if (!api) {
@@ -65,7 +89,7 @@ function onFile(event: Event) {
   const input = event.target as HTMLInputElement;
   const files = Array.from(input.files ?? []);
   input.value = "";
-  if (files.length > 0) emit("upload", files);
+  if (files.length > 0) emit("upload", files, folderId.value);
 }
 </script>
 
@@ -96,6 +120,25 @@ function onFile(event: Event) {
         hidden
         @change="onFile"
       />
+    </div>
+    <div v-if="childFolders.length" class="folder-row">
+      <button
+        v-if="folderId"
+        type="button"
+        class="btn btn-ghost btn-sm"
+        @click="openFolder(folders.find((folder) => folder.folderId === folderId)?.parentId ?? null)"
+      >
+        返回上一级
+      </button>
+      <button
+        v-for="folder in childFolders"
+        :key="folder.folderId"
+        type="button"
+        class="btn btn-secondary btn-sm"
+        @click="openFolder(folder.folderId)"
+      >
+        {{ folder.name }}
+      </button>
     </div>
     <div class="picker-grid">
       <button
@@ -134,6 +177,11 @@ function onFile(event: Event) {
 .drawer-tools {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+.folder-row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .drawer-tools .input {

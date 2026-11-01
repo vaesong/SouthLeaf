@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -246,7 +247,12 @@ class AdminContentController {
           String declared = part.getContentType() == null ? "" : part.getContentType().trim();
           var result =
               content.upload(
-                  principal.accountId(), key, bytes, declared, part.getSubmittedFileName());
+                  principal.accountId(),
+                  key,
+                  bytes,
+                  declared,
+                  part.getSubmittedFileName(),
+                  request.getParameter("folderId"));
           var asset =
               content
                   .mediaAsset(result.mediaId())
@@ -263,9 +269,63 @@ class AdminContentController {
         (principal, requestId) ->
             ok(
                 requestId,
-                content.listMedia(request.getParameter("q")).stream()
+                content
+                    .listMedia(request.getParameter("q"), request.getParameter("folderId"))
+                    .stream()
                     .map(AdminContentController::media)
                     .toList()));
+  }
+
+  @GetMapping("/media/folders")
+  ResponseEntity<?> folders(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_READ,
+        (principal, requestId) -> ok(requestId, content.folders()));
+  }
+
+  @PostMapping("/media/folders")
+  ResponseEntity<?> createFolder(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          FolderBody body = folderBody(request);
+          return ok(requestId, content.createFolder(body.parentId(), body.name()));
+        });
+  }
+
+  @DeleteMapping("/media/folders/{folderId}")
+  ResponseEntity<?> deleteFolder(HttpServletRequest request, @PathVariable String folderId) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          content.deleteFolder(folderId);
+          return ok(requestId, java.util.Map.of("deleted", true));
+        });
+  }
+
+  @PutMapping("/media/{mediaId}/folder")
+  ResponseEntity<?> moveMedia(HttpServletRequest request, @PathVariable String mediaId) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          content.moveMedia(mediaId, folderBody(request).parentId());
+          return ok(requestId, java.util.Map.of("moved", true));
+        });
+  }
+
+  @DeleteMapping("/media/{mediaId}")
+  ResponseEntity<?> deleteMedia(HttpServletRequest request, @PathVariable String mediaId) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          content.deleteMedia(mediaId);
+          return ok(requestId, java.util.Map.of("deleted", true));
+        });
   }
 
   @GetMapping("/media/{mediaId}")
@@ -580,6 +640,38 @@ class AdminContentController {
     return "\"v" + version + "\"";
   }
 
+  private record FolderBody(String name, String parentId) {}
+
+  private static FolderBody folderBody(HttpServletRequest request) {
+    byte[] bytes = body(request, 4096);
+    String name = null;
+    String parentId = null;
+    try (JsonParser parser = STRICT_JSON.createParser(bytes)) {
+      if (parser.nextToken() != JsonToken.START_OBJECT)
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+        if (parser.currentToken() != JsonToken.PROPERTY_NAME)
+          throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+        String field = parser.currentName();
+        JsonToken value = parser.nextToken();
+        if ("name".equals(field)) {
+          if (value != JsonToken.VALUE_STRING)
+            throw new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_NAME_INVALID");
+          name = parser.getString();
+        } else if ("parentId".equals(field) || "folderId".equals(field)) {
+          if (value == JsonToken.VALUE_NULL) parentId = null;
+          else if (value == JsonToken.VALUE_STRING) parentId = parser.getString();
+          else throw new ContentException(ContentFailure.INVALID_REQUEST, "FOLDER_UNKNOWN");
+        } else throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+      }
+      if (parser.nextToken() != null)
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+    } catch (JacksonException malformed) {
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+    }
+    return new FolderBody(name, parentId);
+  }
+
   private static byte[] body(HttpServletRequest request, int max) {
     String type = request.getContentType();
     if (type == null || !type.toLowerCase(java.util.Locale.ROOT).startsWith("application/json"))
@@ -714,6 +806,7 @@ class AdminContentController {
         asset.sourceHeight(),
         asset.createdAt().toString(),
         asset.sourceFileName(),
+        asset.folderId(),
         asset.variants().stream()
             .map(
                 v ->
@@ -763,6 +856,7 @@ class AdminContentController {
       int sourceHeight,
       String createdAt,
       String sourceFileName,
+      String folderId,
       List<VariantView> variants) {}
 
   record UploadView(MediaView media, boolean replayed) {}

@@ -34,7 +34,6 @@ import { describeFailure } from "../content/messages";
 type Operation = "publish" | "withdraw";
 
 const SCOPE_REF = /^[A-Za-z0-9._:-]{1,64}$/;
-const FIXED_BUSINESSES = ["child", "family", "wedding", "portrait", "maternity", "id-photo"];
 
 const api = requireContentApi();
 const auth = inject(authStoreKey);
@@ -55,12 +54,20 @@ const pickerOpen = ref(false);
 const withdrawOpen = ref(false);
 const uploading = ref(false);
 
-const businessChoices = computed(() =>
-  FIXED_BUSINESSES.map((id) => {
-    const named = catalog?.state.draft?.businesses.find((item) => item.id === id)?.name?.trim();
-    return { id, label: named || businessNameLabel(id) };
-  }),
-);
+const businessChoices = computed(() => {
+  const listed = [...(catalog?.state.draft?.businesses ?? [])].sort(
+    (a, b) => a.position - b.position,
+  );
+  const choices = listed.map((item) => ({
+    id: item.id,
+    label: item.name.trim() || businessNameLabel(item.id),
+  }));
+  const known = new Set(choices.map((item) => item.id));
+  for (const id of form.businessIds.split(/[,\s]+/).filter(Boolean)) {
+    if (!known.has(id)) choices.push({ id, label: businessNameLabel(id) });
+  }
+  return choices;
+});
 
 const form = reactive({
   title: "",
@@ -152,12 +159,12 @@ function chooseMedia(mediaId: string) {
   pickerOpen.value = false;
 }
 
-async function uploadMedia(files: File[]) {
+async function uploadMedia(files: File[], folderId: string | null = null) {
   uploading.value = true;
   notice.value = "";
   let blocked = false;
   const failure = await uploadFilesSequentially(files, async (file, key) => {
-    const result = await api.upload(file, file.name, key);
+    const result = await api.upload(file, file.name, key, folderId);
     library.value = rememberUploadedMedia(library.value, result.media);
     const outcome = addWorkMedia(form.selected, result.media.mediaId);
     if (outcome === "added") {

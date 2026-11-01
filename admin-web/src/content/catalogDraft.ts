@@ -99,9 +99,12 @@ export function normalizeDraft(draft: CatalogDraftInput): void {
     item.position = index;
     item.qrMediaId = emptyToNull(item.qrMediaId);
   });
-  draft.businesses.forEach((item) => {
-    item.coverMediaId = emptyToNull(item.coverMediaId);
-  });
+  [...draft.businesses]
+    .sort((a, b) => a.position - b.position)
+    .forEach((item, index) => {
+      item.position = index;
+      item.coverMediaId = emptyToNull(item.coverMediaId);
+    });
   draft.packages.forEach((item, index) => {
     item.position = index;
     item.coverMediaId = emptyToNull(item.coverMediaId);

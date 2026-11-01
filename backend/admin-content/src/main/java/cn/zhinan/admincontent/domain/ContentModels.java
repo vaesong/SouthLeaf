@@ -30,6 +30,8 @@ public final class ContentModels {
 
   public record EncodedVariant(Variant metadata, byte[] bytes) {}
 
+  public record MediaFolder(String folderId, String parentId, String name) {}
+
   public record MediaAsset(
       String mediaId,
       String status,
@@ -38,6 +40,7 @@ public final class ContentModels {
       int sourceHeight,
       Instant createdAt,
       String sourceFileName,
+      String folderId,
       List<Variant> variants) {
     public MediaAsset {
       variants = List.copyOf(variants);

@@ -24,6 +24,7 @@ const sample: MediaView = {
   sourceHeight: 8,
   createdAt: "2026-11-01T00:00:00Z",
   sourceFileName: "cover.jpg",
+  folderId: null,
   variants: [],
 };
 

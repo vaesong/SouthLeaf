@@ -46,6 +46,7 @@ public final class CatalogApplication {
       throw new ContentException(ContentFailure.INVALID_REQUEST, "ACTOR_INVALID");
     if (expectedRevision < 0) throw new ContentException(ContentFailure.PRECONDITION_REQUIRED);
     draft.validated();
+    requireBusinessesCoverWorks(draft);
     validateJson(payloadJson);
     return drafts.save(expectedRevision, payloadJson, actorId, clock.instant());
   }
@@ -55,6 +56,7 @@ public final class CatalogApplication {
   public Preview preview(CatalogDraft draft) {
     try {
       CatalogDraft ready = draft.publishable();
+      requireBusinessesCoverWorks(ready);
       publications.validateWorkReferences(ready.publicationWorkIds(), clock.instant());
       publications.validateMedia(toPortMedia(ready));
       return new Preview(true, null);
@@ -77,6 +79,7 @@ public final class CatalogApplication {
     var replay = publications.findReplay(actorId, key, digest);
     if (replay.isPresent()) return replay.get();
     CatalogDraft ready = draft.publishable();
+    requireBusinessesCoverWorks(ready);
     validateJson(canonicalPayload);
     var media = toPortMedia(ready);
     return publications.publish(
@@ -115,6 +118,17 @@ public final class CatalogApplication {
                 new CatalogMediaReference(
                     v.mediaId(), v.altText(), v.ownerType(), v.ownerId(), v.position()))
         .toList();
+  }
+
+  private void requireBusinessesCoverWorks(CatalogDraft draft) {
+    var ids =
+        draft.businesses().stream()
+            .map(CatalogDraft.Business::id)
+            .collect(java.util.stream.Collectors.toSet());
+    for (String used : drafts.currentWorkBusinessIds()) {
+      if (!ids.contains(used))
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "BUSINESS_IN_USE");
+    }
   }
 
   private static void validateJson(String json) {
