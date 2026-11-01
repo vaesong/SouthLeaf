@@ -12,7 +12,6 @@ function requireAuthStore() {
 }
 
 const auth = requireAuthStore();
-
 const route = useRoute();
 const router = useRouter();
 const accountId = ref("");
@@ -103,74 +102,75 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="auth-shell">
-    <section class="auth-brand" aria-label="SouthLeaf 管理入口">
-      <div class="brand-mark" aria-hidden="true">S</div>
-      <p class="eyebrow">SOUTHLEAF · SECURE ADMIN</p>
-      <h1>管理入口</h1>
-      <p class="brand-copy">使用工作账户登录。身份与权限由服务器即时确认。</p>
-      <div class="brand-rule"></div>
-      <p class="brand-footnote">安全连接 · 短期工作阶段 · 服务器授权</p>
-    </section>
-
-    <section class="auth-panel" aria-labelledby="login-title">
-      <div class="panel-kicker">STAFF SIGN IN</div>
-      <h2 id="login-title">歡迎回來</h2>
-      <p class="panel-copy">请输入你的工作账户资料以继续。</p>
-
+  <main class="login-screen">
+    <section class="card login-wrap">
+      <div class="login-art" aria-hidden="true">
+        <div class="ph"></div>
+        <div class="txt">
+          <small>枝南影像</small>
+          <b>欢迎回来</b>
+          <span>登录后继续今天的工作。</span>
+        </div>
+      </div>
       <form class="login-form" @submit.prevent="submit">
-        <div class="field-group">
-          <label for="account-id">账号标识</label>
-          <el-input
+        <div class="brand" style="padding: 0">
+          <div class="brand-mark">枝</div>
+          <div><b>枝南影像</b><small>只使用已授权的工作账号</small></div>
+        </div>
+        <h1>登录后台</h1>
+        <div class="field">
+          <label for="account-id">账号</label>
+          <input
             id="account-id"
             v-model="accountId"
+            class="input"
             name="username"
             autocomplete="username"
             maxlength="64"
-            placeholder="输入工作账户"
+            placeholder="请输入账号"
             :disabled="submitting"
             required
           />
         </div>
-        <div class="field-group">
+        <div class="field">
           <label for="account-password">密码</label>
-          <el-input
+          <input
             id="account-password"
             v-model="password"
+            class="input"
             name="password"
             type="password"
             autocomplete="current-password"
             maxlength="512"
-            placeholder="输入密码"
-            show-password
+            placeholder="请输入密码"
             :disabled="submitting"
             required
           />
         </div>
-
-        <div v-if="message" class="form-feedback" role="alert" aria-live="assertive">
-          <span>{{ message }}</span>
-          <small v-if="requestId">Request ID: {{ requestId }}</small>
-        </div>
-
-        <div v-if="!auth.state.csrfReady" class="security-status" role="status">
-          <span>{{ csrfLoading ? "正在准备安全验证…" : "需要完成安全初始化才能登录。" }}</span>
-          <el-button text :disabled="csrfLoading" @click="refreshCsrf(true)">重試初始化</el-button>
-        </div>
-
-        <el-button
-          class="submit-button"
-          type="primary"
-          native-type="submit"
-          :loading="submitting"
+        <p v-if="message" class="alert-line" role="alert">
+          {{ message }}<small v-if="requestId">请求编号 {{ requestId }}</small>
+        </p>
+        <p v-if="!auth.state.csrfReady" role="status">
+          {{ csrfLoading ? "正在准备安全验证…" : "需要完成安全初始化才能登录。" }}
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            :disabled="csrfLoading"
+            @click="refreshCsrf(true)"
+          >
+            重试初始化
+          </button>
+        </p>
+        <button
+          class="btn btn-primary btn-block"
+          type="submit"
+          style="height: 44px"
           :disabled="!canSubmit"
         >
-          {{ submitting ? "正在验证…" : "安全登录" }}
-        </el-button>
+          {{ submitting ? "正在验证…" : "登录" }}
+        </button>
+        <p class="hint">连续多次失败会暂时锁定。忘记密码请联系技术人员重置，本页不能修改密码。</p>
       </form>
-
-      <div class="panel-divider"><span>SESSION SECURITY</span></div>
-      <p class="privacy-note">工作阶段由安全 Cookie 管理。此页不会在浏览器存储密码或登录令牌。</p>
     </section>
   </main>
 </template>

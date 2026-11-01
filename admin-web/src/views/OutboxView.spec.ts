@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { authStoreKey, type AuthStore } from "../auth/store";
-import OutboxView from "./OutboxView.vue";
+import OutboxView from "./NotificationsView.vue";
 
 function response(status: number, body: unknown): Response {
   return {
@@ -89,16 +89,16 @@ describe("OutboxView", () => {
     });
     await flushPromises();
 
-    expect(wrapper.text()).toContain("TEST_SINK");
-    expect(wrapper.text()).toContain("RESERVATION_CONFIRMED");
-    expect(wrapper.text()).toContain("PROVIDER_TIMEOUT");
+    expect(wrapper.text()).toContain("等待发送");
+    expect(wrapper.text()).toContain("预约已确认");
+    expect(wrapper.text()).toContain("发送超时");
     expect(wrapper.text()).not.toContain("recipientRef");
     await wrapper.get("button.recover-button").trigger("click");
     await flushPromises();
 
     expect(window.confirm).toHaveBeenCalledOnce();
     expect(fetcher).toHaveBeenCalledTimes(4);
-    expect(wrapper.text()).toContain("测试接收器不会对外发送通知");
+    expect(wrapper.text()).toContain("已安排重新发送");
     wrapper.unmount();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -134,7 +134,7 @@ describe("OutboxView", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("缺少恢复能力");
+    expect(wrapper.text()).toContain("当前账号不能重发这些消息。");
     expect(wrapper.find("button.recover-button").exists()).toBe(false);
     expect(fetcher).toHaveBeenCalledOnce();
     wrapper.unmount();

@@ -5,13 +5,11 @@ const router = useRouter();
 </script>
 
 <template>
-  <main class="message-shell">
-    <section class="message-card">
-      <p class="eyebrow">PAGE NOT FOUND</p>
-      <div class="message-code">404</div>
+  <main class="login-screen">
+    <section class="card card-pad" style="max-width: 480px">
       <h1>找不到此页面</h1>
-      <p>此管理入口尚未提供该页面。</p>
-      <el-button type="primary" @click="router.push('/')">返回首页</el-button>
+      <p>这个地址没有对应的后台页面。</p>
+      <button class="btn btn-primary" type="button" @click="router.push('/')">返回首页</button>
     </section>
   </main>
 </template>

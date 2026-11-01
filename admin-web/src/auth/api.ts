@@ -58,7 +58,7 @@ export class AdminAuthApi {
       envelope.data.csrfToken.length < 1 ||
       envelope.data.csrfToken.length > 4096
     ) {
-      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "安全初始化回應無效。");
+      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "安全初始化响应无效。");
     }
     this.csrfToken = envelope.data.csrfToken;
   }
@@ -101,7 +101,7 @@ export class AdminAuthApi {
       body: "{}",
     });
     if (response.status !== 204) {
-      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "退出回應無效。");
+      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "退出响应无效。");
     }
     this.csrfToken = undefined;
   }
@@ -117,7 +117,7 @@ export class AdminAuthApi {
       typeof identity.expiresAt !== "string" ||
       Number.isNaN(Date.parse(identity.expiresAt))
     ) {
-      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "身份回應無效。", envelope.requestId);
+      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "身份响应无效。", envelope.requestId);
     }
     return {
       accountId: identity.accountId,

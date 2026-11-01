@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>枝南影像 · 工作室后台（设计稿 v2）</title>
+<style>
+:root{
+  --paper:#F5F0E8; --card:#FFFDF9; --sunk:#FAF6F0;
+  --ink:#2A251F; --ink-2:#5E554B; --ink-3:#958B7F;
+  --line:#E6DCCD; --line-2:#EFE7DB;
+  --accent:#A65A34; --accent-2:#8E4825; --accent-soft:#F5E6DB;
+  --sage:#62735A; --sage-soft:#E5EBDD;
+  --gold:#A87C2E; --gold-soft:#F6ECD6;
+  --danger:#B1442E; --danger-soft:#F8E4DE;
+  --shadow:0 1px 2px rgba(60,40,20,.05),0 8px 24px -12px rgba(60,40,20,.14);
+  --shadow-lg:0 24px 60px -20px rgba(50,30,10,.35);
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ---------- 布局 ---------- */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 14px 16px;border-right:1px solid var(--line);background:#F1EADF}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px}
+.brand-mark{width:36px;height:36px;border-radius:11px;background:var(--ink);color:#F5E6DB;display:grid;place-items:center;font-family:var(--serif);font-size:18px}
+.brand b{display:block;font-family:var(--serif);font-size:16px;letter-spacing:.06em}
+.brand small{color:var(--ink-3);font-size:12px}
+.nav-group{margin-top:14px}
+.nav-group>p{padding:0 10px 6px;font-size:12px;color:var(--ink-3);letter-spacing:.1em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 10px;border:0;border-radius:10px;background:none;color:var(--ink-2);cursor:pointer;text-align:left;transition:background .15s,color .15s}
+.nav-item svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+.nav-item:hover{background:rgba(255,253,249,.7);color:var(--ink)}
+.nav-item.active{background:var(--card);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.nav-item .count{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;font-weight:600}
+.side-foot{margin-top:auto;padding:14px 10px 0;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+.side-foot .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--sage);margin-right:6px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;height:64px;padding:0 32px;background:rgba(245,240,232,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.crumb{font-size:13px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.draft-pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:var(--gold-soft);color:#7A5A1E;font-size:13px}
+.draft-pill i{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+
+.account{position:relative}
+.account-btn{display:flex;align-items:center;gap:9px;height:40px;padding:0 10px 0 4px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer}
+.account-btn:hover{border-color:#D6C8B5}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#C98A63,#8E4825);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600}
+.account-btn svg{width:14px;height:14px;stroke:var(--ink-3);fill:none;stroke-width:2}
+.menu{position:absolute;right:0;top:48px;width:240px;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow-lg);display:none}
+.menu.open{display:block}
+.menu-head{display:flex;gap:10px;align-items:center;padding:8px 8px 12px;border-bottom:1px solid var(--line-2);margin-bottom:6px}
+.menu-head b{display:block;font-size:14px}
+.menu-head small{color:var(--ink-3);font-size:12px}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 10px;border:0;border-radius:9px;background:none;cursor:pointer;text-align:left;color:var(--ink-2)}
+.menu button:hover{background:var(--sunk);color:var(--ink)}
+.menu button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7}
+.menu .sep{height:1px;background:var(--line-2);margin:6px 0}
+.menu .logout{color:var(--danger)}
+.menu .logout:hover{background:var(--danger-soft);color:var(--danger)}
+
+.page{display:none;padding:28px 32px 64px;max-width:1360px;width:100%}
+.page.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:24px}
+.page-head h1{font-family:var(--serif);font-size:28px;font-weight:600;letter-spacing:.02em;line-height:1.3}
+.page-head p{margin-top:6px;color:var(--ink-2);max-width:620px}
+.page-head .actions{margin-left:auto;display:flex;gap:10px;flex:none}
+
+/* ---------- 按钮系统 ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 16px;border:1px solid transparent;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.btn-primary{background:var(--ink);color:#FFF6EC}
+.btn-primary:hover{background:#3D362E}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 6px 16px -8px rgba(166,90,52,.8)}
+.btn-accent:hover{background:var(--accent-2)}
+.btn-secondary{background:var(--card);border-color:var(--line);color:var(--ink)}
+.btn-secondary:hover{border-color:#CDBBA4;background:#fff}
+.btn-ghost{background:transparent;color:var(--ink-2)}
+.btn-ghost:hover{background:rgba(42,37,31,.05);color:var(--ink)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#963826}
+.btn-danger-ghost{background:transparent;color:var(--danger)}
+.btn-danger-ghost:hover{background:var(--danger-soft)}
+.btn-sm{height:32px;padding:0 12px;font-size:13px;border-radius:8px}
+.btn-sm svg{width:14px;height:14px}
+.btn-block{width:100%}
+.icon-btn{display:inline-grid;place-items:center;width:32px;height:32px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ink-3);cursor:pointer;transition:.15s}
+.icon-btn:hover{background:var(--sunk);border-color:var(--line);color:var(--ink)}
+.icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.icon-btn.danger:hover{background:var(--danger-soft);border-color:#EFC9BE;color:var(--danger)}
+
+/* ---------- 卡片 & 表单 ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.card-pad{padding:22px 24px}
+.card-head{display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line-2)}
+.card-head h2{font-family:var(--serif);font-size:18px;font-weight:600}
+.card-head p{color:var(--ink-3);font-size:13px}
+.card-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.stack{display:grid;gap:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 18px}
+.span-2{grid-column:span 2}
+.field{display:grid;gap:7px}
+.field label{font-size:13px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.field label em{font-style:normal;font-weight:400;color:var(--ink-3);margin-left:auto;font-size:12px}
+.field .hint{font-size:12px;color:var(--ink-3)}
+.input,.textarea,.select{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.input{height:40px}
+.textarea{min-height:96px;resize:vertical;line-height:1.7}
+.input:focus,.textarea:focus,.select:focus{border-color:#C49274;box-shadow:0 0 0 4px rgba(166,90,52,.12)}
+.input-group{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.input-group span{padding:0 12px;color:var(--ink-3);border-right:1px solid var(--line-2);height:40px;display:grid;place-items:center;background:var(--sunk);font-size:13px}
+.input-group input{border:0;outline:none;height:40px;padding:0 12px;flex:1;background:transparent}
+
+.seg{display:inline-flex;padding:3px;border-radius:11px;background:#EFE7DB;gap:2px}
+.seg button{height:32px;padding:0 14px;border:0;border-radius:8px;background:none;color:var(--ink-2);cursor:pointer;font-size:13px}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(60,40,20,.12)}
+
+.switch{position:relative;width:38px;height:22px;border-radius:11px;background:#DCCFBE;border:0;cursor:pointer;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
+.switch.on{background:var(--sage)}
+.switch.on::after{transform:translateX(16px)}
+.switch-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
+.chip i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip-live{background:var(--sage-soft);color:var(--sage)}
+.chip-draft{background:var(--gold-soft);color:#86641F}
+.chip-off{background:#EEE8DF;color:var(--ink-3)}
+.chip-warn{background:var(--danger-soft);color:var(--danger)}
+.chip-accent{background:var(--accent-soft);color:var(--accent-2)}
+
+.tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 6px 0 12px;border-radius:8px;background:var(--sunk);border:1px solid var(--line-2);font-size:13px}
+.tag button{width:20px;height:20px;border:0;border-radius:5px;background:none;color:var(--ink-3);cursor:pointer;display:grid;place-items:center}
+.tag button:hover{background:#EADFD0;color:var(--ink)}
+.tag-add{height:30px;padding:0 12px;border:1px dashed #CDBBA4;border-radius:8px;background:none;color:var(--ink-2);cursor:pointer;font-size:13px}
+.tag-add:hover{border-color:var(--accent);color:var(--accent)}
+
+.list-editor{display:grid;gap:8px}
+.list-row{display:flex;align-items:center;gap:8px}
+.list-row .grip{color:#C8B9A5;cursor:grab;font-size:14px;letter-spacing:-2px;padding:0 2px}
+.list-row .input{height:36px}
+
+/* 图片位 */
+.ph{position:relative;overflow:hidden;background:linear-gradient(135deg,#E9D8C4,#CFB091 60%,#A97E5C)}
+.ph img{width:100%;height:100%;object-fit:cover;filter:saturate(.82) sepia(.1)}
+.upload{display:grid;place-items:center;gap:6px;text-align:center;border:1.5px dashed #CDBBA4;border-radius:14px;background:var(--sunk);color:var(--ink-3);cursor:pointer;transition:.15s;font-size:13px}
+.upload:hover{border-color:var(--accent);color:var(--accent);background:#FFF8F2}
+.upload svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+.img-slot{position:relative;border-radius:14px;overflow:hidden}
+.img-slot .over{position:absolute;inset:auto 8px 8px 8px;display:flex;gap:6px;opacity:0;transition:.15s}
+.img-slot:hover .over{opacity:1}
+.over .btn{background:rgba(255,253,249,.94);border-color:transparent;backdrop-filter:blur(6px)}
+
+/* 设计说明（批注，非界面元素） */
+.note{display:flex;gap:10px;padding:12px 14px;border:1px dashed #C9A24F;border-radius:12px;background:#FBF4E2;color:#6D5318;font-size:13px;line-height:1.65}
+.note b{flex:none;height:20px;padding:0 7px;border-radius:5px;background:#C9A24F;color:#fff;font-size:12px;display:grid;place-items:center}
+
+/* ---------- 工作台 ---------- */
+.hero-greet{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-bottom:20px}
+.greet{padding:28px 30px;border-radius:22px;background:linear-gradient(140deg,#2F2924,#4A3A2E 60%,#7A4A2E);color:#F8EDE1;position:relative;overflow:hidden}
+.greet::after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(232,170,120,.35),transparent 70%)}
+.greet small{opacity:.7;letter-spacing:.12em}
+.greet h1{font-family:var(--serif);font-size:30px;font-weight:600;margin:8px 0 10px}
+.greet p{opacity:.82;max-width:420px}
+.greet .row{display:flex;gap:10px;margin-top:22px;position:relative;z-index:1}
+.greet .btn-secondary{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#FFF4E8}
+.greet .btn-secondary:hover{background:rgba(255,255,255,.18)}
+.greet .btn-light{background:#FFF4E8;color:var(--ink)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat{padding:18px 20px;cursor:pointer;transition:.15s}
+.stat:hover{transform:translateY(-2px)}
+.stat small{color:var(--ink-3);font-size:13px}
+.stat b{display:block;font-family:var(--serif);font-size:32px;font-weight:600;line-height:1.2;margin:6px 0 2px}
+.stat span{font-size:12px;color:var(--ink-3)}
+.stat.alert b{color:var(--accent)}
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+.todo{display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:1px solid var(--line-2)}
+.todo:last-child{border-bottom:0}
+.todo .t-ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none}
+.todo .t-ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7}
+.todo b{display:block;font-weight:600}
+.todo small{color:var(--ink-3);font-size:12px}
+.todo .btn{margin-left:auto}
+.timeline{padding:6px 24px 18px}
+.tl{display:grid;grid-template-columns:56px 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.tl:last-child{border-bottom:0}
+.tl time{font-family:var(--serif);font-size:16px;font-weight:600}
+.tl b{display:block}
+.tl small{color:var(--ink-3)}
+.health{display:grid;gap:10px;padding:18px 24px}
+.health-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.health-row .chip{margin-left:auto}
+
+/* ---------- 编辑 + 手机预览 ---------- */
+.edit-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.preview-col{position:sticky;top:88px}
+.preview-col>p{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--ink-3)}
+.phone{width:300px;margin:0 auto;padding:10px;border-radius:44px;background:#1E1A16;box-shadow:var(--shadow-lg)}
+.screen{height:600px;border-radius:35px;background:#FBF8F3;overflow:hidden;position:relative}
+.screen-scroll{height:100%;overflow:auto;scrollbar-width:none}
+.mp-status{display:flex;justify-content:space-between;padding:12px 22px 4px;font-size:11px;font-weight:600}
+.mp-nav{text-align:center;font-size:13px;font-weight:600;padding:4px 0 10px}
+.mp-swiper{margin:0 14px;height:200px;border-radius:16px;position:relative}
+.mp-swiper .cap{position:absolute;left:14px;bottom:14px;right:14px;color:#fff}
+.mp-swiper .cap small{font-size:10px;opacity:.85;letter-spacing:.1em}
+.mp-swiper .cap b{display:block;font-family:var(--serif);font-size:18px;margin:2px 0 8px}
+.mp-swiper .cap span{display:inline-block;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.92);color:var(--ink);font-size:10px}
+.mp-swiper::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.55))}
+.mp-swiper .cap{z-index:1}
+.dots{position:absolute;right:14px;bottom:16px;display:flex;gap:4px;z-index:1}
+.dots i{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.5)}
+.dots i.on{width:14px;background:#fff}
+.mp-sec{padding:16px 14px 0}
+.mp-sec h4{font-family:var(--serif);font-size:14px;margin-bottom:8px;display:flex;justify-content:space-between}
+.mp-sec h4 small{font-family:var(--sans);font-weight:400;color:var(--ink-3);font-size:10px}
+.mp-biz{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mp-biz div{border-radius:10px;overflow:hidden;background:#fff;font-size:10px;text-align:center;padding-bottom:6px;border:1px solid var(--line-2)}
+.mp-biz .ph{height:54px;margin-bottom:5px}
+.mp-works{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mp-works .ph{height:100px;border-radius:10px}
+.mp-studio{margin:16px 14px 20px;padding:14px;border-radius:14px;background:#2F2924;color:#F5E6DB;font-size:11px}
+.mp-studio b{display:block;font-family:var(--serif);font-size:14px;margin-bottom:4px;color:#fff}
+.mp-about-head{display:flex;flex-direction:column;align-items:center;padding:18px 14px 6px;text-align:center}
+.mp-logo{width:60px;height:60px;border-radius:18px;background:var(--ink);color:#F5E6DB;display:grid;place-items:center;font-family:var(--serif);font-size:24px;margin-bottom:8px}
+.mp-about-head b{font-family:var(--serif);font-size:17px}
+.mp-about-head small{color:var(--ink-3);font-size:10px;letter-spacing:.12em}
+.mp-about-head p{font-size:11px;color:var(--ink-2);margin-top:6px}
+.mp-card{margin:10px 14px 0;padding:12px;border-radius:12px;background:#fff;border:1px solid var(--line-2);font-size:11px;color:var(--ink-2)}
+.mp-card b{color:var(--ink);font-size:12px}
+.mp-team{display:flex;gap:10px;align-items:center;margin-top:8px}
+.mp-team .ph{width:38px;height:38px;border-radius:50%;flex:none}
+.mp-kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line-2)}
+.mp-kv:last-child{border-bottom:0}
+
+/* ---------- 首页布置：轮播 ---------- */
+.slides{display:grid;gap:12px;padding:18px 24px 22px}
+.slide{display:grid;grid-template-columns:18px 168px 1fr auto;gap:16px;align-items:center;padding:12px;border:1px solid var(--line-2);border-radius:14px;background:var(--sunk);transition:.15s}
+.slide:hover{border-color:var(--line);background:#fff}
+.slide.editing{background:#fff;border-color:#D9BBA5;box-shadow:0 0 0 4px rgba(166,90,52,.08)}
+.slide .grip{color:#C8B9A5;cursor:grab;text-align:center;letter-spacing:-2px}
+.slide .ph{height:96px;border-radius:10px}
+.slide-meta b{display:block;font-family:var(--serif);font-size:16px}
+.slide-meta small{color:var(--ink-3)}
+.slide-meta .tags{margin-top:8px}
+.slide-tools{display:flex;align-items:center;gap:4px}
+.slide-form{grid-column:2 / -1;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 0 4px}
+.picker{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px 24px 22px}
+.pick{position:relative;border:1.5px solid var(--line-2);border-radius:14px;overflow:hidden;cursor:pointer;background:#fff;transition:.15s}
+.pick:hover{border-color:#D6C5B0}
+.pick.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(166,90,52,.12)}
+.pick .ph{height:92px}
+.pick div.t{padding:9px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.pick .no{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;font-weight:700}
+.pick:not(.on) .no{background:rgba(255,255,255,.9);color:var(--ink-3);border:1px solid var(--line)}
+
+/* ---------- 关于 ---------- */
+.logo-edit{display:flex;gap:18px;align-items:center}
+.logo-big{width:88px;height:88px;border-radius:24px;background:var(--ink);color:#F5E6DB;display:grid;place-items:center;font-family:var(--serif);font-size:36px;flex:none}
+.team-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px 24px 22px}
+.member{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:14px;border:1px solid var(--line-2);border-radius:16px;background:var(--sunk);transition:.15s}
+.member:hover{background:#fff;border-color:var(--line);box-shadow:var(--shadow)}
+.member .ph{width:72px;height:88px;border-radius:12px}
+.member-top{display:flex;align-items:flex-start;gap:8px}
+.member-top b{font-family:var(--serif);font-size:16px}
+.member-top small{display:block;color:var(--ink-3);font-size:12px}
+.member-top .tools{margin-left:auto;display:flex;gap:2px}
+.member p{font-size:13px;color:var(--ink-2);margin:6px 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.member .tags .chip{height:22px}
+.member.add{grid-template-columns:1fr;place-items:center;border:1.5px dashed #CDBBA4;background:none;color:var(--ink-3);cursor:pointer;min-height:118px}
+.member.add:hover{border-color:var(--accent);color:var(--accent)}
+.channels{padding:8px 24px 18px}
+.channel{display:grid;grid-template-columns:44px 1fr 1fr 120px auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.channel:last-child{border-bottom:0}
+.ch-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:13px}
+.qr{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:repeating-conic-gradient(#2A251F 0 25%,#fff 0 50%) 0 0/8px 8px}
+.qr.empty{background:var(--sunk);border-style:dashed;display:grid;place-items:center;color:var(--ink-3);font-size:11px}
+
+/* ---------- 业务与套餐 ---------- */
+.biz-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+.biz-list{padding:10px}
+.biz{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:.15s}
+.biz:hover{background:var(--sunk)}
+.biz.on{background:var(--accent-soft)}
+.biz .ph{width:46px;height:46px;border-radius:10px;flex:none}
+.biz b{display:block;font-size:14px}
+.biz small{color:var(--ink-3);font-size:12px}
+.biz .chip{margin-left:auto}
+.biz-cover{display:grid;grid-template-columns:220px 1fr;gap:20px;padding:22px 24px}
+.biz-cover .img-slot .ph{height:150px}
+.pkg{border-top:1px solid var(--line-2)}
+.pkg-row{display:grid;grid-template-columns:64px 1fr 150px 110px auto;gap:16px;align-items:center;padding:14px 24px;cursor:pointer;transition:.15s}
+.pkg-row:hover{background:var(--sunk)}
+.pkg-row .ph{width:64px;height:48px;border-radius:9px}
+.pkg-row .chip{justify-self:start}
+.pkg-row b{display:block}
+.pkg-row small{color:var(--ink-3);font-size:12px}
+.price{font-family:var(--serif);font-size:18px;font-weight:600}
+.price small{font-family:var(--sans);font-size:12px;color:var(--ink-3);font-weight:400;margin-left:2px}
+.pkg-edit{padding:4px 24px 24px;background:linear-gradient(#FFFBF6,#FFFDF9)}
+.pkg-edit .grid-2{gap:16px 20px}
+.sub-title{font-size:13px;font-weight:600;color:var(--ink-2);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sub-title::after{content:"";flex:1;height:1px;background:var(--line-2)}
+
+/* ---------- 作品 ---------- */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);width:260px;color:var(--ink-3)}
+.search svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.search input{border:0;outline:none;background:none;flex:1}
+.works{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.work{overflow:hidden;cursor:pointer;transition:.2s}
+.work:hover{transform:translateY(-3px);box-shadow:0 18px 36px -18px rgba(60,40,20,.35)}
+.work .ph{height:220px}
+.work .ph .chip{position:absolute;top:10px;left:10px;backdrop-filter:blur(6px)}
+.work .ph .count{position:absolute;right:10px;bottom:10px;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,.45);color:#fff;font-size:12px}
+.work-body{padding:14px 16px 16px}
+.work-body b{font-family:var(--serif);font-size:16px;display:block}
+.work-body small{color:var(--ink-3);font-size:12px}
+.work-foot{display:flex;align-items:center;gap:6px;margin-top:10px}
+.work-foot .star{margin-left:auto;color:var(--gold);font-size:12px;display:flex;align-items:center;gap:4px}
+
+/* 抽屉 */
+.scrim{position:fixed;inset:0;background:rgba(30,22,14,.38);backdrop-filter:blur(2px);z-index:50;opacity:0;pointer-events:none;transition:.2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:92vw;background:var(--card);z-index:51;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--line-2)}
+.drawer-head h3{font-family:var(--serif);font-size:20px}
+.drawer-head .icon-btn{margin-left:auto}
+.drawer-body{flex:1;overflow:auto;padding:22px 24px;display:grid;gap:18px;align-content:start}
+.drawer-foot{display:flex;gap:10px;padding:16px 24px;border-top:1px solid var(--line-2);background:var(--sunk)}
+.drawer-foot .right{margin-left:auto;display:flex;gap:10px}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.thumb{position:relative;border-radius:10px;overflow:hidden}
+.thumb .ph{height:92px}
+.thumb.cover{outline:2px solid var(--accent);outline-offset:2px}
+.thumb .cover-badge{position:absolute;left:6px;top:6px;padding:1px 7px;border-radius:5px;background:var(--accent);color:#fff;font-size:11px;z-index:1}
+.check-row{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:13px}
+.check.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+
+/* 弹窗 */
+.modal{position:fixed;left:50%;top:50%;z-index:52;width:400px;max-width:92vw;padding:26px;border-radius:20px;background:var(--card);box-shadow:var(--shadow-lg);transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;transition:.2s}
+.modal.open{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+.modal .m-ico{width:46px;height:46px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:14px}
+.modal .m-ico svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.modal h3{font-family:var(--serif);font-size:20px;margin-bottom:6px}
+.modal p{color:var(--ink-2)}
+.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+
+/* ---------- 图片库 ---------- */
+.media-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.media{border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
+.media .ph{height:130px}
+.media div.m{padding:8px 10px;font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;align-items:center}
+.media div.alt{padding:0 10px 10px;font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media div.alt.miss{color:var(--danger)}
+
+/* ---------- 预约 ---------- */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{height:42px;padding:0 16px;border:0;background:none;cursor:pointer;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:8px}
+.tab.on{color:var(--ink);font-weight:600;border-color:var(--ink)}
+.tab .n{height:18px;min-width:18px;padding:0 5px;border-radius:9px;background:var(--accent-soft);color:var(--accent-2);font-size:11px;display:grid;place-items:center}
+.booking{display:grid;grid-template-columns:86px 1fr 180px auto;gap:18px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line-2)}
+.booking:last-child{border-bottom:0}
+.date-box{text-align:center;padding:8px 0;border-radius:12px;background:var(--sunk);border:1px solid var(--line-2)}
+.date-box small{display:block;color:var(--ink-3);font-size:12px}
+.date-box b{display:block;font-family:var(--serif);font-size:24px;line-height:1.2}
+.booking .who b{font-size:15px}
+.booking .who small{display:block;color:var(--ink-3);font-size:12px;margin-top:2px}
+.expire{font-size:12px;color:var(--accent-2);display:flex;align-items:center;gap:6px}
+.expire svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.booking .acts{display:flex;gap:8px}
+
+/* 档期 */
+.week{display:grid;grid-template-columns:64px repeat(7,1fr);border-top:1px solid var(--line-2)}
+.week .h{padding:12px 8px;text-align:center;font-size:12px;color:var(--ink-3);border-bottom:1px solid var(--line-2)}
+.week .h b{display:block;font-family:var(--serif);font-size:18px;color:var(--ink)}
+.week .h.today b{color:var(--accent)}
+.week .t{padding:6px 8px;font-size:11px;color:var(--ink-3);text-align:right;border-right:1px solid var(--line-2);height:64px}
+.week .c{border-bottom:1px dashed var(--line-2);border-right:1px solid var(--line-2);height:64px;padding:4px;position:relative}
+.slot{height:100%;border-radius:8px;padding:5px 8px;font-size:11px;line-height:1.4}
+.slot.open{background:var(--sage-soft);color:var(--sage);border:1px solid #CBD6C0}
+.slot.held{background:var(--gold-soft);color:#86641F;border:1px solid #EAD7A9}
+.slot.booked{background:var(--accent-soft);color:var(--accent-2);border:1px solid #EBCDB9}
+
+/* 通知 & 发布记录 */
+.table{width:100%;border-collapse:collapse}
+.table th{text-align:left;font-size:12px;font-weight:600;color:var(--ink-3);padding:12px 22px;border-bottom:1px solid var(--line-2);background:var(--sunk)}
+.table td{padding:14px 22px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.table tr:last-child td{border-bottom:0}
+.table tr:hover td{background:#FFFBF6}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink-3)}
+
+/* 登录页（缩略） */
+.login-wrap{display:grid;grid-template-columns:1.1fr 1fr;min-height:560px;overflow:hidden}
+.login-art{position:relative}
+.login-art .ph{position:absolute;inset:0}
+.login-art .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(42,37,31,.1),rgba(42,37,31,.7))}
+.login-art .txt{position:absolute;left:36px;bottom:36px;color:#FFF4E8;z-index:1}
+.login-art .txt b{font-family:var(--serif);font-size:30px;display:block}
+.login-form{padding:56px 52px;display:flex;flex-direction:column;justify-content:center;gap:18px}
+.login-form h2{font-family:var(--serif);font-size:26px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ================= 侧边栏 ================= -->
+<aside class="side">
+  <div class="brand"><div class="brand-mark">枝</div><div><b>枝南影像</b><small>工作室后台</small></div></div>
+
+  <div class="nav-group">
+    <button class="nav-item active" data-page="today"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>今日工作台</button>
+  </div>
+  <div class="nav-group"><p>小程序内容</p>
+    <button class="nav-item" data-page="home"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>首页布置</button>
+    <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>关于我们</button>
+    <button class="nav-item" data-page="biz"><svg viewBox="0 0 24 24"><path d="M4 7h16v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>业务与套餐</button>
+    <button class="nav-item" data-page="works"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>作品集</button>
+    <button class="nav-item" data-page="media"><svg viewBox="0 0 24 24"><path d="M4 16l4-4 3 3 5-5 4 4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>图片库</button>
+  </div>
+  <div class="nav-group"><p>预约经营</p>
+    <button class="nav-item" data-page="booking"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>预约处理<span class="count">3</span></button>
+    <button class="nav-item" data-page="slots"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>档期安排</button>
+    <button class="nav-item" data-page="notice"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>消息通知</button>
+  </div>
+  <div class="nav-group"><p>其他</p>
+    <button class="nav-item" data-page="release"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/></svg>发布记录</button>
+    <button class="nav-item" data-page="login"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>登录页（设计）</button>
+  </div>
+
+  <div class="side-foot"><span class="dot"></span>小程序线上版本：第 12 版<br>上次发布：10 月 30 日 18:42</div>
+</aside>
+
+<!-- ================= 主区域 ================= -->
+<div class="main">
+  <header class="topbar">
+    <div class="crumb" id="crumb">枝南影像 / <b>今日工作台</b></div>
+    <div class="top-actions">
+      <span class="draft-pill"><i></i>有 4 处修改尚未发布</span>
+      <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>预览小程序</button>
+      <button class="btn btn-accent btn-sm" data-open="publish"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>发布到小程序</button>
+      <div class="account">
+        <button class="account-btn" id="accountBtn"><span class="avatar">枝</span><span>店长</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="menu" id="accountMenu">
+          <div class="menu-head"><span class="avatar">枝</span><div><b>枝南 · 店长</b><small>本次登录 11 月 1 日 09:12</small></div></div>
+          <button><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>修改登录密码</button>
+          <button><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>最近登录记录</button>
+          <div class="sep"></div>
+          <button class="logout" data-open="logout"><svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg>退出登录</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 今日工作台 ================= -->
+  <section class="page active" id="page-today" data-title="今日工作台">
+    <div class="hero-greet">
+      <div class="greet">
+        <small>11 月 1 日 · 星期日</small>
+        <h1>早上好，今天有 3 位客人在等你回复。</h1>
+        <p>先处理即将过期的预约，再看看首页的新作品要不要发布。</p>
+        <div class="row">
+          <button class="btn btn-light" data-goto="booking">去处理预约</button>
+          <button class="btn btn-secondary" data-goto="home">布置首页</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="card stat alert" data-goto="booking"><small>待确认预约</small><b>3</b><span>最早一条 2 小时后过期</span></div>
+        <div class="card stat" data-goto="slots"><small>今天的拍摄</small><b>2</b><span>10:00 · 15:30</span></div>
+        <div class="card stat" data-goto="release"><small>未发布的修改</small><b>4</b><span>首页 2 处 · 套餐 2 处</span></div>
+        <div class="card stat" data-goto="notice"><small>通知发送失败</small><b>1</b><span>可以一键重试</span></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><h2>需要你处理</h2><p>按紧急程度排序</p></div>
+        <div class="todo"><div class="t-ico" style="background:var(--accent-soft);color:var(--accent)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b>儿童成长写真 · 11 月 8 日 10:00</b><small>2 小时后自动过期，过期后档期会重新开放</small></div><button class="btn btn-primary btn-sm" data-goto="booking">确认档期</button></div>
+        <div class="todo"><div class="t-ico" style="background:var(--accent-soft);color:var(--accent)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg></div><div><b>全家福 · 11 月 9 日 14:00</b><small>客人留言：希望能带上宠物</small></div><button class="btn btn-secondary btn-sm" data-goto="booking">查看</button></div>
+        <div class="todo"><div class="t-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><div><b>2 张图片还没写图片描述</b><small>不写描述也能发布，但读屏用户看不到图片内容</small></div><button class="btn btn-ghost btn-sm" data-goto="media">去补充</button></div>
+        <div class="todo"><div class="t-ico" style="background:var(--danger-soft);color:var(--danger)"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/></svg></div><div><b>1 条预约确认通知发送失败</b><small>微信订阅消息额度不足，可稍后重试</small></div><button class="btn btn-ghost btn-sm" data-goto="notice">重试</button></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2>今天的拍摄</h2><div class="right"><button class="btn btn-ghost btn-sm" data-goto="slots">看整周</button></div></div>
+          <div class="timeline">
+            <div class="tl"><time>10:00</time><div><b>孕妈写真 · 室内暖调</b><small>约 120 分钟 · 摄影师 林小满</small></div></div>
+            <div class="tl"><time>15:30</time><div><b>情侣写真 · 外景</b><small>约 90 分钟 · 摄影师 阿树</small></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>小程序内容检查</h2></div>
+          <div class="health">
+            <div class="health-row">首页轮播图<span class="chip chip-live"><i></i>3 张</span></div>
+            <div class="health-row">关于我们 · 联系电话<span class="chip chip-live"><i></i>已填写</span></div>
+            <div class="health-row">小红书二维码<span class="chip chip-warn"><i></i>未上传</span></div>
+            <div class="health-row">“证件照”业务<span class="chip chip-off"><i></i>未上架</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 首页布置 ================= -->
+  <section class="page" id="page-home" data-title="首页布置">
+    <div class="page-head">
+      <div><h1>首页布置</h1><p>客人打开小程序第一眼看到的内容。改完先在右侧预览，满意再统一发布。</p></div>
+      <div class="actions"><button class="btn btn-secondary">放弃修改</button><button class="btn btn-primary">保存草稿</button></div>
+    </div>
+    <div class="edit-layout">
+      <div class="stack">
+        <div class="note"><b>说明</b><span>现在轮播图是由“首页精选作品”的前 3 个自动生成的，副标题“公开作品”和按钮“浏览作品”是写死的，后台改不了。下面这块是新设计：轮播图单独配置。确认要做的话，需要后端新增轮播字段。</span></div>
+
+        <div class="card">
+          <div class="card-head"><h2>首页轮播图</h2><p>最多 5 张，拖动左侧把手调整顺序</p><div class="right"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加一张</button></div></div>
+          <div class="slides">
+            <div class="slide editing">
+              <span class="grip">⋮⋮</span>
+              <div class="ph"><img src="https://picsum.photos/seed/sl-hero-1/480/280" alt=""></div>
+              <div class="slide-meta"><b>秋日里的小大人</b><small>副标题：儿童成长写真 · 按钮：看这组作品</small><div class="tags"><span class="chip chip-live"><i></i>显示中</span><span class="chip chip-accent">跳转：作品</span></div></div>
+              <div class="slide-tools"><button class="switch on" aria-label="显示"></button><button class="icon-btn" title="收起"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></button><button class="icon-btn danger" title="删除"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+              <div class="slide-form">
+                <div class="field"><label>主标题<em>8/16</em></label><input class="input" value="秋日里的小大人"></div>
+                <div class="field"><label>副标题<em>选填</em></label><input class="input" value="儿童成长写真"></div>
+                <div class="field"><label>按钮文字</label><input class="input" value="看这组作品"></div>
+                <div class="field"><label>点击后去哪里</label>
+                  <div class="seg"><button class="on">作品</button><button>套餐</button><button>业务</button><button>关于我们</button></div>
+                </div>
+                <div class="field span-2"><label>选择作品</label><select class="select input"><option>秋日里的小大人 · 儿童成长写真</option><option>一家四口的周末</option></select></div>
+              </div>
+            </div>
+            <div class="slide">
+              <span class="grip">⋮⋮</span>
+              <div class="ph"><img src="https://picsum.photos/seed/sl-hero-2/480/280" alt=""></div>
+              <div class="slide-meta"><b>把今天，留成全家的纪念</b><small>副标题：全家福 · 按钮：查看套餐</small><div class="tags"><span class="chip chip-live"><i></i>显示中</span><span class="chip chip-accent">跳转：套餐</span></div></div>
+              <div class="slide-tools"><button class="switch on"></button><button class="icon-btn" title="编辑"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="icon-btn danger" title="删除"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+            </div>
+            <div class="slide">
+              <span class="grip">⋮⋮</span>
+              <div class="ph"><img src="https://picsum.photos/seed/sl-hero-3/480/280" alt=""></div>
+              <div class="slide-meta"><b>来工作室坐坐</b><small>副标题：关于枝南 · 按钮：了解我们</small><div class="tags"><span class="chip chip-off"><i></i>已隐藏</span><span class="chip chip-accent">跳转：关于我们</span></div></div>
+              <div class="slide-tools"><button class="switch"></button><button class="icon-btn" title="编辑"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="icon-btn danger" title="删除"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>首页文案</h2><p>标题区与分享卡片</p></div>
+          <div class="card-pad grid-2">
+            <div class="field"><label>首页栏目标题<em>对应“发现”区标题</em></label><input class="input" value="在枝南，慢慢拍"></div>
+            <div class="field"><label>分享卡片标题<em>转发给朋友时显示</em></label><input class="input" value="枝南影像 · 温柔记录每个阶段"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>精选业务</h2><p>首页展示 3 个，按点选顺序排列</p></div>
+          <div class="picker">
+            <div class="pick on"><span class="no">1</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-1/400/220" alt=""></div><div class="t">儿童成长写真<span class="chip chip-live">已上架</span></div></div>
+            <div class="pick on"><span class="no">2</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-2/400/220" alt=""></div><div class="t">全家福<span class="chip chip-live">已上架</span></div></div>
+            <div class="pick on"><span class="no">3</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-3/400/220" alt=""></div><div class="t">孕妈写真<span class="chip chip-live">已上架</span></div></div>
+            <div class="pick"><span class="no">·</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-4/400/220" alt=""></div><div class="t">情侣写真<span class="chip chip-live">已上架</span></div></div>
+            <div class="pick"><span class="no">·</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-5/400/220" alt=""></div><div class="t">个人形象照<span class="chip chip-live">已上架</span></div></div>
+            <div class="pick"><span class="no">·</span><div class="ph"><img src="https://picsum.photos/seed/sl-biz-6/400/220" alt=""></div><div class="t">证件照<span class="chip chip-off">未上架</span></div></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap:20px">
+          <div class="card">
+            <div class="card-head"><h2>精选作品</h2><div class="right"><button class="btn btn-ghost btn-sm">选择作品</button></div></div>
+            <div class="card-pad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+              <div class="img-slot"><div class="ph" style="height:96px"><img src="https://picsum.photos/seed/sl-w1/300/300" alt=""></div></div>
+              <div class="img-slot"><div class="ph" style="height:96px"><img src="https://picsum.photos/seed/sl-w2/300/300" alt=""></div></div>
+              <div class="img-slot"><div class="ph" style="height:96px"><img src="https://picsum.photos/seed/sl-w3/300/300" alt=""></div></div>
+              <div class="img-slot"><div class="ph" style="height:96px"><img src="https://picsum.photos/seed/sl-w4/300/300" alt=""></div></div>
+              <div class="upload" style="height:96px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>精选套餐</h2><div class="right"><button class="btn btn-ghost btn-sm">选择套餐</button></div></div>
+            <div class="card-pad" style="display:grid;gap:10px">
+              <div class="list-row"><span class="grip">⋮⋮</span><b style="flex:1">成长纪念 · 单人</b><span class="price">¥699<small>起</small></span></div>
+              <div class="list-row"><span class="grip">⋮⋮</span><b style="flex:1">温馨全家福 · 4 人</b><span class="price">¥1,280</span></div>
+              <div class="list-row"><span class="grip">⋮⋮</span><b style="flex:1">孕期纪念 · 室内</b><span class="price" style="font-size:14px">到店咨询</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-col">
+        <p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>小程序首页实时预览（草稿）</p>
+        <div class="phone"><div class="screen"><div class="screen-scroll">
+          <div class="mp-status"><span>9:41</span><span>●●● 5G</span></div>
+          <div class="mp-nav">枝南影像</div>
+          <div class="mp-swiper ph"><img src="https://picsum.photos/seed/sl-hero-1/600/400" alt="" style="position:absolute;inset:0;height:100%"><div class="cap"><small>儿童成长写真</small><b>秋日里的小大人</b><span>看这组作品</span></div><div class="dots"><i class="on"></i><i></i></div></div>
+          <div class="mp-sec"><h4>在枝南，慢慢拍<small>全部业务 ›</small></h4>
+            <div class="mp-biz"><div><div class="ph"><img src="https://picsum.photos/seed/sl-biz-1/200/120" alt=""></div>儿童成长</div><div><div class="ph"><img src="https://picsum.photos/seed/sl-biz-2/200/120" alt=""></div>全家福</div><div><div class="ph"><img src="https://picsum.photos/seed/sl-biz-3/200/120" alt=""></div>孕妈写真</div></div></div>
+          <div class="mp-sec"><h4>精选作品<small>更多 ›</small></h4>
+            <div class="mp-works"><div class="ph"><img src="https://picsum.photos/seed/sl-w1/300/300" alt=""></div><div class="ph"><img src="https://picsum.photos/seed/sl-w2/300/300" alt=""></div></div></div>
+          <div class="mp-studio"><b>来工作室坐坐</b>城南梧桐路 18 号 · 每天 10:00–19:00</div>
+        </div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 关于我们 ================= -->
+  <section class="page" id="page-about" data-title="关于我们">
+    <div class="page-head">
+      <div><h1>关于我们</h1><p>工作室介绍、摄影师、地址电话和社交账号，都会出现在小程序“关于”页。</p></div>
+      <div class="actions"><button class="btn btn-secondary">放弃修改</button><button class="btn btn-primary">保存草稿</button></div>
+    </div>
+    <div class="edit-layout">
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2>品牌信息</h2></div>
+          <div class="card-pad stack">
+            <div class="logo-edit">
+              <div class="logo-big">枝</div>
+              <div><b>品牌标志</b><p style="color:var(--ink-3);font-size:13px;margin:2px 0 10px">建议正方形，至少 400×400，透明背景更好看</p>
+                <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>更换图片</button><button class="btn btn-ghost btn-sm">从图片库选择</button></div></div>
+            </div>
+            <div class="grid-2">
+              <div class="field"><label>工作室名称</label><input class="input" value="枝南影像"></div>
+              <div class="field"><label>英文名<em>选填</em></label><input class="input" value="Zhinan Studio"></div>
+              <div class="field span-2"><label>一句话介绍<em>14/30</em></label><input class="input" value="温柔记录每一个值得纪念的阶段"></div>
+              <div class="field span-2"><label>品牌故事</label><textarea class="textarea">2018 年，我们在城南一间老房子里开了这家小小的工作室。没有棚拍流水线，只有自然光、木地板和慢下来的时间。希望每一位来过的客人，都能带走一组多年后还会翻出来看的照片。</textarea><span class="hint">会显示在“关于”页顶部，建议 80–200 字</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>联系方式</h2><p>客人点击即可拨号、导航</p></div>
+          <div class="card-pad grid-2">
+            <div class="field"><label>联系电话</label><div class="input-group"><span>+86</span><input value="138 0000 0000"></div></div>
+            <div class="field"><label>营业时间</label><input class="input" value="每天 10:00–19:00，周二休息"></div>
+            <div class="field span-2"><label>工作室地址</label><input class="input" value="城南梧桐路 18 号 2 楼（梧桐书店楼上）"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>摄影师与团队</h2><p>拖动调整显示顺序</p><div class="right"><button class="btn btn-secondary btn-sm" data-open="member"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加成员</button></div></div>
+          <div class="team-grid">
+            <div class="member">
+              <div class="ph"><img src="https://picsum.photos/seed/sl-p1/200/240" alt=""></div>
+              <div><div class="member-top"><div><b>林小满</b><small>主理人 · 摄影师</small></div><div class="tools"><button class="icon-btn" title="编辑" data-open="member"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="icon-btn" title="隐藏"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+                <p>拍了九年的孩子和家庭，擅长在玩耍里抓住最自然的表情。</p>
+                <div class="tags"><span class="chip chip-accent">儿童</span><span class="chip chip-accent">家庭</span><span class="chip chip-live"><i></i>展示中</span></div></div>
+            </div>
+            <div class="member">
+              <div class="ph"><img src="https://picsum.photos/seed/sl-p2/200/240" alt=""></div>
+              <div><div class="member-top"><div><b>阿树</b><small>摄影师</small></div><div class="tools"><button class="icon-btn" title="编辑" data-open="member"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="icon-btn" title="隐藏"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+                <p>喜欢外景和胶片色调，情侣和个人形象照找他准没错。</p>
+                <div class="tags"><span class="chip chip-accent">情侣</span><span class="chip chip-accent">外景</span><span class="chip chip-live"><i></i>展示中</span></div></div>
+            </div>
+            <div class="member">
+              <div class="ph"><img src="https://picsum.photos/seed/sl-p3/200/240" alt=""></div>
+              <div><div class="member-top"><div><b>小禾</b><small>化妆造型师</small></div><div class="tools"><button class="icon-btn" title="编辑" data-open="member"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="icon-btn" title="显示"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/></svg></button></div></div>
+                <p>温柔耐心，孕妈和小朋友的妆发都交给她。</p>
+                <div class="tags"><span class="chip chip-accent">妆造</span><span class="chip chip-off"><i></i>已隐藏</span></div></div>
+            </div>
+            <div class="member add" data-open="member"><div style="text-align:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><div style="font-size:13px;margin-top:4px">添加一位成员</div></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>社交账号</h2><p>客人可以长按二维码关注</p><div class="right"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加账号</button></div></div>
+          <div class="channels">
+            <div class="channel"><div class="ch-ico" style="background:#E3F1E4;color:#2E8B47">微信</div><div class="field"><label>显示名称</label><input class="input" value="店长微信"></div><div class="field"><label>账号</label><input class="input" value="nanye-studio"></div><div style="display:flex;gap:8px;align-items:center"><div class="qr"></div><button class="btn btn-ghost btn-sm">更换</button></div><button class="switch on"></button></div>
+            <div class="channel"><div class="ch-ico" style="background:#FBE4E4;color:#C93A3A">小红书</div><div class="field"><label>显示名称</label><input class="input" value="枝南影像工作室"></div><div class="field"><label>账号</label><input class="input" value="nanye2018"></div><div style="display:flex;gap:8px;align-items:center"><div class="qr empty">无</div><button class="btn btn-secondary btn-sm">上传</button></div><button class="switch on"></button></div>
+            <div class="channel"><div class="ch-ico" style="background:#E7E7EE;color:#333">抖音</div><div class="field"><label>显示名称</label><input class="input" value="枝南的日常"></div><div class="field"><label>账号</label><input class="input" value="nanye.daily"></div><div style="display:flex;gap:8px;align-items:center"><div class="qr"></div><button class="btn btn-ghost btn-sm">更换</button></div><button class="switch"></button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-col">
+        <p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>小程序“关于”页预览（草稿）</p>
+        <div class="phone"><div class="screen"><div class="screen-scroll">
+          <div class="mp-status"><span>9:41</span><span>●●● 5G</span></div>
+          <div class="mp-nav">关于我们</div>
+          <div class="mp-about-head"><div class="mp-logo">枝</div><b>枝南影像</b><small>ZHINAN STUDIO</small><p>温柔记录每一个值得纪念的阶段</p></div>
+          <div class="mp-card">2018 年，我们在城南一间老房子里开了这家小小的工作室。没有棚拍流水线，只有自然光、木地板和慢下来的时间……</div>
+          <div class="mp-card"><b>我们的团队</b>
+            <div class="mp-team"><div class="ph"><img src="https://picsum.photos/seed/sl-p1/100/100" alt=""></div><div><b>林小满</b><br>主理人 · 摄影师</div></div>
+            <div class="mp-team"><div class="ph"><img src="https://picsum.photos/seed/sl-p2/100/100" alt=""></div><div><b>阿树</b><br>摄影师</div></div>
+          </div>
+          <div class="mp-card"><div class="mp-kv"><span>电话</span><b>138 0000 0000</b></div><div class="mp-kv"><span>地址</span><b>城南梧桐路 18 号 2 楼</b></div><div class="mp-kv"><span>营业</span><b>每天 10:00–19:00</b></div></div>
+          <div class="mp-card" style="margin-bottom:20px"><b>关注我们</b><div style="display:flex;gap:10px;margin-top:8px"><div class="qr" style="width:52px;height:52px"></div><div class="qr empty" style="width:52px;height:52px">无</div></div></div>
+        </div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 业务与套餐 ================= -->
+  <section class="page" id="page-biz" data-title="业务与套餐">
+    <div class="page-head">
+      <div><h1>业务与套餐</h1><p>6 个固定业务，每个业务下可以有多个套餐。价格、服务内容和注意事项都在这里改。</p></div>
+      <div class="actions"><button class="btn btn-primary">保存草稿</button></div>
+    </div>
+    <div class="biz-layout">
+      <div class="card biz-list">
+        <div class="biz on"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-1/120/120" alt=""></div><div><b>儿童成长写真</b><small>3 个套餐</small></div><span class="chip chip-live">上架</span></div>
+        <div class="biz"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-2/120/120" alt=""></div><div><b>全家福</b><small>2 个套餐</small></div><span class="chip chip-live">上架</span></div>
+        <div class="biz"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-3/120/120" alt=""></div><div><b>孕妈写真</b><small>2 个套餐</small></div><span class="chip chip-live">上架</span></div>
+        <div class="biz"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-4/120/120" alt=""></div><div><b>情侣写真</b><small>2 个套餐</small></div><span class="chip chip-live">上架</span></div>
+        <div class="biz"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-5/120/120" alt=""></div><div><b>个人形象照</b><small>1 个套餐</small></div><span class="chip chip-live">上架</span></div>
+        <div class="biz"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-6/120/120" alt=""></div><div><b>证件照</b><small>0 个套餐</small></div><span class="chip chip-off">下架</span></div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2>儿童成长写真</h2><div class="right"><span class="switch-row">在小程序上架<button class="switch on"></button></span></div></div>
+          <div class="biz-cover">
+            <div class="img-slot"><div class="ph"><img src="https://picsum.photos/seed/sl-biz-1/440/300" alt=""></div><div class="over"><button class="btn btn-secondary btn-sm">更换封面</button></div></div>
+            <div class="stack" style="gap:14px">
+              <div class="field"><label>业务名称</label><input class="input" value="儿童成长写真"></div>
+              <div class="field"><label>业务简介</label><textarea class="textarea" style="min-height:70px">0–12 岁，在玩耍里拍下最真实的样子。可以带上心爱的玩具。</textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>套餐</h2><p>点击展开编辑</p><div class="right"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新建套餐</button></div></div>
+          <div class="pkg">
+            <div class="pkg-row" style="background:var(--sunk)"><div class="ph"><img src="https://picsum.photos/seed/sl-pk1/160/120" alt=""></div><div><b>成长纪念 · 单人</b><small>约 90 分钟 · 适合 1–6 岁</small></div><div class="price">¥699<small>起</small></div><span class="chip chip-live"><i></i>上架</span><button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></button></div>
+            <div class="pkg-edit">
+              <div class="sub-title">基本信息</div>
+              <div class="grid-2">
+                <div class="field"><label>套餐名称</label><input class="input" value="成长纪念 · 单人"></div>
+                <div class="field"><label>拍摄时长</label><div class="input-group"><input value="90"><span style="border-right:0;border-left:1px solid var(--line-2)">分钟</span></div></div>
+                <div class="field"><label>适合人群</label><input class="input" value="1–6 岁宝宝，可 1 位家长陪同入镜"></div>
+                <div class="field"><label>套餐封面</label><div style="display:flex;gap:10px;align-items:center"><div class="ph" style="width:56px;height:40px;border-radius:8px"><img src="https://picsum.photos/seed/sl-pk1/160/120" alt=""></div><button class="btn btn-ghost btn-sm">更换</button></div></div>
+                <div class="field span-2"><label>套餐简介</label><textarea class="textarea" style="min-height:64px">一套服装、一个场景，自然光室内拍摄，含基础妆发。</textarea></div>
+              </div>
+              <div class="sub-title">价格</div>
+              <div class="grid-2">
+                <div class="field"><label>价格显示方式</label><div class="seg" id="priceSeg"><button>固定价</button><button class="on">起价</button><button>到店咨询</button><button>不公开</button></div><span class="hint">本阶段小程序不收款，价格仅作展示</span></div>
+                <div class="field"><label>显示价格</label><div class="input-group"><span>¥</span><input value="699"><span style="border-right:0;border-left:1px solid var(--line-2)">起</span></div></div>
+              </div>
+              <div class="sub-title">服务内容</div>
+              <div class="tags"><span class="tag">精修 12 张<button>✕</button></span><span class="tag">底片全送<button>✕</button></span><span class="tag">1 套服装<button>✕</button></span><span class="tag">基础妆发<button>✕</button></span><button class="tag-add">+ 添加一项</button></div>
+              <div class="grid-2" style="margin-top:4px">
+                <div><div class="sub-title">拍摄小贴士</div>
+                  <div class="list-editor">
+                    <div class="list-row"><span class="grip">⋮⋮</span><input class="input" value="提前 15 分钟到店，让宝宝熟悉环境"><button class="icon-btn danger"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+                    <div class="list-row"><span class="grip">⋮⋮</span><input class="input" value="可以带上宝宝最喜欢的玩具"><button class="icon-btn danger"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+                    <button class="tag-add" style="justify-self:start">+ 添加一条</button>
+                  </div></div>
+                <div><div class="sub-title">预约须知</div>
+                  <div class="list-editor">
+                    <div class="list-row"><span class="grip">⋮⋮</span><input class="input" value="改期请提前 24 小时告知"><button class="icon-btn danger"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+                    <div class="list-row"><span class="grip">⋮⋮</span><input class="input" value="超出时长按 30 分钟加收"><button class="icon-btn danger"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+                    <button class="tag-add" style="justify-self:start">+ 添加一条</button>
+                  </div></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:22px;align-items:center">
+                <span class="switch-row">上架这个套餐<button class="switch on"></button></span>
+                <button class="btn btn-danger-ghost btn-sm" style="margin-left:auto">删除套餐</button>
+                <button class="btn btn-primary btn-sm">完成</button>
+              </div>
+            </div>
+            <div class="pkg-row" style="border-top:1px solid var(--line-2)"><div class="ph"><img src="https://picsum.photos/seed/sl-pk2/160/120" alt=""></div><div><b>成长纪念 · 双宝</b><small>约 120 分钟 · 两位小朋友</small></div><div class="price">¥1,080</div><span class="chip chip-live"><i></i>上架</span><button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+            <div class="pkg-row" style="border-top:1px solid var(--line-2)"><div class="ph"><img src="https://picsum.photos/seed/sl-pk3/160/120" alt=""></div><div><b>周岁宴跟拍</b><small>约 180 分钟 · 外出跟拍</small></div><div class="price" style="font-size:14px">到店咨询</div><span class="chip chip-draft"><i></i>草稿</span><button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 作品集 ================= -->
+  <section class="page" id="page-works" data-title="作品集">
+    <div class="page-head">
+      <div><h1>作品集</h1><p>每组作品单独发布。已发布的会出现在小程序作品页，也可以放到首页精选和轮播。</p></div>
+      <div class="actions"><button class="btn btn-accent" data-open="work"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新建作品</button></div>
+    </div>
+    <div class="toolbar">
+      <div class="seg"><button class="on">全部 24</button><button>已发布 18</button><button>草稿 4</button><button>已撤下 2</button></div>
+      <select class="select input" style="width:160px;height:38px;margin-left:auto"><option>全部业务</option><option>儿童成长写真</option></select>
+      <div class="search" style="margin:0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="搜索作品标题"></div>
+    </div>
+    <div class="works">
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w1/400/440" alt=""><span class="chip chip-live" style="background:rgba(229,235,221,.92)"><i></i>已发布</span><span class="count">12 张</span></div><div class="work-body"><b>秋日里的小大人</b><small>儿童成长写真 · 10 月 28 日更新</small><div class="work-foot"><span class="chip chip-accent">轮播第 1 张</span><span class="star">★ 首页精选</span></div></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w2/400/440" alt=""><span class="chip chip-live" style="background:rgba(229,235,221,.92)"><i></i>已发布</span><span class="count">9 张</span></div><div class="work-body"><b>一家四口的周末</b><small>全家福 · 10 月 20 日更新</small><div class="work-foot"><span class="star">★ 首页精选</span></div></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w3/400/440" alt=""><span class="chip chip-draft" style="background:rgba(246,236,214,.94)"><i></i>草稿</span><span class="count">6 张</span></div><div class="work-body"><b>等你来的第 32 周</b><small>孕妈写真 · 昨天编辑</small><div class="work-foot"><span class="chip chip-warn">2 张缺描述</span></div></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w4/400/440" alt=""><span class="chip chip-live" style="background:rgba(229,235,221,.92)"><i></i>已发布</span><span class="count">15 张</span></div><div class="work-body"><b>海边的风</b><small>情侣写真 · 9 月 30 日更新</small><div class="work-foot"><span class="star">★ 首页精选</span></div></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w5/400/440" alt=""><span class="chip chip-live" style="background:rgba(229,235,221,.92)"><i></i>已发布</span><span class="count">8 张</span></div><div class="work-body"><b>她的三十岁</b><small>个人形象照 · 9 月 21 日更新</small></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w6/400/440" alt=""><span class="chip chip-off" style="background:rgba(238,232,223,.94)"><i></i>已撤下</span><span class="count">10 张</span></div><div class="work-body"><b>夏天的西瓜</b><small>儿童成长写真 · 8 月 12 日撤下</small></div></div>
+      <div class="card work" data-open="work"><div class="ph"><img src="https://picsum.photos/seed/sl-w7/400/440" alt=""><span class="chip chip-live" style="background:rgba(229,235,221,.92)"><i></i>已发布</span><span class="count">11 张</span></div><div class="work-body"><b>外婆的老院子</b><small>全家福 · 8 月 3 日更新</small></div></div>
+      <div class="upload card" style="min-height:300px" data-open="work"><div><svg viewBox="0 0 24 24" style="margin:0 auto 6px"><path d="M12 5v14M5 12h14"/></svg>新建一组作品</div></div>
+    </div>
+  </section>
+
+  <!-- ================= 图片库 ================= -->
+  <section class="page" id="page-media" data-title="图片库">
+    <div class="page-head">
+      <div><h1>图片库</h1><p>所有上传的图片都在这里。作品、封面、团队照片、二维码都从这里选。</p></div>
+      <div class="actions"><button class="btn btn-accent"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>上传图片</button></div>
+    </div>
+    <div class="upload" style="height:120px;margin-bottom:20px"><div><svg viewBox="0 0 24 24" style="margin:0 auto 6px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>把图片拖到这里，或点击选择<br><small>支持 JPG、PNG，单张不超过 20MB，会自动生成缩略图</small></div></div>
+    <div class="toolbar">
+      <div class="seg"><button class="on">全部 186</button><button>缺描述 2</button><button>未使用 31</button></div>
+      <div class="search" style="margin-left:auto"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="按描述搜索"></div>
+    </div>
+    <div class="media-grid">
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m1/300/260" alt=""></div><div class="m">4032×3024<span class="chip chip-live">处理完成</span></div><div class="alt">小女孩在落叶里大笑</div></div>
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m2/300/260" alt=""></div><div class="m">3000×4000<span class="chip chip-live">处理完成</span></div><div class="alt">一家四口坐在沙发上</div></div>
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m3/300/260" alt=""></div><div class="m">4032×3024<span class="chip chip-live">处理完成</span></div><div class="alt miss">还没有图片描述</div></div>
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m4/300/260" alt=""></div><div class="m">5472×3648<span class="chip chip-draft">处理中</span></div><div class="alt">海边牵手的背影</div></div>
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m5/300/260" alt=""></div><div class="m">3648×5472<span class="chip chip-live">处理完成</span></div><div class="alt">窗边的孕妈侧影</div></div>
+      <div class="media"><div class="ph"><img src="https://picsum.photos/seed/sl-m6/300/260" alt=""></div><div class="m">4000×3000<span class="chip chip-live">处理完成</span></div><div class="alt miss">还没有图片描述</div></div>
+    </div>
+  </section>
+
+  <!-- ================= 预约处理 ================= -->
+  <section class="page" id="page-booking" data-title="预约处理">
+    <div class="page-head">
+      <div><h1>预约处理</h1><p>客人在小程序里提交的预约。本阶段不收款，确认后档期即锁定。</p></div>
+    </div>
+    <div class="tabs"><button class="tab on">待确认<span class="n">3</span></button><button class="tab">已确认</button><button class="tab">已拒绝 / 已取消</button></div>
+    <div class="card">
+      <div class="booking">
+        <div class="date-box"><small>11 月</small><b>8</b><small>周六 10:00</small></div>
+        <div class="who"><b>成长纪念 · 单人</b><small>儿童成长写真 · 约 90 分钟 · 来自小程序</small><small>预约编号 R-20261101-0007 · 微信用户（未留手机号）</small></div>
+        <div class="expire"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>2 小时 14 分后过期</div>
+        <div class="acts"><button class="btn btn-ghost btn-sm">改期</button><button class="btn btn-secondary btn-sm">婉拒</button><button class="btn btn-primary btn-sm">确认预约</button></div>
+      </div>
+      <div class="booking">
+        <div class="date-box"><small>11 月</small><b>9</b><small>周日 14:00</small></div>
+        <div class="who"><b>温馨全家福 · 4 人</b><small>全家福 · 约 120 分钟 · 来自小程序</small><small>预约编号 R-20261101-0005 · 手机 138****2210</small></div>
+        <div class="expire"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>今天 21:00 过期</div>
+        <div class="acts"><button class="btn btn-ghost btn-sm">改期</button><button class="btn btn-secondary btn-sm">婉拒</button><button class="btn btn-primary btn-sm">确认预约</button></div>
+      </div>
+      <div class="booking">
+        <div class="date-box"><small>11 月</small><b>15</b><small>周六 15:30</small></div>
+        <div class="who"><b>孕期纪念 · 室内</b><small>孕妈写真 · 约 120 分钟 · 来自小程序</small><small>预约编号 R-20261031-0012 · 微信用户（未留手机号）</small></div>
+        <div class="expire"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>明天 10:00 过期</div>
+        <div class="acts"><button class="btn btn-ghost btn-sm">改期</button><button class="btn btn-secondary btn-sm">婉拒</button><button class="btn btn-primary btn-sm">确认预约</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 档期安排 ================= -->
+  <section class="page" id="page-slots" data-title="档期安排">
+    <div class="page-head">
+      <div><h1>档期安排</h1><p>客人在小程序里只能选择这里开放的时间段。</p></div>
+      <div class="actions"><button class="btn btn-secondary btn-sm">‹ 上一周</button><button class="btn btn-secondary btn-sm">下一周 ›</button><button class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>开放新档期</button></div>
+    </div>
+    <div class="note" style="margin-bottom:18px"><b>说明</b><span>现在后台只能查看档期，“开放新档期 / 关闭档期”还没有后端接口；预约规则（提前多久可约、待确认多久过期）目前也只能在服务器配置文件里改。这里先把界面设计出来，确认后再补接口。</span></div>
+    <div class="card" style="overflow:hidden">
+      <div class="week">
+        <div class="h"></div>
+        <div class="h">周一<b>2</b></div><div class="h">周二<b>3</b></div><div class="h">周三<b>4</b></div><div class="h">周四<b>5</b></div><div class="h">周五<b>6</b></div><div class="h">周六<b>7</b></div><div class="h today">周日<b>8</b></div>
+        <div class="t">10:00</div><div class="c"><div class="slot open">可预约</div></div><div class="c"></div><div class="c"><div class="slot open">可预约</div></div><div class="c"><div class="slot booked">已确认<br>全家福</div></div><div class="c"><div class="slot open">可预约</div></div><div class="c"><div class="slot held">待确认<br>儿童写真</div></div><div class="c"><div class="slot booked">已确认<br>孕妈写真</div></div>
+        <div class="t">13:00</div><div class="c"></div><div class="c"></div><div class="c"><div class="slot open">可预约</div></div><div class="c"></div><div class="c"><div class="slot open">可预约</div></div><div class="c"><div class="slot open">可预约</div></div><div class="c"></div>
+        <div class="t">15:30</div><div class="c"><div class="slot open">可预约</div></div><div class="c"></div><div class="c"></div><div class="c"><div class="slot open">可预约</div></div><div class="c"><div class="slot booked">已确认<br>情侣写真</div></div><div class="c"><div class="slot held">待确认<br>全家福</div></div><div class="c"><div class="slot booked">已确认<br>情侣写真</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-head"><h2>预约规则</h2><p>当前生效：第 3 版</p><div class="right"><button class="btn btn-secondary btn-sm">修改规则</button></div></div>
+      <div class="card-pad grid-3">
+        <div class="field"><label>最早可提前预约</label><input class="input" value="30 天" disabled></div>
+        <div class="field"><label>最晚提前</label><input class="input" value="24 小时" disabled></div>
+        <div class="field"><label>待确认多久后过期</label><input class="input" value="12 小时" disabled></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 消息通知 ================= -->
+  <section class="page" id="page-notice" data-title="消息通知">
+    <div class="page-head">
+      <div><h1>消息通知</h1><p>确认、改期、婉拒预约后，系统会给客人发微信消息。发送失败的可以在这里重试。</p></div>
+    </div>
+    <div class="tabs"><button class="tab on">全部</button><button class="tab">发送失败<span class="n">1</span></button><button class="tab">等待发送</button></div>
+    <div class="card" style="overflow:hidden">
+      <table class="table">
+        <tr><th>内容</th><th>对应预约</th><th>时间</th><th>状态</th><th></th></tr>
+        <tr><td><b>预约已确认</b></td><td class="mono">R-20261031-0009</td><td>今天 09:40</td><td><span class="chip chip-warn"><i></i>发送失败</span></td><td style="text-align:right"><button class="btn btn-secondary btn-sm">重新发送</button></td></tr>
+        <tr><td><b>预约已改期</b></td><td class="mono">R-20261030-0004</td><td>昨天 18:12</td><td><span class="chip chip-live"><i></i>已送达</span></td><td></td></tr>
+        <tr><td><b>预约已确认</b></td><td class="mono">R-20261030-0002</td><td>昨天 11:05</td><td><span class="chip chip-live"><i></i>已送达</span></td><td></td></tr>
+        <tr><td><b>预约未通过</b></td><td class="mono">R-20261029-0011</td><td>10 月 29 日</td><td><span class="chip chip-live"><i></i>已送达</span></td><td></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= 发布记录 ================= -->
+  <section class="page" id="page-release" data-title="发布记录">
+    <div class="page-head">
+      <div><h1>发布记录</h1><p>每次“发布到小程序”都会留一版。可以查看当时的内容，或撤回到上一版。</p></div>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <table class="table">
+        <tr><th>版本</th><th>改了什么</th><th>发布时间</th><th>状态</th><th></th></tr>
+        <tr><td><b>草稿</b></td><td>首页轮播 2 处、套餐价格 2 处</td><td>—</td><td><span class="chip chip-draft"><i></i>未发布</span></td><td style="text-align:right"><button class="btn btn-accent btn-sm" data-open="publish">发布</button></td></tr>
+        <tr><td><b>第 12 版</b></td><td>新增作品“秋日里的小大人”</td><td>10 月 30 日 18:42</td><td><span class="chip chip-live"><i></i>线上</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">查看</button></td></tr>
+        <tr><td><b>第 11 版</b></td><td>更新营业时间</td><td>10 月 22 日 10:03</td><td><span class="chip chip-off">历史</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">查看</button><button class="btn btn-ghost btn-sm">恢复为草稿</button></td></tr>
+        <tr><td><b>第 10 版</b></td><td>全家福套餐调价</td><td>10 月 15 日 20:17</td><td><span class="chip chip-off">历史</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">查看</button><button class="btn btn-ghost btn-sm">恢复为草稿</button></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= 登录页 ================= -->
+  <section class="page" id="page-login" data-title="登录页（设计）">
+    <div class="card login-wrap">
+      <div class="login-art"><div class="ph"><img src="https://picsum.photos/seed/sl-login/900/900" alt="" style="height:100%"></div><div class="txt"><small style="opacity:.8;letter-spacing:.14em">枝南影像</small><b>欢迎回来</b><span style="opacity:.8">今天也慢慢拍。</span></div></div>
+      <div class="login-form">
+        <div class="brand" style="padding:0"><div class="brand-mark">枝</div><div><b>枝南影像</b><small>工作室后台</small></div></div>
+        <h2>登录后台</h2>
+        <div class="field"><label>账号</label><input class="input" placeholder="请输入账号"></div>
+        <div class="field"><label>密码</label><input class="input" type="password" placeholder="请输入密码"></div>
+        <button class="btn btn-primary btn-block" style="height:44px">登录</button>
+        <p style="color:var(--ink-3);font-size:12px">连续输错 5 次会锁定 15 分钟。忘记密码请在服务器上用账号工具重置。</p>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<!-- ================= 抽屉：编辑成员 ================= -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer-member">
+  <div class="drawer-head"><h3>编辑成员</h3><button class="icon-btn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="drawer-body">
+    <div style="display:flex;gap:16px;align-items:center">
+      <div class="img-slot"><div class="ph" style="width:96px;height:120px;border-radius:14px"><img src="https://picsum.photos/seed/sl-p1/200/240" alt=""></div></div>
+      <div><b>个人照片</b><p style="color:var(--ink-3);font-size:13px;margin:2px 0 10px">竖版 3:4 效果最好</p><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm">更换照片</button><button class="btn btn-ghost btn-sm">从图片库选择</button></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>姓名</label><input class="input" value="林小满"></div>
+      <div class="field"><label>职位</label><input class="input" value="主理人 · 摄影师"></div>
+    </div>
+    <div class="field"><label>个人介绍<em>28/120</em></label><textarea class="textarea">拍了九年的孩子和家庭，擅长在玩耍里抓住最自然的表情。</textarea></div>
+    <div class="field"><label>擅长方向</label><div class="tags"><span class="tag">儿童<button>✕</button></span><span class="tag">家庭<button>✕</button></span><button class="tag-add">+ 添加</button></div></div>
+    <div class="switch-row" style="justify-content:space-between;padding:14px 16px;border-radius:12px;background:var(--sunk)"><span><b style="color:var(--ink)">在小程序展示</b><br><small>关闭后保留资料，但客人看不到</small></span><button class="switch on"></button></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-danger-ghost">删除成员</button><div class="right"><button class="btn btn-secondary" data-close>取消</button><button class="btn btn-primary" data-close>保存</button></div></div>
+</aside>
+
+<!-- ================= 抽屉：编辑作品 ================= -->
+<aside class="drawer" id="drawer-work" style="width:640px">
+  <div class="drawer-head"><h3>秋日里的小大人</h3><span class="chip chip-live"><i></i>已发布 · 第 3 版</span><button class="icon-btn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="drawer-body">
+    <div class="field"><label>作品标题</label><input class="input" value="秋日里的小大人"></div>
+    <div class="field"><label>作品介绍</label><textarea class="textarea" style="min-height:72px">三岁的朵朵第一次来工作室，一开始有点害羞，后来抱着南瓜不肯撒手。</textarea></div>
+    <div class="field"><label>所属业务<em>可多选</em></label><div class="check-row"><span class="check on">儿童成长写真</span><span class="check">全家福</span><span class="check">孕妈写真</span><span class="check">情侣写真</span><span class="check">个人形象照</span><span class="check">证件照</span></div></div>
+    <div class="field"><label>肖像授权</label><select class="select input"><option>已获家长书面授权，可公开展示</option><option>仅限工作室内部使用</option></select><span class="hint">没有公开授权的作品无法发布</span></div>
+    <div class="field"><label>图片<em>点星标设为封面，悬停可写描述</em></label>
+      <div class="thumbs">
+        <div class="thumb cover"><span class="cover-badge">封面</span><div class="ph"><img src="https://picsum.photos/seed/sl-w1/200/200" alt=""></div></div>
+        <div class="thumb"><div class="ph"><img src="https://picsum.photos/seed/sl-w1b/200/200" alt=""></div></div>
+        <div class="thumb"><div class="ph"><img src="https://picsum.photos/seed/sl-w1c/200/200" alt=""></div></div>
+        <div class="upload" style="height:92px;border-radius:10px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加</div>
+      </div>
+    </div>
+    <div class="field"><label>封面图片描述</label><input class="input" value="小女孩抱着南瓜坐在落叶里"></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-danger-ghost">从小程序撤下</button><div class="right"><button class="btn btn-secondary">保存草稿</button><button class="btn btn-accent">发布这组作品</button></div></div>
+</aside>
+
+<!-- ================= 弹窗：退出 / 发布 ================= -->
+<div class="modal" id="modal-logout">
+  <div class="m-ico"><svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg></div>
+  <h3>要退出登录吗？</h3>
+  <p>你还有 4 处修改没有发布，它们已经自动保存为草稿，下次登录可以继续。</p>
+  <div class="row"><button class="btn btn-secondary" data-close>再待一会</button><button class="btn btn-primary" data-close>退出登录</button></div>
+</div>
+<div class="modal" id="modal-publish">
+  <div class="m-ico" style="background:var(--sage-soft);color:var(--sage)"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+  <h3>发布到小程序</h3>
+  <p>本次会更新：首页轮播图 2 处、“成长纪念 · 单人”价格、“周岁宴跟拍”上架。发布后客人刷新即可看到，随时可以在发布记录里撤回。</p>
+  <div class="row"><button class="btn btn-secondary" data-close>再检查一下</button><button class="btn btn-accent" data-close>确认发布</button></div>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function go(id){
+  $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + id));
+  $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === id));
+  $('#crumb').innerHTML = '枝南影像 / <b>' + $('#page-' + id).dataset.title + '</b>';
+  window.scrollTo({top:0});
+}
+$$('.nav-item').forEach(n => n.onclick = () => go(n.dataset.page));
+$$('[data-goto]').forEach(n => n.onclick = () => go(n.dataset.goto));
+
+const scrim = $('#scrim');
+function closeAll(){ $$('.drawer.open,.modal.open').forEach(x => x.classList.remove('open')); scrim.classList.remove('open'); }
+function open(name){
+  closeAll(); $('#accountMenu').classList.remove('open');
+  const el = $('#drawer-' + name) || $('#modal-' + name);
+  if (el){ el.classList.add('open'); scrim.classList.add('open'); }
+}
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'); if (o){ e.stopPropagation(); open(o.dataset.open); return; }
+  if (e.target.closest('[data-close]') || e.target === scrim) closeAll();
+  if (!e.target.closest('.account')) $('#accountMenu').classList.remove('open');
+});
+$('#accountBtn').onclick = () => $('#accountMenu').classList.toggle('open');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+$$('.switch').forEach(s => s.addEventListener('click', e => { e.stopPropagation(); s.classList.toggle('on'); }));
+$$('.seg').forEach(g => $$('button', g).forEach(b => b.onclick = () => { $$('button', g).forEach(x => x.classList.remove('on')); b.classList.add('on'); }));
+$$('.check').forEach(c => c.onclick = () => c.classList.toggle('on'));
+$$('.pick').forEach(p => p.onclick = () => p.classList.toggle('on'));
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端规范索引"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "组件只展示不发请求"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "质量规则"}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "状态管理"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "类型安全"}
+{"file": "docs/设计笔记集/后台界面设计稿-v2.html", "reason": "视觉模板"}

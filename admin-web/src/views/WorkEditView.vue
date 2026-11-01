@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, reactive, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { authStoreKey } from "../auth/store";
+import AppIcon from "../components/AppIcon.vue";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
+import MediaPicker from "../components/MediaPicker.vue";
+import SideDrawer from "../components/SideDrawer.vue";
+import StatusChip from "../components/StatusChip.vue";
 import {
   mediaContentPath,
   newIdempotencyKey,
@@ -10,14 +15,26 @@ import {
   type PreviewView,
   type WorkView,
 } from "../content/api";
+import { catalogStoreKey } from "../content/catalogStore";
 import { requireContentApi } from "../content/inject";
+import {
+  businessNameLabel,
+  countLabel,
+  publishBlockLabel,
+  workStateLabel,
+} from "../content/format";
 import { describeFailure } from "../content/messages";
 
 type Operation = "publish" | "withdraw";
 
+const SCOPE_REF = /^[A-Za-z0-9._:-]{1,64}$/;
+const FIXED_BUSINESSES = ["child", "family", "wedding", "portrait", "maternity", "id-photo"];
+
 const api = requireContentApi();
 const auth = inject(authStoreKey);
+const catalog = inject(catalogStoreKey);
 const route = useRoute();
+const router = useRouter();
 const workId = String(route.params.workId);
 const work = ref<WorkView | null>(null);
 const preview = ref<PreviewView | null>(null);
@@ -28,6 +45,17 @@ const requestId = ref("");
 const lastCommand = ref<CommandView | null>(null);
 // Pending publication intent: same key + same revision on retry; cleared on definitive outcome.
 const pending = ref<{ operation: Operation; version: number; key: string } | null>(null);
+const pickerOpen = ref(false);
+const withdrawOpen = ref(false);
+const uploading = ref(false);
+let uploadKey: string | null = null;
+
+const businessChoices = computed(() =>
+  FIXED_BUSINESSES.map((id) => {
+    const named = catalog?.state.draft?.businesses.find((item) => item.id === id)?.name?.trim();
+    return { id, label: named || businessNameLabel(id) };
+  }),
+);
 
 const form = reactive({
   title: "",
@@ -42,6 +70,25 @@ const form = reactive({
 const permissions = computed(() => new Set(auth?.state.identity?.permissions ?? []));
 const canEdit = computed(() => permissions.value.has("CONTENT_EDIT"));
 const canPublish = computed(() => permissions.value.has("CONTENT_PUBLISH"));
+const scopeError = computed(() => {
+  const value = form.subjectScopeRef;
+  if (!value) return "";
+  return SCOPE_REF.test(value) ? "" : "编号只能包含字母、数字和 . _ : -，最长 64 个字符。";
+});
+const drawerTitle = computed(() => form.title.trim() || work.value?.title?.trim() || "未命名作品");
+const statusChip = computed(() => {
+  const current = work.value;
+  if (!current) return { tone: "draft" as const, text: "草稿" };
+  const unpublished =
+    current.publicationState === "PUBLISHED" &&
+    current.publishedVersion !== null &&
+    current.version !== current.publishedVersion;
+  if (unpublished) return { tone: "warn" as const, text: "有未发布修改" };
+  const text = workStateLabel(current.publicationState);
+  if (current.publicationState === "PUBLISHED") return { tone: "live" as const, text };
+  if (current.publicationState === "WITHDRAWN") return { tone: "off" as const, text };
+  return { tone: "draft" as const, text };
+});
 
 function fail(error: unknown): boolean {
   const failure = describeFailure(error);
@@ -75,6 +122,50 @@ async function load() {
   }
 }
 
+function businessIds() {
+  return form.businessIds
+    .split(/[,\s]+/)
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+}
+
+function toggleBusiness(id: string) {
+  const current = businessIds();
+  const next = current.includes(id)
+    ? current.filter((item) => item !== id)
+    : current.length >= 3
+      ? current
+      : [...current, id];
+  form.businessIds = next.join(", ");
+}
+
+function chooseMedia(mediaId: string) {
+  if (!form.selected.includes(mediaId) && form.selected.length < 9) {
+    form.selected.push(mediaId);
+    form.alt[mediaId] ??= "";
+    if (!form.cover) form.cover = mediaId;
+  }
+  pickerOpen.value = false;
+}
+
+async function uploadMedia(file: File) {
+  uploading.value = true;
+  uploadKey ??= newIdempotencyKey();
+  try {
+    const result = await api.upload(file, file.name, uploadKey);
+    uploadKey = null;
+    library.value = [
+      result.media,
+      ...library.value.filter((item) => item.mediaId !== result.media.mediaId),
+    ];
+    chooseMedia(result.media.mediaId);
+  } catch (error) {
+    if (!fail(error)) uploadKey = null;
+  } finally {
+    uploading.value = false;
+  }
+}
+
 function toggle(mediaId: string) {
   const index = form.selected.indexOf(mediaId);
   if (index >= 0) {
@@ -88,6 +179,10 @@ function toggle(mediaId: string) {
 
 async function save() {
   if (!work.value) return;
+  if (scopeError.value) {
+    notice.value = "肖像授权编号格式不对。";
+    return;
+  }
   busy.value = "save";
   notice.value = "";
   try {
@@ -104,7 +199,7 @@ async function save() {
     });
     fill(saved);
     preview.value = await api.preview(workId);
-    notice.value = `草稿已保存为 v${saved.version}。`;
+    notice.value = "草稿已保存。";
   } catch (error) {
     fail(error);
   } finally {
@@ -124,8 +219,8 @@ async function run(operation: Operation) {
     lastCommand.value = await call.call(api, workId, version, pending.value.key);
     pending.value = null;
     notice.value =
-      (operation === "publish" ? `已发布 v${lastCommand.value.targetVersion}` : "已撤下") +
-      (lastCommand.value.replayed ? "（已确认先前提交的结果）" : "") +
+      (operation === "publish" ? "已发布" : "已撤下") +
+      (lastCommand.value.replayed ? "。已确认先前提交的结果" : "") +
       "。";
     fill(await api.getWork(workId));
     preview.value = await api.preview(workId);
@@ -136,187 +231,201 @@ async function run(operation: Operation) {
   }
 }
 
-onMounted(load);
+function close() {
+  void router.push({ name: "works" });
+}
+
+onMounted(() => {
+  void catalog?.load();
+  void load();
+});
 </script>
 
 <template>
-  <main class="identity-shell content-shell">
-    <header class="topbar">
-      <router-link class="wordmark" to="/works" aria-label="返回作品列表">
-        <span class="wordmark-mark">S</span>
-        <span>SouthLeaf <small>ADMIN</small></span>
-      </router-link>
-      <div class="topbar-status">
-        <span class="environment-badge">S2-B · 本地验证（非生产）</span>
-      </div>
-    </header>
-
-    <section v-if="work" class="identity-card content-card" aria-labelledby="work-title">
-      <div class="section-title-row">
-        <h1 id="work-title">編輯作品</h1>
-        <span data-testid="work-version"
-          >草稿 v{{ work.version }} · {{ work.publicationState }}</span
-        >
-      </div>
-      <form class="content-form" @submit.prevent="save">
-        <label
-          >标题（≤ 80）<el-input
-            v-model="form.title"
-            maxlength="80"
-            data-testid="work-title-input"
-            :disabled="!canEdit"
-        /></label>
-        <label
-          >摘要（≤ 400）<el-input
-            v-model="form.summary"
-            type="textarea"
-            maxlength="400"
-            data-testid="work-summary-input"
-            :disabled="!canEdit"
-        /></label>
-        <label
-          >授权主体范围引用<el-input
-            v-model="form.subjectScopeRef"
-            data-testid="work-scope-input"
-            :disabled="!canEdit"
-        /></label>
-        <label
-          >关联业务 ID（≤ 3，逗號分隔）<el-input
-            v-model="form.businessIds"
-            data-testid="work-business-input"
-            :disabled="!canEdit"
-        /></label>
-
-        <fieldset>
-          <legend>圖片（≤ 9，需選擇封面）</legend>
-          <ul class="media-grid">
-            <li v-for="item in library" :key="item.mediaId" :data-media-id="item.mediaId">
-              <img
-                :src="mediaContentPath(item.mediaId, 'thumbnail')"
-                :alt="form.alt[item.mediaId] || item.mediaId"
-              />
-              <label
-                ><input
-                  type="checkbox"
-                  :checked="form.selected.includes(item.mediaId)"
-                  :disabled="!canEdit"
-                  data-testid="media-select"
-                  @change="toggle(item.mediaId)"
-                />
-                選用</label
+  <SideDrawer :open="true" :title="drawerTitle" :width="640" @close="close">
+    <template v-if="work" #heading>
+      <span>{{ drawerTitle }}</span>
+      <StatusChip :tone="statusChip.tone" :text="statusChip.text" data-testid="work-version" />
+    </template>
+    <div v-if="work" class="stack">
+      <form id="work-edit-form" class="stack" @submit.prevent="save">
+        <div class="grid-2">
+          <div class="field">
+            <label
+              >标题<em>{{ countLabel(form.title.length, 80) }}</em></label
+            >
+            <input
+              v-model="form.title"
+              class="input"
+              maxlength="80"
+              data-testid="work-title-input"
+              :disabled="!canEdit"
+            />
+          </div>
+          <div class="field">
+            <label>肖像授权编号</label>
+            <input
+              v-model="form.subjectScopeRef"
+              class="input"
+              maxlength="64"
+              placeholder="填写授权书上的编号，例如 SQ-2026-001"
+              data-testid="work-scope-input"
+              :disabled="!canEdit"
+            />
+            <p class="hint">没有授权编号的作品不能发布</p>
+            <p v-if="scopeError" class="hint" style="color: var(--danger)">{{ scopeError }}</p>
+          </div>
+          <div class="field span-2">
+            <label
+              >介绍<em>{{ countLabel(form.summary.length, 400) }}</em></label
+            >
+            <textarea
+              v-model="form.summary"
+              class="textarea"
+              maxlength="400"
+              data-testid="work-summary-input"
+              :disabled="!canEdit"
+            ></textarea>
+          </div>
+          <div class="field span-2">
+            <label>所属业务</label>
+            <div class="check-row" data-testid="work-business-input">
+              <button
+                v-for="biz in businessChoices"
+                :key="biz.id"
+                class="check"
+                :class="{ on: businessIds().includes(biz.id) }"
+                type="button"
+                :disabled="!canEdit"
+                @click="toggleBusiness(biz.id)"
               >
-              <template v-if="form.selected.includes(item.mediaId)">
-                <label
-                  ><input
-                    v-model="form.cover"
-                    type="radio"
-                    name="cover"
-                    :value="item.mediaId"
-                    :disabled="!canEdit"
+                {{ biz.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>图片<em>最多 9 张 · 点星标设为封面</em></label>
+          <div class="thumbs">
+            <div v-for="mediaId in form.selected" :key="mediaId" class="work-thumb">
+              <div class="thumb" :class="{ cover: form.cover === mediaId }">
+                <div class="ph">
+                  <img :src="mediaContentPath(mediaId, 'thumbnail')" alt="" />
+                </div>
+                <span v-if="form.cover === mediaId" class="cover-badge">封面</span>
+                <div class="over">
+                  <button
+                    class="icon-btn"
+                    type="button"
+                    aria-label="设为封面"
                     data-testid="media-cover"
-                  />
-                  封面</label
-                >
-                <input
-                  v-model="form.alt[item.mediaId]"
-                  maxlength="120"
-                  placeholder="替代文字"
-                  :disabled="!canEdit"
-                  data-testid="media-alt"
-                />
-              </template>
-            </li>
-          </ul>
-        </fieldset>
-
-        <div class="identity-actions">
-          <el-button
-            v-if="canEdit"
-            type="primary"
-            native-type="submit"
-            data-testid="save-draft"
-            :loading="busy === 'save'"
-            :disabled="busy !== ''"
-            >保存草稿</el-button
-          >
+                    :disabled="!canEdit"
+                    @click="form.cover = mediaId"
+                  >
+                    <AppIcon name="star" />
+                  </button>
+                  <button
+                    class="icon-btn danger"
+                    type="button"
+                    aria-label="移除"
+                    data-testid="media-select"
+                    :disabled="!canEdit"
+                    @click="toggle(mediaId)"
+                  >
+                    <AppIcon name="close" />
+                  </button>
+                </div>
+              </div>
+              <input
+                v-model="form.alt[mediaId]"
+                class="input"
+                maxlength="120"
+                placeholder="图片描述"
+                :disabled="!canEdit"
+                data-testid="media-alt"
+              />
+            </div>
+            <button
+              v-if="form.selected.length < 9"
+              class="upload"
+              type="button"
+              :disabled="!canEdit"
+              @click="pickerOpen = true"
+            >
+              <AppIcon name="plus" />
+              添加
+            </button>
+          </div>
         </div>
       </form>
-    </section>
-
-    <section
-      v-if="preview"
-      class="identity-card content-card"
-      aria-labelledby="preview-title"
-      data-testid="preview"
-    >
-      <h2 id="preview-title">发布预检（服务器判定）</h2>
-      <dl class="identity-details">
-        <div>
-          <dt>可发布</dt>
-          <dd data-testid="publishable">{{ preview.publishable ? "是" : "否" }}</dd>
-        </div>
-        <div>
-          <dt>阻断原因</dt>
-          <dd data-testid="blocking-reason">{{ preview.blockingReason ?? "—" }}</dd>
-        </div>
-        <div>
-          <dt>授权状态</dt>
-          <dd>{{ preview.authorizationState ?? "—" }}</dd>
-        </div>
-        <div>
-          <dt>接受的來源</dt>
-          <dd>{{ preview.acceptedProvenance }}</dd>
-        </div>
-      </dl>
-      <p class="helper-text">预检仅供提示；发布时服务器会在同一事务内重新校验全部门禁。</p>
-      <div class="identity-actions">
-        <el-button
-          v-if="canPublish"
-          type="success"
-          data-testid="publish"
-          :loading="busy === 'publish'"
-          :disabled="busy !== '' || !preview.publishable"
-          @click="run('publish')"
-          >发布当前修订</el-button
-        >
-        <el-button
-          v-if="canPublish && work?.publicationState === 'PUBLISHED'"
-          type="danger"
-          plain
-          data-testid="withdraw"
-          :loading="busy === 'withdraw'"
-          :disabled="busy !== ''"
-          @click="run('withdraw')"
-          >撤下</el-button
-        >
+      <p v-if="preview?.publishable" class="chip chip-live" data-testid="publishable">可以发布</p>
+      <div v-else-if="preview" class="note" data-testid="blocking-reason">
+        <b>说明</b>
+        <span>{{ publishBlockLabel(preview.blockingReason) }}</span>
       </div>
-      <div
-        v-if="pending && busy === ''"
-        class="security-status"
-        role="status"
-        data-testid="pending-intent"
-      >
-        <span
-          >上一次{{
-            pending.operation === "publish" ? "发布" : "撤下"
-          }}结果未知；重试将沿用同一操作键与修订。</span
-        >
-      </div>
-      <p v-if="lastCommand" class="helper-text" data-testid="last-command">
-        命令 {{ lastCommand.commandId }} · {{ lastCommand.operation }} · {{ lastCommand.status }}
+      <p v-if="pending && busy === ''" data-testid="pending-intent">
+        上一次{{ pending.operation === "publish" ? "发布" : "撤下" }}还没确认。再点一次会接着完成。
       </p>
-    </section>
-
-    <p v-if="busy === 'load'" role="status">加载中…</p>
-    <div
-      v-if="notice"
-      class="form-feedback"
-      role="alert"
-      aria-live="assertive"
-      data-testid="content-notice"
-    >
-      <span>{{ notice }}</span>
-      <small v-if="requestId">Request ID: {{ requestId }}</small>
+      <p v-if="lastCommand" data-testid="last-command">
+        {{ lastCommand.operation === "PUBLISH" ? "发布已完成" : "撤下已完成" }}
+      </p>
+      <p v-if="notice" role="alert" data-testid="content-notice">{{ notice }}</p>
+      <MediaPicker
+        :open="pickerOpen"
+        :media="library"
+        :uploading="uploading"
+        @close="pickerOpen = false"
+        @choose="chooseMedia"
+        @upload="uploadMedia"
+      />
     </div>
-  </main>
+    <p v-else-if="busy === 'load'">正在读取作品…</p>
+    <p v-else-if="notice" role="alert" data-testid="content-notice">{{ notice }}</p>
+    <template v-if="work" #footer>
+      <button
+        v-if="canPublish && work.publicationState === 'PUBLISHED'"
+        class="btn btn-danger-ghost"
+        type="button"
+        data-testid="withdraw"
+        :disabled="busy !== ''"
+        @click="withdrawOpen = true"
+      >
+        从小程序撤下
+      </button>
+      <div class="right">
+        <button
+          v-if="canEdit"
+          class="btn btn-secondary"
+          type="submit"
+          form="work-edit-form"
+          data-testid="save-draft"
+          :disabled="busy !== ''"
+        >
+          保存草稿
+        </button>
+        <button
+          v-if="canPublish"
+          class="btn btn-accent"
+          type="button"
+          data-testid="publish"
+          :disabled="busy !== '' || !preview?.publishable"
+          @click="run('publish')"
+        >
+          发布这组作品
+        </button>
+      </div>
+    </template>
+    <ConfirmDialog
+      :open="withdrawOpen"
+      title="从小程序撤下"
+      message="撤下后，客人在小程序里就看不到这组作品了。"
+      confirm-text="确认撤下"
+      danger
+      @cancel="withdrawOpen = false"
+      @confirm="
+        withdrawOpen = false;
+        run('withdraw');
+      "
+    />
+  </SideDrawer>
 </template>

@@ -1,0 +1,29 @@
+{
+  "id": "admin-studio-redesign",
+  "name": "admin-studio-redesign",
+  "title": "后台工作室界面重做",
+  "description": "按已确认的 v2 HTML 设计稿重做管理后台，并补齐小程序可配置项",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "vaesong",
+  "assignee": "vaesong",
+  "createdAt": "2026-11-01",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-01-admin-studio-ui",
+    "11-01-admin-config-gaps"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

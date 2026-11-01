@@ -184,8 +184,23 @@ describe("AdminContentApi", () => {
     expect(error).toBeInstanceOf(ContentApiError);
     expect((error as ContentApiError).reason).toBe("AUTHORIZATION_EXPIRED");
     const described = describeFailure(error);
-    expect(described.text).toContain("AUTHORIZATION_EXPIRED");
+    expect(described.text).toContain("还有内容没填完");
+    expect(described.text).not.toContain("AUTHORIZATION_EXPIRED");
     expect(described.unknown).toBe(false);
+  });
+
+  it("explains a catalog validation reason in Chinese", () => {
+    const described = describeFailure(
+      new ContentApiError(
+        400,
+        "INVALID_REQUEST",
+        "The request is invalid.",
+        "r-alt",
+        "MEDIA_ALT_INVALID",
+      ),
+    );
+    expect(described.text).toBe("用到的图片都要写上描述后才能保存。");
+    expect(described.text).not.toContain("MEDIA_ALT");
   });
 
   it("treats network loss as an unknown outcome so the caller keeps its key", async () => {

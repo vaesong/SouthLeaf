@@ -11,24 +11,42 @@ export function describeFailure(error: unknown): {
     return { text: "发生未预期的错误。", requestId: "", unknown: true };
   const reason = error instanceof ContentApiError ? error.reason : undefined;
   const byCode: Record<string, string> = {
-    AUTHENTICATION_REQUIRED: "工作阶段已失效，请重新登录。",
-    CAPABILITY_REQUIRED: "当前账号没有执行此操作的能力。",
-    RESOURCE_UNAVAILABLE: "资源不存在或已不可用。",
-    VERSION_CONFLICT: "内容已被其他人更新；请重新加载最新修订后再操作。",
-    IDEMPOTENCY_KEY_REUSE: "同一操作键已用于不同内容；请重新发起操作。",
-    NOT_PUBLISHED: "作品目前未发布，无需撤下。",
-    PRECONDITION_REQUIRED: "缺少修订前置条件，请重新加载。",
-    MEDIA_TOO_LARGE: "圖片超過 4 MiB 上限。",
-    MEDIA_UNSUPPORTED_TYPE: "仅支持 JPEG 或 PNG 图片。",
-    MEDIA_REJECTED: "圖片無法通過安全處理（尺寸、格式或內容無效）。",
-    MEDIA_NOT_READY: "所選圖片尚未就緒。",
-    PUBLICATION_BLOCKED: "发布门禁未通过。",
-    CONTENT_SERVICE_UNAVAILABLE: "内容服务或授权依赖暂时不可用；结果未变更，请稍后重试。",
-    NETWORK_ERROR: "连接中断，结果未知。请以相同操作重试（将沿用同一操作键）。",
+    AUTHENTICATION_REQUIRED: "登录已失效，请重新登录。",
+    CAPABILITY_REQUIRED: "当前账号不能做这个操作。",
+    RESOURCE_UNAVAILABLE: "内容不存在或已不可用。",
+    VERSION_CONFLICT: "内容已在别处更新，请重新加载后再操作。",
+    IDEMPOTENCY_KEY_REUSE: "这次提交和上次内容不一致，请重新保存。",
+    NOT_PUBLISHED: "这组作品还没发布，不用撤下。",
+    PRECONDITION_REQUIRED: "页面内容已过期，请重新加载。",
+    MEDIA_TOO_LARGE: "图片超过 4MB。",
+    MEDIA_UNSUPPORTED_TYPE: "只支持 JPEG 或 PNG 图片。",
+    MEDIA_REJECTED: "这张图片无法使用，请换一张。",
+    MEDIA_NOT_READY: "这张图片还在处理，请稍后再选。",
+    INVALID_AUTH_RESPONSE: "登录校验没有完成，请刷新后再试。",
+    PUBLICATION_BLOCKED: "还有内容没填完，暂时不能发布。",
+    CONTENT_SERVICE_UNAVAILABLE: "暂时连不上，内容没有变化，请稍后再试。",
+    NETWORK_ERROR: "网络中断，结果未知。请再试一次。",
   };
-  const base = byCode[error.code] ?? error.message;
+  const byReason: Record<string, string> = {
+    MEDIA_ALT_INVALID: "用到的图片都要写上描述后才能保存。",
+    MEDIA_ALT_SET_MISMATCH: "图片描述和当前用到的图片对不上，请重新加载后再保存。",
+    MEDIA_ALT_CONFLICT: "图片描述和图片库里的记录不一致，请重新加载后再保存。",
+    HOME_FEATURE_LIMIT: "精选最多 3 个业务、3 个套餐、6 个作品。",
+    CHANNEL_UNCONFIRMED: "要公开的社交账号需要已上传的二维码、名称和账号。",
+    HOME_BUSINESS_UNAVAILABLE: "精选业务必须是已经公开的业务。",
+    HOME_PACKAGE_UNAVAILABLE: "精选套餐必须是已经公开的套餐。",
+    PACKAGE_BUSINESS_UNAVAILABLE: "套餐所属的业务还没公开，不能单独公开这个套餐。",
+  };
+  const base =
+    (reason ? byReason[reason] : undefined) ??
+    byCode[error.code] ??
+    (/[\u4e00-\u9fff]/.test(error.message) ? error.message : "操作没有完成，请稍后再试。");
+  const extra =
+    reason && reason !== error.code && /[\u4e00-\u9fff]/.test(reason) && !/[A-Z]{2,}/.test(reason)
+      ? `（${reason}）`
+      : "";
   return {
-    text: reason && reason !== error.code ? `${base}（${reason}）` : base,
+    text: `${base}${extra}`,
     requestId: error.requestId ?? "",
     unknown: error.status === 0 || error.status >= 500,
   };

@@ -1,24 +1,22 @@
 import { createApp } from "vue";
-import { ElButton, ElInput } from "element-plus";
-import "element-plus/es/components/button/style/css";
-import "element-plus/es/components/input/style/css";
 import App from "./App.vue";
 import { AdminAuthApi } from "./auth/api";
-import { AdminContentApi } from "./content/api";
-import { contentApiKey } from "./content/inject";
 import { createAuthStore, authStoreKey } from "./auth/store";
+import { AdminContentApi } from "./content/api";
+import { createCatalogStore, catalogStoreKey } from "./content/catalogStore";
+import { contentApiKey } from "./content/inject";
 import { createAdminRouter } from "./router";
 import "./style.css";
 
 const auth = createAuthStore(new AdminAuthApi());
+const contentApi = new AdminContentApi();
 const router = createAdminRouter(auth);
 
 createApp(App)
   .provide(authStoreKey, auth)
-  .provide(contentApiKey, new AdminContentApi())
+  .provide(contentApiKey, contentApi)
+  .provide(catalogStoreKey, createCatalogStore(contentApi))
   .use(router)
-  .use(ElButton)
-  .use(ElInput)
   .mount("#app");
 
 window.addEventListener("focus", () => {

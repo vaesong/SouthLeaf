@@ -12,39 +12,6 @@ const testIdentity: AdminIdentity = {
   expiresAt: "2026-10-24T14:00:00Z",
 };
 
-const InputStub = defineComponent({
-  inheritAttrs: false,
-  props: { modelValue: String, type: String },
-  emits: ["update:modelValue"],
-  setup(props, { attrs, emit }) {
-    return () =>
-      h("input", {
-        ...attrs,
-        type: props.type === "password" ? "password" : "text",
-        value: props.modelValue ?? "",
-        onInput: (event: Event) =>
-          emit("update:modelValue", (event.target as HTMLInputElement).value),
-      });
-  },
-});
-
-const ButtonStub = defineComponent({
-  inheritAttrs: false,
-  props: { nativeType: String, disabled: Boolean, loading: Boolean },
-  setup(props, { attrs, slots }) {
-    return () =>
-      h(
-        "button",
-        {
-          ...attrs,
-          type: props.nativeType ?? "button",
-          disabled: props.disabled || props.loading,
-        },
-        slots.default?.(),
-      );
-  },
-});
-
 function setupView(loginResult: () => Promise<AdminIdentity>) {
   const api = {
     getSession: vi.fn().mockRejectedValue(new AdminApiError(401, "AUTHENTICATION_REQUIRED", "")),
@@ -74,7 +41,6 @@ describe("LoginView", () => {
       global: {
         plugins: [router],
         provide: { [authStoreKey as symbol]: auth },
-        stubs: { "el-input": InputStub, "el-button": ButtonStub },
       },
     });
     await flushPromises();
@@ -101,7 +67,6 @@ describe("LoginView", () => {
       global: {
         plugins: [router],
         provide: { [authStoreKey as symbol]: auth },
-        stubs: { "el-input": InputStub, "el-button": ButtonStub },
       },
     });
     await flushPromises();

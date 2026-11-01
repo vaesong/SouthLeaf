@@ -106,7 +106,7 @@ async function main() {
   currentCheck = "same-origin-ui-navigation";
   await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded", timeout: 20000 });
   currentCheck = "management-heading-visible";
-  await page.getByRole("heading", { name: "管理入口" }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: "登录后台" }).waitFor({ timeout: 15000 });
   currentCheck = "csrf-bootstrap-ready";
   await page.locator('input[name="username"]').fill(accountId);
   await page.locator('input[name="password"]').fill(password);
@@ -261,7 +261,7 @@ async function main() {
     (response) => response.url().endsWith(loginPath) && response.request().method() === "POST",
     { timeout: 15000 },
   );
-  await page.getByRole("button", { name: "安全登录" }).click();
+  await page.getByRole("button", { name: "登录" }).click();
   const wrongLogin = await wrongLoginWait;
   const wrongLoginBody = await json(wrongLogin);
   check(
@@ -276,7 +276,7 @@ async function main() {
     (response) => response.url().endsWith(loginPath) && response.request().method() === "POST",
     { timeout: 20000 },
   );
-  await page.getByRole("button", { name: "安全登录" }).click();
+  await page.getByRole("button", { name: "登录" }).click();
   const goodLogin = await goodLoginWait;
   check("login-accepted", goodLogin.status() === 200);
   const identityEnvelope = await json(goodLogin);
@@ -288,11 +288,13 @@ async function main() {
       identityEnvelope.data.permissions.includes("STAFF_ACCESS_MANAGE") &&
       typeof identityEnvelope?.data?.expiresAt === "string",
   );
-  await page.getByRole("heading", { name: "今天先看这些。" }).waitFor({ timeout: 15000 });
-  check("identity-rendered-by-spa", (await page.locator("body").innerText()).includes(accountId));
+  await page.getByRole("heading", { name: "今日工作台" }).waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: "管理员" }).click();
+  check("identity-rendered-by-spa", (await page.locator("body").innerText()).includes("管理员"));
   check(
     "permission-rendered-by-spa",
-    (await page.locator("body").innerText()).includes("STAFF_ACCESS_MANAGE"),
+    !(await page.locator("body").innerText()).includes("STAFF_ACCESS_MANAGE") &&
+      (await page.locator(".menu").innerText()).includes("本次登录到期"),
   );
 
   const sessionResponse = await context.request.get(`${baseUrl}${sessionPath}`);
@@ -337,10 +339,12 @@ async function main() {
     (response) => response.url().endsWith(logoutPath) && response.request().method() === "POST",
     { timeout: 20000 },
   );
+  await page.getByRole("button", { name: "管理员" }).click();
   await page.getByRole("button", { name: "退出登录" }).click();
+  await page.getByRole("button", { name: "确认退出" }).click();
   const logoutResponse = await logoutWait;
   check("logout-endpoint", logoutResponse.status() === 204);
-  await page.getByRole("heading", { name: "管理入口" }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: "登录后台" }).waitFor({ timeout: 15000 });
   const afterLogoutCookies = await context.cookies(baseUrl);
   check("logout-clears-session-cookie", !cookie(afterLogoutCookies, sessionCookieName));
   check("no-jessionid-after-logout", !cookie(afterLogoutCookies, "JSESSIONID"));

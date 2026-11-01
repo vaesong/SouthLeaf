@@ -343,7 +343,7 @@ export class AdminContentApi {
       token.length < 1 ||
       token.length > 4096
     )
-      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "安全初始化回應無效。");
+      throw new AdminApiError(502, "INVALID_AUTH_RESPONSE", "安全初始化响应无效。");
     this.csrfToken = token;
     return token;
   }

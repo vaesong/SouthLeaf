@@ -155,7 +155,7 @@ export class AdminOutboxApi {
       throw new OutboxApiError(
         502,
         "INVALID_CSRF_RESPONSE",
-        "安全初始化回應無效。",
+        "安全初始化响应无效。",
         envelope.requestId,
       );
     }
