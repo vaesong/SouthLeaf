@@ -109,7 +109,7 @@ onMounted(() => {
     <div class="page-head">
       <div>
         <h1>作品集</h1>
-        <p>每组作品单独发布。已发布的可以放到首页精选；轮播使用精选作品的前 3 个。</p>
+        <p>每组作品单独发布。已发布的可以放到首页精选，也可以作为首页轮播的跳转目标。</p>
       </div>
       <div class="actions">
         <button

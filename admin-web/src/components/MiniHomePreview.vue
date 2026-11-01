@@ -5,12 +5,26 @@ defineProps<{
   businesses: Array<{ name: string; imageUrl: string }>;
   works: Array<{ title: string; imageUrl: string }>;
   address: string;
+  hero?: { title: string; subtitle: string; action: string; imageUrl: string } | null;
 }>();
 </script>
 
 <template>
   <div class="mp-nav">{{ title || "首页" }}</div>
-  <div v-if="works[0]" class="mp-swiper ph">
+  <div v-if="hero" class="mp-swiper ph">
+    <img
+      v-if="hero.imageUrl"
+      :src="hero.imageUrl"
+      alt=""
+      style="position: absolute; inset: 0; height: 100%"
+    />
+    <div class="cap">
+      <small v-if="hero.subtitle">{{ hero.subtitle }}</small>
+      <b>{{ hero.title || "未填写标题" }}</b>
+      <span v-if="hero.action">{{ hero.action }}</span>
+    </div>
+  </div>
+  <div v-else-if="works[0]" class="mp-swiper ph">
     <img
       v-if="works[0].imageUrl"
       :src="works[0].imageUrl"

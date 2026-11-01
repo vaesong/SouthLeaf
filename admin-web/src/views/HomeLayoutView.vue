@@ -1,14 +1,32 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import AppSwitch from "../components/AppSwitch.vue";
 import CatalogSaveButtons from "../components/CatalogSaveButtons.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import MediaField from "../components/MediaField.vue";
 import MediaThumb from "../components/MediaThumb.vue";
+import SegmentedControl from "../components/SegmentedControl.vue";
 import SideDrawer from "../components/SideDrawer.vue";
 import MiniHomePreview from "../components/MiniHomePreview.vue";
 import PhonePreview from "../components/PhonePreview.vue";
 import StatusChip from "../components/StatusChip.vue";
-import { mediaContentPath, type WorkView } from "../content/api";
-import { FEATURED_LIMIT, FEATURED_WORK_LIMIT, toggleLimitedIds } from "../content/catalogDraft";
+import {
+  mediaContentPath,
+  newIdempotencyKey,
+  type HeroSlideInput,
+  type HeroTargetType,
+  type MediaView,
+  type WorkView,
+} from "../content/api";
+import {
+  FEATURED_LIMIT,
+  FEATURED_WORK_LIMIT,
+  HERO_LIMIT,
+  moveItem,
+  syncMediaAltTexts,
+  toggleLimitedIds,
+} from "../content/catalogDraft";
+import { countLabel } from "../content/format";
 import { requireContentApi } from "../content/inject";
 import { describeFailure } from "../content/messages";
 import { useCatalogAccess, useCatalogLeaveGuard } from "../content/useCatalog";
@@ -19,12 +37,27 @@ const leave = useCatalogLeaveGuard(store);
 const leaveOpen = leave.open;
 const works = ref<WorkView[]>([]);
 const worksError = ref("");
+const media = ref<MediaView[]>([]);
+const mediaError = ref("");
+const uploading = ref(false);
 const packageDrawer = ref(false);
 const workDrawer = ref(false);
 const limitHint = ref("");
+const editingSlideId = ref<string | null>(null);
+let uploadKey: string | null = null;
 const draft = computed(() => store.state.draft);
+const heroTargets = [
+  { value: "WORK", label: "作品" },
+  { value: "PACKAGE", label: "套餐" },
+  { value: "BUSINESS", label: "业务" },
+  { value: "ABOUT", label: "关于我们" },
+] as const;
 
-const carousel = computed(() => draft.value?.featuredWorkIds.slice(0, 3) ?? []);
+const heroSlides = computed(() =>
+  [...(draft.value?.heroSlides ?? [])].sort(
+    (a, b) => a.position - b.position || a.id.localeCompare(b.id),
+  ),
+);
 
 function workOf(id: string) {
   return works.value.find((item) => item.workId === id);
@@ -40,6 +73,17 @@ const previewBusinesses = computed(() => {
       name: item.name,
       imageUrl: item.coverMediaId ? mediaContentPath(item.coverMediaId, "thumbnail") : "",
     }));
+});
+
+const previewHero = computed(() => {
+  const slide = heroSlides.value.find((item) => item.enabled);
+  if (!slide) return null;
+  return {
+    title: slide.title,
+    subtitle: slide.subtitle,
+    action: slide.actionText,
+    imageUrl: slide.mediaId ? mediaContentPath(slide.mediaId, "thumbnail") : "",
+  };
 });
 
 const previewWorks = computed(() => {
@@ -61,6 +105,94 @@ async function refreshWorks() {
     works.value = [];
     worksError.value = describeFailure(error).text;
   }
+}
+
+async function refreshMedia() {
+  mediaError.value = "";
+  try {
+    media.value = await api.listMedia();
+  } catch (error) {
+    media.value = [];
+    mediaError.value = describeFailure(error).text;
+  }
+}
+
+async function uploadMedia(file: File) {
+  uploading.value = true;
+  uploadKey ??= newIdempotencyKey();
+  try {
+    const result = await api.upload(file, file.name, uploadKey);
+    uploadKey = null;
+    media.value = [
+      result.media,
+      ...media.value.filter((item) => item.mediaId !== result.media.mediaId),
+    ];
+  } catch (error) {
+    mediaError.value = describeFailure(error).text;
+    if (!describeFailure(error).unknown) uploadKey = null;
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function heroTargetLabel(type: string) {
+  return heroTargets.find((item) => item.value === type)?.label ?? "其他";
+}
+
+function setHeroTarget(slide: HeroSlideInput, type: string) {
+  const next = heroTargets.some((item) => item.value === type) ? (type as HeroTargetType) : "WORK";
+  slide.target = next === "ABOUT" ? { type: "ABOUT", id: "about" } : { type: next, id: "" };
+}
+
+function setSlideMedia(slide: HeroSlideInput, mediaId: string | null) {
+  slide.mediaId = mediaId ?? "";
+  if (draft.value) syncMediaAltTexts(draft.value);
+}
+
+function addSlide() {
+  const value = draft.value;
+  if (!value || value.heroSlides.length >= HERO_LIMIT) return;
+  const id = `hero-${crypto.randomUUID()}`;
+  value.heroSlides.push({
+    id,
+    mediaId: "",
+    title: "",
+    subtitle: "",
+    actionText: "查看详情",
+    target: { type: "WORK", id: "" },
+    enabled: true,
+    position: value.heroSlides.length,
+  });
+  editingSlideId.value = id;
+}
+
+function orderedSlides() {
+  return [...(draft.value?.heroSlides ?? [])].sort(
+    (a, b) => a.position - b.position || a.id.localeCompare(b.id),
+  );
+}
+
+function moveSlide(index: number, offset: number) {
+  const value = draft.value;
+  if (!value) return;
+  const ordered = orderedSlides();
+  moveItem(ordered, index, offset);
+  ordered.forEach((slide, position) => {
+    slide.position = position;
+  });
+  value.heroSlides = ordered;
+}
+
+function removeSlide(id: string) {
+  const value = draft.value;
+  if (!value) return;
+  const ordered = orderedSlides().filter((slide) => slide.id !== id);
+  ordered.forEach((slide, position) => {
+    slide.position = position;
+  });
+  value.heroSlides = ordered;
+  if (editingSlideId.value === id) editingSlideId.value = null;
+  syncMediaAltTexts(value);
 }
 
 function pickLimited(list: string[], id: string, max: number, message: string) {
@@ -87,7 +219,7 @@ function packageOf(id: string) {
 
 onMounted(async () => {
   await store.load();
-  await refreshWorks();
+  await Promise.all([refreshWorks(), refreshMedia()]);
 });
 </script>
 
@@ -103,25 +235,234 @@ onMounted(async () => {
           <CatalogSaveButtons :disabled="!canEdit" />
         </div>
       </div>
-      <div class="note">
-        <b>说明</b>
-        <span>轮播图目前取自精选作品的前 3 个。这里不能单独改标题、按钮或跳转。</span>
-      </div>
       <div class="card">
         <div class="card-head">
           <h2>首页轮播图</h2>
-          <p>只读，来自精选作品</p>
+          <p>最多 {{ HERO_LIMIT }} 张。没有启用的轮播时，自动显示精选作品前 3 个。</p>
           <div class="right">
-            <a class="btn btn-ghost btn-sm" href="#featured-works">调整精选作品</a>
+            <button
+              class="btn btn-secondary btn-sm"
+              type="button"
+              data-testid="catalog-hero-add"
+              :disabled="!canEdit || heroSlides.length >= HERO_LIMIT"
+              @click="addSlide"
+            >
+              添加一张
+            </button>
           </div>
         </div>
         <div class="slides">
-          <p v-if="carousel.length === 0" class="card-pad">还没有可展示的精选作品。</p>
-          <div v-for="id in carousel" :key="id" class="slide">
-            <MediaThumb :media-id="workOf(id)?.coverMediaId ?? null" quiet />
+          <p v-if="mediaError" class="alert-line" role="alert">{{ mediaError }}</p>
+          <p v-if="heroSlides.length === 0" class="card-pad">
+            还没有轮播。可以添加，也可以先留空。
+          </p>
+          <div
+            v-for="(slide, index) in heroSlides"
+            :key="slide.id"
+            class="slide"
+            :class="{ editing: editingSlideId === slide.id }"
+            data-testid="catalog-hero-slide"
+          >
+            <span class="grip" aria-hidden="true">⋮⋮</span>
+            <MediaThumb :media-id="slide.mediaId || null" quiet />
             <div class="slide-meta">
-              <b>{{ workOf(id)?.title || "未命名作品" }}</b>
-              <small>{{ workOf(id) ? "已发布作品" : "作品列表里没有这条" }}</small>
+              <b>{{ slide.title || "未填写标题" }}</b>
+              <small
+                >副标题：{{ slide.subtitle || "无" }} · 按钮：{{
+                  slide.actionText || "未填写"
+                }}</small
+              >
+              <div class="tags">
+                <StatusChip
+                  :tone="slide.enabled ? 'live' : 'off'"
+                  :text="slide.enabled ? '显示中' : '已隐藏'"
+                />
+                <span class="chip chip-accent">跳转：{{ heroTargetLabel(slide.target.type) }}</span>
+              </div>
+            </div>
+            <div class="slide-tools">
+              <AppSwitch v-model="slide.enabled" label="显示" :disabled="!canEdit" />
+              <button
+                class="icon-btn"
+                type="button"
+                aria-label="上移"
+                :disabled="!canEdit || index === 0"
+                @click="moveSlide(index, -1)"
+              >
+                <svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6" /></svg>
+              </button>
+              <button
+                class="icon-btn"
+                type="button"
+                aria-label="下移"
+                :disabled="!canEdit || index === heroSlides.length - 1"
+                @click="moveSlide(index, 1)"
+              >
+                <svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6" /></svg>
+              </button>
+              <button
+                class="icon-btn"
+                type="button"
+                :aria-label="editingSlideId === slide.id ? '收起' : '编辑'"
+                :disabled="!canEdit"
+                @click="editingSlideId = editingSlideId === slide.id ? null : slide.id"
+              >
+                <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" /></svg>
+              </button>
+              <button
+                class="icon-btn danger"
+                type="button"
+                aria-label="删除"
+                :disabled="!canEdit"
+                @click="removeSlide(slide.id)"
+              >
+                <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+              </button>
+            </div>
+            <div v-if="editingSlideId === slide.id" class="slide-form">
+              <div class="field span-2">
+                <label>图片</label>
+                <MediaField
+                  :model-value="slide.mediaId || null"
+                  :media="media"
+                  :disabled="!canEdit"
+                  :uploading="uploading"
+                  test-id="catalog-hero-media"
+                  @update:model-value="setSlideMedia(slide, $event)"
+                  @upload="uploadMedia"
+                />
+              </div>
+              <div class="field">
+                <label
+                  >主标题<em>{{ countLabel(slide.title.length, 16) }}</em></label
+                >
+                <input
+                  v-model="slide.title"
+                  class="input"
+                  maxlength="16"
+                  data-testid="catalog-hero-title"
+                  :disabled="!canEdit"
+                />
+              </div>
+              <div class="field">
+                <label>副标题<em>选填</em></label>
+                <input
+                  v-model="slide.subtitle"
+                  class="input"
+                  maxlength="64"
+                  data-testid="catalog-hero-subtitle"
+                  :disabled="!canEdit"
+                />
+              </div>
+              <div class="field">
+                <label>按钮文字</label>
+                <input
+                  v-model="slide.actionText"
+                  class="input"
+                  maxlength="8"
+                  data-testid="catalog-hero-action"
+                  :disabled="!canEdit"
+                />
+              </div>
+              <div class="field">
+                <label>点击后去哪里</label>
+                <SegmentedControl
+                  :model-value="slide.target.type"
+                  :options="[...heroTargets]"
+                  label="点击后去哪里"
+                  :disabled="!canEdit"
+                  @update:model-value="setHeroTarget(slide, $event)"
+                />
+              </div>
+              <div v-if="slide.target.type === 'WORK'" class="field span-2">
+                <label>选择作品</label>
+                <select
+                  v-model="slide.target.id"
+                  class="select input"
+                  data-testid="catalog-hero-target"
+                  :disabled="!canEdit"
+                >
+                  <option value="">请选择</option>
+                  <option
+                    v-if="
+                      slide.target.id &&
+                      !works.some(
+                        (item) =>
+                          item.workId === slide.target.id && item.publicationState === 'PUBLISHED',
+                      )
+                    "
+                    :value="slide.target.id"
+                  >
+                    这条内容现在不可用
+                  </option>
+                  <option
+                    v-for="work in works.filter((item) => item.publicationState === 'PUBLISHED')"
+                    :key="work.workId"
+                    :value="work.workId"
+                  >
+                    {{ work.title || "未命名作品" }}
+                  </option>
+                </select>
+              </div>
+              <div v-else-if="slide.target.type === 'PACKAGE'" class="field span-2">
+                <label>选择套餐</label>
+                <select
+                  v-model="slide.target.id"
+                  class="select input"
+                  data-testid="catalog-hero-target"
+                  :disabled="!canEdit"
+                >
+                  <option value="">请选择</option>
+                  <option
+                    v-if="
+                      slide.target.id &&
+                      !draft.packages.some((item) => item.published && item.id === slide.target.id)
+                    "
+                    :value="slide.target.id"
+                  >
+                    这条内容现在不可用
+                  </option>
+                  <option
+                    v-for="item in draft.packages.filter((pkg) => pkg.published)"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.name || "未命名套餐" }}
+                  </option>
+                </select>
+              </div>
+              <div v-else-if="slide.target.type === 'BUSINESS'" class="field span-2">
+                <label>选择业务</label>
+                <select
+                  v-model="slide.target.id"
+                  class="select input"
+                  data-testid="catalog-hero-target"
+                  :disabled="!canEdit"
+                >
+                  <option value="">请选择</option>
+                  <option
+                    v-if="
+                      slide.target.id &&
+                      !draft.businesses.some(
+                        (item) => item.published && item.id === slide.target.id,
+                      )
+                    "
+                    :value="slide.target.id"
+                  >
+                    这条内容现在不可用
+                  </option>
+                  <option
+                    v-for="item in draft.businesses.filter((biz) => biz.published)"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.name || "未命名业务" }}
+                  </option>
+                </select>
+              </div>
+              <div v-else class="field span-2">
+                <p class="hint">打开后进入关于我们。</p>
+              </div>
             </div>
           </div>
         </div>
@@ -383,6 +724,7 @@ onMounted(async () => {
         :address="[draft.contact.address, draft.contact.workingHours].filter(Boolean).join(' · ')"
         :businesses="previewBusinesses"
         :works="previewWorks"
+        :hero="previewHero"
       />
     </PhonePreview>
     <ConfirmDialog

@@ -1,6 +1,11 @@
 package cn.zhinan.adminruntime;
 
 import cn.zhinan.adminbooking.application.BookingApplication;
+import cn.zhinan.adminbooking.application.OperatingRuleService;
+import cn.zhinan.adminbooking.application.SlotOpeningService;
+import cn.zhinan.adminbooking.application.SlotOpeningService.ClosedSlot;
+import cn.zhinan.adminbooking.application.SlotOpeningService.OpenedSlot;
+import cn.zhinan.adminbooking.application.SlotOpeningService.WeekItem;
 import cn.zhinan.adminbooking.domain.BookingException;
 import cn.zhinan.adminbooking.domain.BookingModels.OrderRevision;
 import cn.zhinan.adminbooking.domain.BookingModels.OrderSnapshot;
@@ -9,6 +14,10 @@ import cn.zhinan.adminbooking.domain.BookingModels.Reservation;
 import cn.zhinan.adminbooking.domain.BookingModels.ReservationView;
 import cn.zhinan.adminbooking.domain.BookingModels.ServiceSlot;
 import cn.zhinan.adminbooking.domain.BookingModels.SlotAssignment;
+import cn.zhinan.adminbooking.domain.BookingRules;
+import cn.zhinan.adminbooking.domain.OperatingRule;
+import cn.zhinan.adminbooking.port.OperatingRulePorts.StoredRule;
+import cn.zhinan.adminbooking.port.SlotOpeningPorts.BoardSlot;
 import cn.zhinan.adminsecurity.application.AdminSessionService;
 import cn.zhinan.adminsecurity.domain.AdminAuthenticationException;
 import cn.zhinan.adminsecurity.domain.AdminPermission;
@@ -17,6 +26,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +61,7 @@ class AdminBookingController {
   private static final int MAX_BODY_BYTES = 1024;
   private static final int MAX_PAGE_SIZE = 100;
   private static final Pattern ETAG = Pattern.compile("\"r(0|[1-9][0-9]{0,8})\"");
+  private static final Pattern RULE_ETAG = Pattern.compile("\"o(0|[1-9][0-9]{0,8})\"");
   private static final Pattern SAFE_CODE = Pattern.compile("[A-Z][A-Z0-9_]{0,63}");
   private static final Pattern RESCHEDULE_CHANGE =
       Pattern.compile("slotId:[0-9a-fA-F-]{36}->[0-9a-fA-F-]{36}");
@@ -55,10 +69,18 @@ class AdminBookingController {
       JsonFactory.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
 
   private final BookingApplication booking;
+  private final OperatingRuleService operatingRules;
+  private final SlotOpeningService slotOpening;
   private final AdminSessionService sessions;
 
-  AdminBookingController(BookingApplication booking, AdminSessionService sessions) {
+  AdminBookingController(
+      BookingApplication booking,
+      OperatingRuleService operatingRules,
+      SlotOpeningService slotOpening,
+      AdminSessionService sessions) {
     this.booking = booking;
+    this.operatingRules = operatingRules;
+    this.slotOpening = slotOpening;
     this.sessions = sessions;
   }
 
@@ -103,6 +125,145 @@ class AdminBookingController {
                   .map(AdminBookingController::slotView)
                   .toList();
           return ok(requestId, slots);
+        });
+  }
+
+  @GetMapping("/slots/board")
+  ResponseEntity<?> slotBoard(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.RESERVATION_READ,
+        (principal, requestId) -> {
+          Instant from = queryInstant(request, "from");
+          Instant to = queryInstant(request, "to");
+          if (!from.isBefore(to))
+            throw new RequestRejected(400, "TIME_RANGE_INVALID", "The time range is invalid.");
+          List<BoardSlotView> slots =
+              slotOpening.board(from, to, MAX_PAGE_SIZE).stream()
+                  .map(AdminBookingController::boardSlot)
+                  .toList();
+          return ok(requestId, slots);
+        });
+  }
+
+  @PostMapping("/slots")
+  ResponseEntity<?> openSlot(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.SLOT_WRITE,
+        (principal, requestId) -> {
+          BookingRules.idempotencyKey(request.getHeader("Idempotency-Key"));
+          TimedRequest body = parseTimed(request, Set.of("date", "startTime"));
+          OpenedSlot opened =
+              slotOpening.open(
+                  principal.accountId(),
+                  request.getHeader("Idempotency-Key"),
+                  body.date(),
+                  body.time());
+          return ok(requestId, openedView(opened));
+        });
+  }
+
+  @PostMapping("/slots/weeks")
+  ResponseEntity<?> openSlotWeek(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.SLOT_WRITE,
+        (principal, requestId) -> {
+          BookingRules.idempotencyKey(request.getHeader("Idempotency-Key"));
+          WeekRequest body = parseWeek(request);
+          List<WeekItemView> items =
+              slotOpening
+                  .openWeek(
+                      principal.accountId(),
+                      request.getHeader("Idempotency-Key"),
+                      body.dates(),
+                      body.times())
+                  .stream()
+                  .map(AdminBookingController::weekItem)
+                  .toList();
+          return ok(requestId, items);
+        });
+  }
+
+  @PostMapping("/slots/{slotId}/close")
+  ResponseEntity<?> closeSlot(HttpServletRequest request, @PathVariable String slotId) {
+    return handle(
+        request,
+        AdminPermission.SLOT_WRITE,
+        (principal, requestId) -> {
+          BookingRules.idempotencyKey(request.getHeader("Idempotency-Key"));
+          int expectedRevision = ifMatch(request);
+          requireEmptyObject(request);
+          ClosedSlot closed =
+              slotOpening.close(
+                  principal.accountId(),
+                  request.getHeader("Idempotency-Key"),
+                  slotId,
+                  expectedRevision);
+          return okBuilder(requestId)
+              .eTag(reservationEtag(closed.slot().revision()))
+              .body(new Envelope<>("OK", requestId, closedView(closed)));
+        });
+  }
+
+  @GetMapping("/operating-rules/current")
+  ResponseEntity<?> currentOperatingRule(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.RESERVATION_READ,
+        (principal, requestId) -> {
+          var stored = operatingRules.current();
+          int version = stored.map(StoredRule::version).orElse(0);
+          return okBuilder(requestId)
+              .eTag(ruleEtag(version))
+              .body(
+                  new Envelope<>(
+                      "OK",
+                      requestId,
+                      new OperatingRuleView(
+                          version,
+                          stored.isPresent(),
+                          stored.map(rule -> ruleBody(rule.rule())).orElse(null))));
+        });
+  }
+
+  @GetMapping("/operating-rules/versions")
+  ResponseEntity<?> operatingRuleVersions(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.RESERVATION_READ,
+        (principal, requestId) ->
+            ok(
+                requestId,
+                operatingRules.history().stream()
+                    .map(
+                        rule ->
+                            new OperatingRuleVersionView(
+                                rule.version(),
+                                ruleBody(rule.rule()),
+                                rule.updatedAt() == null ? "" : rule.updatedAt().toString()))
+                    .toList()));
+  }
+
+  @PutMapping("/operating-rules")
+  ResponseEntity<?> saveOperatingRule(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.BOOKING_RULES_WRITE,
+        (principal, requestId) -> {
+          int expected = ruleIfMatch(request);
+          String key = request.getHeader("Idempotency-Key");
+          OperatingRule rule = parseOperatingRule(request);
+          var saved = operatingRules.save(principal.accountId(), expected, key, rule);
+          return okBuilder(requestId)
+              .eTag(ruleEtag(saved.version()))
+              .body(
+                  new Envelope<>(
+                      "OK",
+                      requestId,
+                      new OperatingRuleSaveView(
+                          saved.version(), true, ruleBody(saved.rule()), saved.replayed())));
         });
   }
 
@@ -291,6 +452,8 @@ class AdminBookingController {
   }
 
   private static ResponseEntity<?> bookingFailure(BookingException failure, String requestId) {
+    if ("RULES_NOT_CONFIGURED".equals(failure.reason()))
+      return error(422, "RULES_NOT_CONFIGURED", "请先设置预约规则", requestId);
     int status =
         switch (failure.failure()) {
           case INVALID_REQUEST -> 400;
@@ -307,6 +470,10 @@ class AdminBookingController {
           case SLOT_UNAVAILABLE -> "SLOT_UNAVAILABLE";
           case IDEMPOTENCY_CONFLICT -> "IDEMPOTENCY_KEY_REUSE";
           case STORAGE_UNAVAILABLE -> "BOOKING_SERVICE_UNAVAILABLE";
+          case CONFLICT ->
+              "RULE_VERSION_CONFLICT".equals(failure.reason())
+                  ? "VERSION_CONFLICT"
+                  : safeCode(failure.reason(), "BOOKING_OPERATION_REJECTED");
           default -> "BOOKING_OPERATION_REJECTED";
         };
     return error(status, code, "The booking request could not be completed.", requestId);
@@ -314,6 +481,67 @@ class AdminBookingController {
 
   private static String safeCode(String value, String fallback) {
     return value != null && SAFE_CODE.matcher(value).matches() ? value : fallback;
+  }
+
+  private static int ruleIfMatch(HttpServletRequest request) {
+    String value = request.getHeader("If-Match");
+    var match = value == null ? null : RULE_ETAG.matcher(value);
+    if (match == null || !match.matches())
+      throw new RequestRejected(
+          428, "IF_MATCH_REQUIRED", "A current operating-rule version is required.");
+    return Integer.parseInt(match.group(1));
+  }
+
+  private static String ruleEtag(int version) {
+    return "\"o" + version + "\"";
+  }
+
+  private static RuleBody ruleBody(OperatingRule rule) {
+    return new RuleBody(
+        rule.minAdvanceHours(),
+        rule.maxAdvanceDays(),
+        rule.pendingExpiryHours(),
+        rule.slotDurationMinutes());
+  }
+
+  private static OperatingRule parseOperatingRule(HttpServletRequest request) {
+    String contentType = request.getContentType();
+    if (contentType == null
+        || !"application/json"
+            .equals(contentType.split(";", 2)[0].trim().toLowerCase(java.util.Locale.ROOT)))
+      throw new RequestRejected(415, "JSON_REQUIRED", "A JSON request is required.");
+    final byte[] bytes;
+    try {
+      bytes = request.getInputStream().readNBytes(MAX_BODY_BYTES + 1);
+    } catch (IOException unreadable) {
+      throw new RequestRejected(400, "BODY_UNREADABLE", "The request is invalid.");
+    }
+    if (bytes.length > MAX_BODY_BYTES)
+      throw new RequestRejected(413, "BODY_TOO_LARGE", "The request is too large.");
+    var fields = new java.util.HashMap<String, Integer>();
+    try (JsonParser parser = STRICT_JSON.createParser(bytes)) {
+      if (parser.nextToken() != JsonToken.START_OBJECT) invalidJson();
+      JsonToken token;
+      while ((token = parser.nextToken()) != JsonToken.END_OBJECT) {
+        if (token != JsonToken.PROPERTY_NAME) invalidJson();
+        String name = parser.currentName();
+        if (!java.util.Set.of(
+                "minAdvanceHours", "maxAdvanceDays", "pendingExpiryHours", "slotDurationMinutes")
+            .contains(name)) invalidJson();
+        if (parser.nextToken() != JsonToken.VALUE_NUMBER_INT
+            || !parser.getNumberType().name().contains("INT")) invalidJson();
+        if (fields.put(name, parser.getIntValue()) != null) invalidJson();
+      }
+      if (parser.nextToken() != null || fields.size() != 4) invalidJson();
+    } catch (JacksonException | RequestRejected malformed) {
+      if (malformed instanceof RequestRejected rejected) throw rejected;
+      throw new RequestRejected(400, "JSON_MALFORMED", "The request is invalid.");
+    }
+    return new OperatingRule(
+        fields.get("minAdvanceHours"),
+        fields.get("maxAdvanceDays"),
+        fields.get("pendingExpiryHours"),
+        fields.get("slotDurationMinutes"));
   }
 
   private static int ifMatch(HttpServletRequest request) {
@@ -373,6 +601,136 @@ class AdminBookingController {
 
   private static void invalidJson() {
     throw new RequestRejected(400, "REQUEST_INVALID", "The request is invalid.");
+  }
+
+  private static TimedRequest parseTimed(HttpServletRequest request, Set<String> fields) {
+    Map<String, String> body = strictObject(request, fields);
+    return new TimedRequest(localDate(body.get("date")), localTime(body.get("startTime")));
+  }
+
+  private static WeekRequest parseWeek(HttpServletRequest request) {
+    byte[] bytes = jsonBytes(request);
+    List<LocalDate> dates = new java.util.ArrayList<>();
+    List<LocalTime> times = new java.util.ArrayList<>();
+    try (JsonParser parser = STRICT_JSON.createParser(bytes)) {
+      if (parser.nextToken() != JsonToken.START_OBJECT) invalidJson();
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+        if (parser.currentToken() != JsonToken.PROPERTY_NAME) invalidJson();
+        String name = parser.currentName();
+        if ("dates".equals(name)) readLocalDates(parser, dates);
+        else if ("startTimes".equals(name)) readLocalTimes(parser, times);
+        else invalidJson();
+      }
+      if (parser.nextToken() != null || dates.isEmpty() || times.isEmpty()) invalidJson();
+    } catch (JacksonException malformed) {
+      throw new RequestRejected(400, "JSON_MALFORMED", "The request is invalid.");
+    }
+    return new WeekRequest(List.copyOf(dates), List.copyOf(times));
+  }
+
+  private static void readLocalDates(JsonParser parser, List<LocalDate> dates)
+      throws JacksonException {
+    if (parser.nextToken() != JsonToken.START_ARRAY) invalidJson();
+    while (parser.nextToken() != JsonToken.END_ARRAY) {
+      if (parser.currentToken() != JsonToken.VALUE_STRING) invalidJson();
+      dates.add(localDate(parser.getText()));
+    }
+  }
+
+  private static void readLocalTimes(JsonParser parser, List<LocalTime> times)
+      throws JacksonException {
+    if (parser.nextToken() != JsonToken.START_ARRAY) invalidJson();
+    while (parser.nextToken() != JsonToken.END_ARRAY) {
+      if (parser.currentToken() != JsonToken.VALUE_STRING) invalidJson();
+      times.add(localTime(parser.getText()));
+    }
+  }
+
+  private static void requireEmptyObject(HttpServletRequest request) {
+    Map<String, String> body = strictObject(request, Set.of());
+    if (!body.isEmpty()) invalidJson();
+  }
+
+  private static byte[] jsonBytes(HttpServletRequest request) {
+    String contentType = request.getContentType();
+    if (contentType == null
+        || !"application/json"
+            .equals(contentType.split(";", 2)[0].trim().toLowerCase(java.util.Locale.ROOT)))
+      throw new RequestRejected(415, "JSON_REQUIRED", "A JSON request is required.");
+    if (request.getContentLengthLong() > MAX_BODY_BYTES)
+      throw new RequestRejected(413, "BODY_TOO_LARGE", "The request is too large.");
+    try {
+      byte[] bytes = request.getInputStream().readNBytes(MAX_BODY_BYTES + 1);
+      if (bytes.length > MAX_BODY_BYTES)
+        throw new RequestRejected(413, "BODY_TOO_LARGE", "The request is too large.");
+      return bytes;
+    } catch (IOException unreadable) {
+      throw new RequestRejected(400, "BODY_UNREADABLE", "The request is invalid.");
+    }
+  }
+
+  private static LocalDate localDate(String value) {
+    try {
+      if (value == null || !value.matches("\\d{4}-\\d{2}-\\d{2}")) invalidJson();
+      return LocalDate.parse(value);
+    } catch (DateTimeParseException invalid) {
+      throw new RequestRejected(400, "REQUEST_INVALID", "The request is invalid.");
+    }
+  }
+
+  private static LocalTime localTime(String value) {
+    try {
+      if (value == null || !value.matches("\\d{2}:\\d{2}")) invalidJson();
+      return LocalTime.parse(value);
+    } catch (DateTimeParseException invalid) {
+      throw new RequestRejected(400, "REQUEST_INVALID", "The request is invalid.");
+    }
+  }
+
+  private static BoardSlotView boardSlot(BoardSlot slot) {
+    ServiceSlot value = slot.slot();
+    return new BoardSlotView(
+        value.slotId(),
+        value.startAt().toString(),
+        value.endAt().toString(),
+        slot.availability(),
+        value.revision());
+  }
+
+  private static SlotOpenView openedView(OpenedSlot opened) {
+    ServiceSlot slot = opened.slot();
+    return new SlotOpenView(
+        slot.slotId(),
+        slot.startAt().toString(),
+        slot.endAt().toString(),
+        slot.revision(),
+        opened.replayed());
+  }
+
+  private static SlotOpenView closedView(ClosedSlot closed) {
+    ServiceSlot slot = closed.slot();
+    return new SlotOpenView(
+        slot.slotId(),
+        slot.startAt().toString(),
+        slot.endAt().toString(),
+        slot.revision(),
+        closed.replayed());
+  }
+
+  private static WeekItemView weekItem(WeekItem item) {
+    return new WeekItemView(
+        item.date().toString(),
+        item.time().toString(),
+        item.ok(),
+        item.reason(),
+        item.slot() == null
+            ? null
+            : new SlotOpenView(
+                item.slot().slotId(),
+                item.slot().startAt().toString(),
+                item.slot().endAt().toString(),
+                item.slot().revision(),
+                item.replayed()));
   }
 
   private static String sessionCookie(HttpServletRequest request) {
@@ -516,6 +874,15 @@ class AdminBookingController {
 
   record ErrorEnvelope(String code, String message, String requestId) {}
 
+  record RuleBody(
+      int minAdvanceHours, int maxAdvanceDays, int pendingExpiryHours, int slotDurationMinutes) {}
+
+  record OperatingRuleView(int version, boolean configured, RuleBody rules) {}
+
+  record OperatingRuleSaveView(int version, boolean configured, RuleBody rules, boolean replayed) {}
+
+  record OperatingRuleVersionView(int version, RuleBody rules, String updatedAt) {}
+
   record ReservationSummary(
       String id,
       String status,
@@ -530,6 +897,18 @@ class AdminBookingController {
 
   record AssignmentView(
       String slotId, String previousSlotId, String assignedAt, String reasonCode, int revision) {}
+
+  record TimedRequest(LocalDate date, LocalTime time) {}
+
+  record WeekRequest(List<LocalDate> dates, List<LocalTime> times) {}
+
+  record BoardSlotView(
+      String id, String startAt, String endAt, String availability, int revision) {}
+
+  record SlotOpenView(String id, String startAt, String endAt, int revision, boolean replayed) {}
+
+  record WeekItemView(
+      String date, String startTime, boolean ok, String reason, SlotOpenView slot) {}
 
   record SlotView(
       String id,

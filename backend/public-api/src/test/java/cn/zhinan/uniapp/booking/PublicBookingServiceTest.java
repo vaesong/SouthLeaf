@@ -225,6 +225,50 @@ class PublicBookingServiceTest {
   }
 
   @Test
+  void enabledEntryWithoutASavedRuleRefusesSlotsAndRequestsButNotTheEnvironmentSwitch() {
+    FakeRepository repository = seeded();
+    repository.operatingRule = java.util.Optional.empty();
+    PublicBookingService service = service(repository);
+    assertThat(service.enabled()).isTrue();
+    assertThatThrownBy(() -> service.openSlots("2026-10-25", "2026-10-26"))
+        .isInstanceOf(PublicBookingException.class)
+        .extracting(error -> ((PublicBookingException) error).getErrorCode())
+        .isEqualTo(PublicBookingException.ErrorCode.RULES_UNCONFIGURED);
+    assertThatThrownBy(
+            () ->
+                service.createRequest(
+                    service.startSession("test-alice-0001").token(),
+                    "mp-order-rules",
+                    "11111111-2222-4333-8444-555555555555",
+                    REF))
+        .isInstanceOf(PublicBookingException.class)
+        .extracting(error -> ((PublicBookingException) error).getErrorCode())
+        .isEqualTo(PublicBookingException.ErrorCode.RULES_UNCONFIGURED);
+    assertThat(repository.requests).isEmpty();
+  }
+
+  @Test
+  void savedRuleSetsExpiryAndHidesSlotsOutsideTheWindow() {
+    FakeRepository repository = seeded();
+    repository.operatingRule =
+        java.util.Optional.of(
+            new cn.zhinan.uniapp.booking.port.PublicBookingPorts.OperatingWindow(
+                2, 48, 30, 10, 120));
+    PublicBookingService service = service(repository);
+    assertThat(service.openSlots("2026-10-25", "2026-10-31").items()).isEmpty();
+    repository.operatingRule =
+        java.util.Optional.of(
+            new cn.zhinan.uniapp.booking.port.PublicBookingPorts.OperatingWindow(
+                3, 0, 30, 10, 120));
+    String token = service.startSession("test-alice-0001").token();
+    var created =
+        service.createRequest(
+            token, "mp-order-window", "11111111-2222-4333-8444-555555555555", REF);
+    assertThat(created.expiresAt()).isEqualTo(NOW.plus(Duration.ofHours(10)).toString());
+    assertThat(service.requestLifetime()).isEqualTo(Duration.ofHours(48));
+  }
+
+  @Test
   void disabledEntryRefusesEveryCall() {
     PublicBookingService service =
         new PublicBookingService(

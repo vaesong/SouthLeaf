@@ -23,6 +23,8 @@ public final class PublicBookingGrantPolicy {
     grants.put("booking_audit", List.of("INSERT"));
     grants.put("booking_notification_outbox", List.of("INSERT"));
     grants.put("booking_service_slot", List.of("SELECT"));
+    grants.put("admin_booking_operating_rule", List.of("SELECT"));
+    grants.put("admin_booking_operating_rule_version", List.of("SELECT"));
     grants.put("booking_slot_occupancy", List.of("SELECT"));
     grants.put("booking_order", List.of("SELECT"));
     grants.put("booking_order_snapshot", List.of("SELECT"));

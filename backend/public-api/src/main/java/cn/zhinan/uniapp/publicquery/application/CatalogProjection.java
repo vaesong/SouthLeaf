@@ -83,6 +83,13 @@ public final class CatalogProjection {
                           && ("CONFIRMED".equals(c.qrCodeStatus())
                               || ("demo".equals(catalog.dataMode())
                                   && "PLACEHOLDER".equals(c.qrCodeStatus()))));
+      case "HERO" ->
+          catalog.heroSlides().stream()
+              .anyMatch(
+                  slide ->
+                      slide.enabled()
+                          && slide.id().equals(binding.ownerId())
+                          && binding.mediaId().equals(slide.mediaId()));
       default -> false;
     };
   }

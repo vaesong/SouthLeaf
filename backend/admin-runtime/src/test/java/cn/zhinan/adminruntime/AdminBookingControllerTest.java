@@ -43,6 +43,25 @@ class AdminBookingControllerTest {
   }
 
   @Test
+  void operatingRulesUseReadAndWriteCapabilitiesAndARuleEtag() {
+    var reader = new Fixture(Set.of(AdminPermission.RESERVATION_READ));
+    var denied = reader.controller.saveOperatingRule(request("PUT", "/bookings/operating-rules"));
+    assertThat(denied.getStatusCode().value()).isEqualTo(403);
+
+    var writer = new Fixture(Set.of(AdminPermission.BOOKING_RULES_WRITE));
+    var request = request("PUT", "/bookings/operating-rules");
+    request.setContentType("application/json");
+    request.setContent(
+        "{\"minAdvanceHours\":24,\"maxAdvanceDays\":30,\"pendingExpiryHours\":48,\"slotDurationMinutes\":120}"
+            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    request.addHeader("Idempotency-Key", "k".repeat(32));
+    var missing = writer.controller.saveOperatingRule(request);
+    assertThat(missing.getStatusCode().value()).isEqualTo(428);
+    assertThat(((AdminBookingController.ErrorEnvelope) missing.getBody()).code())
+        .isEqualTo("IF_MATCH_REQUIRED");
+  }
+
+  @Test
   void requiresIfMatchBeforeAttemptingAnyReservationWrite() {
     var fixture = new Fixture(Set.of(AdminPermission.RESERVATION_CANCEL));
     var request = request("POST", "/bookings/reservations/" + RESERVATION + "/cancel");
@@ -159,6 +178,26 @@ class AdminBookingControllerTest {
     return request;
   }
 
+  @Test
+  void slotWritesRequireTheSlotCapabilityAndTheExistingPreconditions() {
+    var reader = new Fixture(Set.of(AdminPermission.RESERVATION_READ));
+    var denied = reader.controller.openSlot(request("POST", "/bookings/slots"));
+    assertThat(denied.getStatusCode().value()).isEqualTo(403);
+
+    var writer = new Fixture(Set.of(AdminPermission.SLOT_WRITE));
+    var missingKey = writer.controller.openSlot(request("POST", "/bookings/slots"));
+    assertThat(missingKey.getStatusCode().value()).isEqualTo(400);
+    assertThat(((AdminBookingController.ErrorEnvelope) missingKey.getBody()).code())
+        .isEqualTo("IDEMPOTENCY_KEY_INVALID");
+
+    var close = request("POST", "/bookings/slots/" + RESERVATION + "/close");
+    close.addHeader("Idempotency-Key", "k".repeat(32));
+    var missingMatch = writer.controller.closeSlot(close, RESERVATION);
+    assertThat(missingMatch.getStatusCode().value()).isEqualTo(428);
+    assertThat(((AdminBookingController.ErrorEnvelope) missingMatch.getBody()).code())
+        .isEqualTo("IF_MATCH_REQUIRED");
+  }
+
   private static MockHttpServletRequest request(String method, String path) {
     var request = new MockHttpServletRequest(method, path);
     request.setSecure(true);
@@ -173,7 +212,7 @@ class AdminBookingControllerTest {
       var sessions =
           new AdminSessionService(
               new Sessions(permissions), new FixedTokenCodec(), CLOCK, Duration.ofHours(2));
-      controller = new AdminBookingController((BookingApplication) null, sessions);
+      controller = new AdminBookingController((BookingApplication) null, null, null, sessions);
     }
   }
 

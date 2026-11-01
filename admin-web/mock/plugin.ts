@@ -22,6 +22,16 @@ type Draft = {
   featuredPackageIds: string[];
   featuredWorkIds: string[];
   mediaAltTexts: Record<string, string>;
+  heroSlides: Array<{
+    id: string;
+    mediaId: string;
+    title: string;
+    subtitle: string;
+    actionText: string;
+    target: { type: string; id: string };
+    enabled: boolean;
+    position: number;
+  }>;
 };
 
 function mockMediaId(index: number) {
@@ -203,6 +213,38 @@ function emptyDraft(): Draft {
       "aaaaaaaa-aaaa-4aaa-8aaa-000000000002",
       "aaaaaaaa-aaaa-4aaa-8aaa-000000000003",
     ],
+    heroSlides: [
+      {
+        id: "hero-window",
+        mediaId: MEDIA[1],
+        title: "虚构窗边",
+        subtitle: "本地样例",
+        actionText: "查看详情",
+        target: { type: "WORK", id: "aaaaaaaa-aaaa-4aaa-8aaa-000000000001" },
+        enabled: true,
+        position: 0,
+      },
+      {
+        id: "hero-family",
+        mediaId: MEDIA[2],
+        title: "虚构全家",
+        subtitle: "",
+        actionText: "看套餐",
+        target: { type: "PACKAGE", id: "pkg-family-1" },
+        enabled: true,
+        position: 1,
+      },
+      {
+        id: "hero-about",
+        mediaId: MEDIA[3],
+        title: "来坐坐",
+        subtitle: "关于工作室",
+        actionText: "了解我们",
+        target: { type: "ABOUT", id: "about" },
+        enabled: false,
+        position: 2,
+      },
+    ],
     mediaAltTexts: {
       [MEDIA[0]]: "虚构封面",
       [MEDIA[1]]: "虚构封面二",
@@ -264,8 +306,17 @@ export function mockAdminApi(): Plugin {
     };
   });
   let workSerial = 1;
+  let operatingRule = {
+    version: 1,
+    rules: {
+      minAdvanceHours: 24,
+      maxAdvanceDays: 30,
+      pendingExpiryHours: 48,
+      slotDurationMinutes: 120,
+    },
+  };
 
-  function weekSlots() {
+  function buildWeekSlots() {
     const shifted = new Date(Date.now() + 8 * 60 * 60 * 1000);
     const weekday = (shifted.getUTCDay() + 6) % 7;
     const monday =
@@ -287,11 +338,18 @@ export function mockAdminApi(): Plugin {
           capacity: 1,
           ruleVersion: "mock-1",
           revision: 1,
+          availability: serial === 1 ? "PENDING" : serial === 2 ? "OCCUPIED" : "OPEN",
         });
         serial += 1;
       }
     }
     return slots;
+  }
+
+  const mutableSlots = buildWeekSlots();
+
+  function weekSlots() {
+    return mutableSlots.filter((slot) => slot.availability !== "CLOSED");
   }
 
   function pendingReservations() {
@@ -404,6 +462,8 @@ export function mockAdminApi(): Plugin {
                 "ORDER_READ",
                 "OUTBOX_READ",
                 "OUTBOX_RECOVER",
+                "BOOKING_RULES_WRITE",
+                "SLOT_WRITE",
               ],
               expiresAt: "2026-11-02T10:30:00Z",
             }),
@@ -416,7 +476,14 @@ export function mockAdminApi(): Plugin {
             200,
             envelope({
               accountId: "mock.operator",
-              permissions: ["CONTENT_READ", "CONTENT_EDIT", "CONTENT_PUBLISH"],
+              permissions: [
+                "CONTENT_READ",
+                "CONTENT_EDIT",
+                "CONTENT_PUBLISH",
+                "RESERVATION_READ",
+                "BOOKING_RULES_WRITE",
+                "SLOT_WRITE",
+              ],
               expiresAt: "2026-11-02T10:30:00Z",
             }),
           );
@@ -669,13 +736,186 @@ export function mockAdminApi(): Plugin {
           );
           return;
         }
+        if (path === "/api/admin/v1/bookings/operating-rules/current" && method === "GET") {
+          send(
+            res,
+            200,
+            envelope(
+              operatingRule.version === 0
+                ? { version: 0, configured: false, rules: null }
+                : { version: operatingRule.version, configured: true, rules: operatingRule.rules },
+            ),
+            { ETag: `"o${operatingRule.version}"` },
+          );
+          return;
+        }
+        if (path === "/api/admin/v1/bookings/operating-rules/versions" && method === "GET") {
+          send(
+            res,
+            200,
+            envelope(
+              operatingRule.version === 0
+                ? []
+                : [
+                    {
+                      version: operatingRule.version,
+                      rules: operatingRule.rules,
+                      updatedAt: "2026-11-01T01:00:00Z",
+                    },
+                  ],
+            ),
+          );
+          return;
+        }
+        if (path === "/api/admin/v1/bookings/operating-rules" && method === "PUT") {
+          const ifMatch = req.headers["if-match"];
+          if (ifMatch !== `"o${operatingRule.version}"`) {
+            send(res, 409, JSON.stringify({ code: "VERSION_CONFLICT", requestId: "mock" }));
+            return;
+          }
+          const body = JSON.parse(await readBody(req));
+          operatingRule = {
+            version: operatingRule.version + 1,
+            rules: {
+              minAdvanceHours: body.minAdvanceHours,
+              maxAdvanceDays: body.maxAdvanceDays,
+              pendingExpiryHours: body.pendingExpiryHours,
+              slotDurationMinutes: body.slotDurationMinutes,
+            },
+          };
+          send(
+            res,
+            200,
+            envelope({ version: operatingRule.version, replayed: false, ...operatingRule.rules }),
+            { ETag: `"o${operatingRule.version}"` },
+          );
+          return;
+        }
+        if (path === "/api/admin/v1/bookings/slots/board" && method === "GET") {
+          const from = Date.parse(url.searchParams.get("from") ?? "");
+          const to = Date.parse(url.searchParams.get("to") ?? "");
+          const slots = weekSlots()
+            .filter((slot) => {
+              const at = Date.parse(slot.startAt);
+              if (Number.isNaN(from) || Number.isNaN(to)) return true;
+              return at >= from && at < to;
+            })
+            .map((slot) => ({
+              id: slot.id,
+              startAt: slot.startAt,
+              endAt: slot.endAt,
+              availability: slot.availability,
+              revision: slot.revision,
+            }));
+          send(res, 200, envelope(slots));
+          return;
+        }
+        if (path === "/api/admin/v1/bookings/slots" && method === "POST") {
+          if (operatingRule.version < 1) {
+            send(res, 422, JSON.stringify({ code: "RULES_NOT_CONFIGURED", requestId: "mock" }));
+            return;
+          }
+          const body = JSON.parse(await readBody(req));
+          const start = new Date(`${body.date}T${body.startTime}:00+08:00`);
+          const created = {
+            id: `3c9a6900-0000-4000-8000-${String(mutableSlots.length + 20).padStart(12, "0")}`,
+            startAt: start.toISOString(),
+            endAt: new Date(start.getTime() + 2 * 3600000).toISOString(),
+            businessZone: "Asia/Shanghai",
+            displayOffset: "+08:00",
+            status: "OPEN",
+            capacity: 1,
+            ruleVersion: "mock-1",
+            revision: 1,
+            availability: "OPEN",
+          };
+          mutableSlots.push(created);
+          send(
+            res,
+            200,
+            envelope({
+              id: created.id,
+              startAt: created.startAt,
+              endAt: created.endAt,
+              revision: 1,
+              replayed: false,
+            }),
+          );
+          return;
+        }
+        if (path === "/api/admin/v1/bookings/slots/weeks" && method === "POST") {
+          if (operatingRule.version < 1) {
+            send(res, 422, JSON.stringify({ code: "RULES_NOT_CONFIGURED", requestId: "mock" }));
+            return;
+          }
+          const body = JSON.parse(await readBody(req));
+          const items = [];
+          for (const date of body.dates ?? []) {
+            for (const startTime of body.startTimes ?? []) {
+              const start = new Date(`${date}T${startTime}:00+08:00`);
+              const created = {
+                id: `3c9a6900-0000-4000-8000-${String(mutableSlots.length + 40).padStart(12, "0")}`,
+                startAt: start.toISOString(),
+                endAt: new Date(start.getTime() + 2 * 3600000).toISOString(),
+                revision: 1,
+                replayed: false,
+              };
+              mutableSlots.push({
+                ...created,
+                businessZone: "Asia/Shanghai",
+                displayOffset: "+08:00",
+                status: "OPEN",
+                capacity: 1,
+                ruleVersion: "mock-1",
+                availability: "OPEN",
+              });
+              items.push({ date, startTime, ok: true, reason: null, slot: created });
+            }
+          }
+          send(res, 200, envelope(items));
+          return;
+        }
+        const closeMatch = path.match(/^\/api\/admin\/v1\/bookings\/slots\/([0-9a-f-]+)\/close$/i);
+        if (closeMatch && method === "POST") {
+          const found = mutableSlots.find((slot) => slot.id === closeMatch[1]);
+          if (!found) {
+            send(res, 404, JSON.stringify({ code: "RESOURCE_UNAVAILABLE", requestId: "mock" }));
+            return;
+          }
+          if (found.availability === "OCCUPIED") {
+            send(res, 409, JSON.stringify({ code: "SLOT_OCCUPIED", requestId: "mock" }));
+            return;
+          }
+          if (found.availability === "PENDING") {
+            send(res, 409, JSON.stringify({ code: "SLOT_PENDING_REQUEST", requestId: "mock" }));
+            return;
+          }
+          const alreadyClosed = found.availability === "CLOSED";
+          if (!alreadyClosed) {
+            found.availability = "CLOSED";
+            found.status = "CLOSED";
+            found.revision += 1;
+          }
+          send(
+            res,
+            200,
+            envelope({
+              id: found.id,
+              startAt: found.startAt,
+              endAt: found.endAt,
+              revision: found.revision,
+              replayed: alreadyClosed,
+            }),
+          );
+          return;
+        }
         if (path === "/api/admin/v1/bookings/slots" && method === "GET") {
           const from = Date.parse(url.searchParams.get("from") ?? "");
           const to = Date.parse(url.searchParams.get("to") ?? "");
           const slots = weekSlots().filter((slot) => {
             const at = Date.parse(slot.startAt);
             if (Number.isNaN(from) || Number.isNaN(to)) return true;
-            return at >= from && at < to;
+            return at >= from && at < to && slot.availability === "OPEN";
           });
           send(res, 200, envelope(slots));
           return;

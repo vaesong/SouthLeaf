@@ -2,7 +2,12 @@ import { flushPromises } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { AdminApiError } from "../auth/api";
 import type { AdminContentApi, CatalogDraftInput, CatalogView } from "./api";
-import { toggleLimitedIds, unpublishedHint } from "./catalogDraft";
+import {
+  normalizeDraft,
+  referencedMediaIds,
+  toggleLimitedIds,
+  unpublishedHint,
+} from "./catalogDraft";
 import { createCatalogStore } from "./catalogStore";
 
 function draft(overrides: Partial<CatalogDraftInput> = {}): CatalogDraftInput {
@@ -51,6 +56,7 @@ function draft(overrides: Partial<CatalogDraftInput> = {}): CatalogDraftInput {
     featuredPackageIds: [],
     featuredWorkIds: [],
     mediaAltTexts: {},
+    heroSlides: [],
     ...overrides,
   };
 }
@@ -68,6 +74,28 @@ describe("catalog draft helpers", () => {
     expect(toggleLimitedIds(["a", "b"], "c", 3)).toEqual(["a", "b", "c"]);
     expect(toggleLimitedIds(["a", "b", "c"], "d", 3)).toEqual(["a", "b", "c"]);
     expect(toggleLimitedIds(["a", "b", "c"], "b", 3)).toEqual(["a", "c"]);
+  });
+
+  it("keeps hero slides and their pictures when the draft is normalized", () => {
+    const value = draft({
+      heroSlides: [
+        {
+          id: "hero-1",
+          mediaId: "m1",
+          title: "标题",
+          subtitle: "",
+          actionText: "查看详情",
+          target: { type: "ABOUT", id: "about" },
+          enabled: true,
+          position: 4,
+        },
+      ],
+    });
+    normalizeDraft(value);
+    expect(value.heroSlides[0]?.position).toBe(0);
+    expect(value.heroSlides[0]?.target).toEqual({ type: "ABOUT", id: "about" });
+    expect(referencedMediaIds(value)).toContain("m1");
+    expect(value.mediaAltTexts.m1).toBe("");
   });
 
   it("describes the unpublished hint only from this session", () => {
@@ -100,6 +128,21 @@ describe("catalog store", () => {
     expect(revision).toBe(3);
     expect(payload.brand.name).toBe("新名称");
     expect(payload.packages[0]?.name).toBe("新套餐");
+    expect(payload.heroSlides).toEqual([]);
+    store.state.draft!.heroSlides.push({
+      id: "hero-kept",
+      mediaId: "",
+      title: "窗边",
+      subtitle: "",
+      actionText: "查看详情",
+      target: { type: "ABOUT", id: "about" },
+      enabled: true,
+      position: 0,
+    });
+    expect(await store.save()).toBe(true);
+    const second = saveCatalog.mock.calls[1] as [number, CatalogDraftInput];
+    expect(second[1].heroSlides[0]?.id).toBe("hero-kept");
+    expect(second[1].heroSlides[0]?.title).toBe("窗边");
     expect(store.state.revision).toBe(4);
     expect(store.dirty).toBe(false);
     expect(store.unpublishedLabel).toBe("已保存，尚未发布");

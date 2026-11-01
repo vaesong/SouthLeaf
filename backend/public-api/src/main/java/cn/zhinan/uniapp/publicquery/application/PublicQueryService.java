@@ -5,9 +5,13 @@ import static cn.zhinan.uniapp.publicquery.contract.PublicRequestRules.*;
 import cn.zhinan.uniapp.dto.PublicDtos;
 import cn.zhinan.uniapp.publicquery.contract.PublicPage;
 import cn.zhinan.uniapp.publicquery.contract.PublicRequestRules;
+import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot;
 import cn.zhinan.uniapp.works.application.PublicVisibilityPolicy;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class PublicQueryService {
   public static final int DEFAULT_LIMIT = 20;
@@ -46,7 +50,7 @@ public class PublicQueryService {
                 .flatMap(id -> visibleWorks.stream().filter(work -> work.id().equals(id)).limit(1))
                 .toList();
     var works = selectedWorks.stream().limit(DEFAULT_LIMIT).map(p::summary).toList();
-    var heroes =
+    var fallbackHeroes =
         works.stream()
             .limit(3)
             .map(
@@ -60,6 +64,8 @@ public class PublicQueryService {
                         "work",
                         w.id()))
             .toList();
+    var configuredHeroes = configuredHeroes(p);
+    var heroes = configuredHeroes.isEmpty() ? fallbackHeroes : configuredHeroes;
     var businesses =
         p.snapshot().featuredBusinesses().stream()
             .limit(3)
@@ -179,6 +185,44 @@ public class PublicQueryService {
     variant(variant);
     var p = projection();
     return result(p, p.media(null, id, variant).orElseThrow(PublicRequestRules::unavailable), null);
+  }
+
+  private static List<PublicDtos.HeroItem> configuredHeroes(CatalogProjection p) {
+    var slides =
+        p.snapshot().heroSlides().stream()
+            .filter(CatalogSnapshot.HeroSlide::enabled)
+            .sorted(
+                Comparator.comparingInt(CatalogSnapshot.HeroSlide::position)
+                    .thenComparing(CatalogSnapshot.HeroSlide::id))
+            .toList();
+    var items = new ArrayList<PublicDtos.HeroItem>();
+    for (var slide : slides) {
+      if (!heroTargetVisible(p, slide)) continue;
+      var media = p.media(slide.id(), slide.mediaId(), "preview");
+      if (media.isEmpty()) continue;
+      items.add(
+          new PublicDtos.HeroItem(
+              slide.id(),
+              slide.title(),
+              slide.subtitle() == null ? "" : slide.subtitle(),
+              slide.actionText(),
+              media.get(),
+              slide.targetType().toLowerCase(Locale.ROOT),
+              slide.targetId()));
+    }
+    return List.copyOf(items);
+  }
+
+  private static boolean heroTargetVisible(CatalogProjection p, CatalogSnapshot.HeroSlide slide) {
+    return switch (slide.targetType()) {
+      case "WORK" -> p.work(slide.targetId()).isPresent();
+      case "PACKAGE" ->
+          p.packages(null).stream().anyMatch(item -> item.id().equals(slide.targetId()));
+      case "BUSINESS" ->
+          p.snapshot().businesses().stream().anyMatch(item -> item.id().equals(slide.targetId()));
+      case "ABOUT" -> "about".equals(slide.targetId());
+      default -> false;
+    };
   }
 
   private static void optionalId(String id) {

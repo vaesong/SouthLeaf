@@ -115,6 +115,21 @@ const pending = {
   order: null,
 };
 
+test("an unconfigured booking rule uses the customer sentence, not an internal reason", () => {
+  const { createError, PUBLIC_ERROR_MESSAGES } = require("../api/api.js");
+  assert.equal(
+    PUBLIC_ERROR_MESSAGES.BOOKING_RULES_UNCONFIGURED,
+    "暂未开放预约，请稍后再来或直接联系我们",
+  );
+  assert.equal(
+    createError("BOOKING_RULES_UNCONFIGURED").message,
+    "暂未开放预约，请稍后再来或直接联系我们",
+  );
+  assert.notEqual(
+    PUBLIC_ERROR_MESSAGES.BOOKING_SERVICE_UNAVAILABLE,
+    PUBLIC_ERROR_MESSAGES.BOOKING_RULES_UNCONFIGURED,
+  );
+});
 test("booking entry never offers a payment action or a paid result", () => {
   for (const file of ["wxml", "js"]) {
     const text = fs.readFileSync(

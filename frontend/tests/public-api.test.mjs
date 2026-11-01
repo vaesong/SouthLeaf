@@ -79,6 +79,51 @@ const work = () => ({
   publishedAt: "2026-10-01T00:00:00Z",
 });
 
+test("home heroes keep the existing item shape, including an about target", () => {
+  const hero = (id, target, targetId) => ({
+    id,
+    title: "标题",
+    subtitle: "",
+    action: "查看详情",
+    media: media("a"),
+    target,
+    targetId,
+  });
+  const home = mapped.mapHome({
+    brand: brand(),
+    contact: contact(),
+    heroItems: [
+      hero("about-slide", "about", "about"),
+      hero("work-slide", "work", "w1"),
+      hero("package-slide", "package", "p1"),
+      hero("business-slide", "business", "child"),
+    ],
+    featuredWorks: [],
+    businesses: [],
+    packages: [],
+  });
+  assert.deepEqual(
+    home.heroItems.map((item) => [item.target, item.targetId, item.subtitle]),
+    [
+      ["about", "about", ""],
+      ["work", "w1", ""],
+      ["package", "p1", ""],
+      ["business", "child", ""],
+    ],
+  );
+  assert.throws(
+    () =>
+      mapped.mapHome({
+        brand: brand(),
+        contact: contact(),
+        heroItems: [hero("blank", "about", "")],
+        featuredWorks: [],
+        businesses: [],
+        packages: [],
+      }),
+    (error) => error.code === "PUBLIC_RESPONSE_INVALID",
+  );
+});
 test("only qualified same-host media references are accepted", () => {
   assert.equal(
     mapped.mapMedia(media()).src,

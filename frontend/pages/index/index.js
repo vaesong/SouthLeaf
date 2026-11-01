@@ -117,10 +117,13 @@ Page({
     });
   },
   openHero(item) {
-    if (item.target === "package" && item.targetId)
+    if (!item || typeof item.target !== "string") return;
+    if (item.target === "work" && item.targetId) this.openWork(item.targetId);
+    else if (item.target === "package" && item.targetId)
       this.openPackage(item.targetId);
-    else if (item.targetId) this.openWork(item.targetId);
-    else this.goWorks();
+    else if (item.target === "business" && item.targetId)
+      this.goServices(item.targetId);
+    else if (item.target === "about") this.goAbout();
   },
   openWork(id) {
     if (id)

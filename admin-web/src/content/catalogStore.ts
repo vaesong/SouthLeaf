@@ -116,6 +116,7 @@ export function createCatalogStore(api: AdminContentApi): CatalogStore {
 
   function accept(view: CatalogView, savedUnpublished = state.savedUnpublished) {
     const draft = structuredClone(view.draft);
+    if (!Array.isArray(draft.heroSlides)) draft.heroSlides = [];
     syncMediaAltTexts(draft);
     state.revision = view.revision;
     state.draft = draft;
@@ -264,6 +265,7 @@ export function createCatalogStore(api: AdminContentApi): CatalogStore {
 
   function applyHistoricDraft(view: CatalogView, serverRevision: number) {
     const draft = structuredClone(view.draft);
+    if (!Array.isArray(draft.heroSlides)) draft.heroSlides = [];
     syncMediaAltTexts(draft);
     state.draft = draft;
     state.preview = null;

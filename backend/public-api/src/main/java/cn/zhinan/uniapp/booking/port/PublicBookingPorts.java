@@ -9,6 +9,13 @@ import java.util.function.Supplier;
 public final class PublicBookingPorts {
   private PublicBookingPorts() {}
 
+  public record OperatingWindow(
+      int version,
+      int minAdvanceHours,
+      int maxAdvanceDays,
+      int pendingExpiryHours,
+      int slotDurationMinutes) {}
+
   public record SlotRow(
       String slotId,
       Instant startAt,
@@ -71,6 +78,11 @@ public final class PublicBookingPorts {
     List<SlotRow> listAvailableSlots(Instant from, Instant to, int limit);
 
     boolean slotAvailable(String slotId);
+
+    Optional<SlotRow> findOpenSlot(String slotId);
+
+    /** Empty when the studio has not saved an operating rule. A read failure is not empty. */
+    Optional<OperatingWindow> currentOperatingRule();
 
     Optional<String> findOpenReservationId(String customerId, Instant now);
 

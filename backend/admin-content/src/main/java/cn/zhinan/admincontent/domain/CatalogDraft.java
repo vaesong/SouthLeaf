@@ -18,7 +18,8 @@ public record CatalogDraft(
     List<String> featuredBusinessIds,
     List<String> featuredPackageIds,
     List<String> featuredWorkIds,
-    Map<String, String> mediaAltTexts) {
+    Map<String, String> mediaAltTexts,
+    List<HeroSlide> heroSlides) {
   private static final Pattern ID = Pattern.compile("[A-Za-z0-9_-]{1,128}");
   private static final List<String> BUSINESS_IDS =
       List.of("child", "family", "wedding", "portrait", "maternity", "id-photo");
@@ -37,6 +38,11 @@ public record CatalogDraft(
     if (mediaAltTexts == null) throw invalid("MEDIA_ALT_TEXTS_REQUIRED");
     mediaAltTexts =
         java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(mediaAltTexts));
+    if (heroSlides == null) heroSlides = List.of();
+    else {
+      for (var slide : heroSlides) if (slide == null) throw invalid("HERO_REQUIRED");
+      heroSlides = List.copyOf(heroSlides);
+    }
   }
 
   public static CatalogDraft empty() {
@@ -55,7 +61,8 @@ public record CatalogDraft(
         List.of(),
         List.of(),
         List.of(),
-        Map.of());
+        Map.of(),
+        List.of());
   }
 
   public List<MediaReference> mediaReferences() {
@@ -76,7 +83,20 @@ public record CatalogDraft(
         packages.stream().filter(Package::published).toList(),
         featuredBusinessIds,
         featuredPackageIds,
-        featuredWorkIds);
+        featuredWorkIds,
+        heroSlides.stream()
+            .filter(HeroSlide::enabled)
+            .sorted(
+                java.util.Comparator.comparingInt(HeroSlide::position).thenComparing(HeroSlide::id))
+            .toList());
+  }
+
+  /** Featured works plus enabled slide targets that must pass the publication work gate. */
+  public List<String> publicationWorkIds() {
+    var ids = new ArrayList<String>(featuredWorkIds);
+    for (var slide : heroSlides)
+      if (slide.enabled() && "WORK".equals(slide.target().type())) ids.add(slide.target().id());
+    return List.copyOf(ids);
   }
 
   private List<MediaReference> mediaReferences(boolean publishedOnly) {
@@ -94,6 +114,9 @@ public record CatalogDraft(
     packages.stream()
         .filter(v -> !publishedOnly || v.published())
         .forEach(v -> addRef(refs, v.coverMediaId(), "PACKAGE", v.id(), 0));
+    heroSlides.stream()
+        .filter(v -> !publishedOnly || v.enabled())
+        .forEach(v -> addRef(refs, v.mediaId(), "HERO", v.id(), v.position()));
     return List.copyOf(refs);
   }
 
@@ -106,7 +129,8 @@ public record CatalogDraft(
       List<Package> packages,
       List<String> featuredBusinessIds,
       List<String> featuredPackageIds,
-      List<String> featuredWorkIds) {
+      List<String> featuredWorkIds,
+      List<HeroSlide> heroSlides) {
     public PublicationSnapshot {
       team = List.copyOf(team);
       channels = List.copyOf(channels);
@@ -115,6 +139,7 @@ public record CatalogDraft(
       featuredBusinessIds = List.copyOf(featuredBusinessIds);
       featuredPackageIds = List.copyOf(featuredPackageIds);
       featuredWorkIds = List.copyOf(featuredWorkIds);
+      heroSlides = List.copyOf(heroSlides);
     }
   }
 
@@ -168,6 +193,7 @@ public record CatalogDraft(
       if (business == null || (item.published() && !business.published()))
         throw invalid("PACKAGE_BUSINESS_UNAVAILABLE");
     }
+    validateHeroSlides();
     Set<String> referencedMedia =
         mediaReferences().stream()
             .map(MediaReference::mediaId)
@@ -207,7 +233,48 @@ public record CatalogDraft(
             || channels.stream().anyMatch(c -> c.published() && c.qrStatus().equals("CONFIRMED"));
     if (!hasContact) throw invalid("CONTACT_CHANNEL_REQUIRED");
     if (businesses.stream().noneMatch(Business::published)) throw invalid("BUSINESS_REQUIRED");
+    for (var slide : heroSlides) {
+      if (!slide.enabled()) continue;
+      switch (slide.target().type()) {
+        case "PACKAGE" -> {
+          var item = packages.stream().filter(p -> p.id().equals(slide.target().id())).findFirst();
+          if (item.isEmpty() || !item.get().published()) throw invalid("HERO_PACKAGE_UNAVAILABLE");
+          var business =
+              businesses.stream().filter(b -> b.id().equals(item.get().businessId())).findFirst();
+          if (business.isEmpty() || !business.get().published())
+            throw invalid("HERO_PACKAGE_UNAVAILABLE");
+        }
+        case "BUSINESS" -> {
+          if (businesses.stream()
+              .noneMatch(b -> b.id().equals(slide.target().id()) && b.published()))
+            throw invalid("HERO_BUSINESS_UNAVAILABLE");
+        }
+        default -> {}
+      }
+    }
     return this;
+  }
+
+  private void validateHeroSlides() {
+    if (heroSlides.size() > 5) throw invalid("HERO_LIMIT");
+    requireUnique(heroSlides.stream().map(HeroSlide::id).toList(), "HERO_ID_DUPLICATE");
+    requireUniquePositions(
+        heroSlides.stream().map(HeroSlide::position).toList(), "HERO_POSITION_DUPLICATE");
+    for (var slide : heroSlides) {
+      requireId(slide.id());
+      requireId(slide.mediaId());
+      requireBoundedText(slide.title(), 1, 16, "HERO_FIELD_INVALID");
+      if (slide.subtitle().codePointCount(0, slide.subtitle().length()) > 64)
+        throw invalid("HERO_FIELD_INVALID");
+      requireBoundedText(slide.actionText(), 1, 8, "HERO_FIELD_INVALID");
+      if (slide.position() < 0) throw invalid("HERO_FIELD_INVALID");
+      var target = slide.target();
+      if (!List.of("WORK", "PACKAGE", "BUSINESS", "ABOUT").contains(target.type()))
+        throw invalid("HERO_TARGET_INVALID");
+      if ("ABOUT".equals(target.type())) {
+        if (!"about".equals(target.id())) throw invalid("HERO_TARGET_INVALID");
+      } else requireId(target.id());
+    }
   }
 
   private static <T> List<T> copy(List<T> values, String reason) {
@@ -229,6 +296,12 @@ public record CatalogDraft(
 
   private static void text(String value, int max, String reason) {
     if (value == null || value.length() > max) throw invalid(reason);
+  }
+
+  private static void requireBoundedText(String value, int min, int max, String reason) {
+    if (value == null || value.isBlank()) throw invalid(reason);
+    int length = value.codePointCount(0, value.length());
+    if (length < min || length > max) throw invalid(reason);
   }
 
   private static ContentException invalid(String reason) {
@@ -379,6 +452,23 @@ public record CatalogDraft(
       if (published && (name.isBlank() || summary.isBlank() || suitableFor.isBlank()))
         throw invalid("PACKAGE_REQUIRED_FIELDS");
       return this;
+    }
+  }
+
+  public record HeroTarget(String type, String id) {}
+
+  public record HeroSlide(
+      String id,
+      String mediaId,
+      String title,
+      String subtitle,
+      String actionText,
+      HeroTarget target,
+      boolean enabled,
+      int position) {
+    public HeroSlide {
+      if (target == null) throw invalid("HERO_TARGET_REQUIRED");
+      subtitle = subtitle == null ? "" : subtitle;
     }
   }
 }

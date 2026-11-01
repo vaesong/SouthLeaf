@@ -20,7 +20,8 @@ public record CatalogSnapshot(
     List<String> featuredBusinesses,
     List<String> featuredPackages,
     List<String> featuredWorks,
-    Map<String, String> overlayReleases) {
+    Map<String, String> overlayReleases,
+    List<HeroSlide> heroSlides) {
   /** V1-only snapshot: no S2 per-work overlay entries. */
   public CatalogSnapshot(
       String releaseId,
@@ -51,7 +52,8 @@ public record CatalogSnapshot(
         featuredBusinesses,
         featuredPackages,
         List.of(),
-        Map.of());
+        Map.of(),
+        List.of());
   }
 
   /** Existing callers keep the V1/S2 default ordering until a V3 snapshot curates featured work. */
@@ -85,7 +87,44 @@ public record CatalogSnapshot(
         featuredBusinesses,
         featuredPackages,
         List.of(),
-        overlayReleases);
+        overlayReleases,
+        List.of());
+  }
+
+  /** Callers that predate configured homepage slides keep an empty slide list. */
+  public CatalogSnapshot(
+      String releaseId,
+      String contentVersion,
+      String dataMode,
+      String approvalStatus,
+      Brand brand,
+      Contact contact,
+      List<Business> businesses,
+      List<Package> packages,
+      List<Work> works,
+      Map<String, Asset> assets,
+      List<Binding> bindings,
+      List<String> featuredBusinesses,
+      List<String> featuredPackages,
+      List<String> featuredWorks,
+      Map<String, String> overlayReleases) {
+    this(
+        releaseId,
+        contentVersion,
+        dataMode,
+        approvalStatus,
+        brand,
+        contact,
+        businesses,
+        packages,
+        works,
+        assets,
+        bindings,
+        featuredBusinesses,
+        featuredPackages,
+        featuredWorks,
+        overlayReleases,
+        List.of());
   }
 
   public CatalogSnapshot {
@@ -98,6 +137,7 @@ public record CatalogSnapshot(
     bindings = List.copyOf(bindings);
     featuredBusinesses = List.copyOf(featuredBusinesses);
     featuredPackages = List.copyOf(featuredPackages);
+    heroSlides = heroSlides == null ? List.of() : List.copyOf(heroSlides);
   }
 
   public record Brand(
@@ -210,4 +250,15 @@ public record CatalogSnapshot(
       String contentType) {}
 
   public record Binding(String ownerType, String ownerId, String mediaId, int position) {}
+
+  public record HeroSlide(
+      String id,
+      String mediaId,
+      String title,
+      String subtitle,
+      String actionText,
+      String targetType,
+      String targetId,
+      boolean enabled,
+      int position) {}
 }

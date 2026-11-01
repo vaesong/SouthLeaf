@@ -212,6 +212,8 @@ def create_scoped_users(helpers, state: dict[str, object], passwords: dict[str, 
         "booking_audit": "INSERT",
         "booking_notification_outbox": "INSERT",
         "booking_service_slot": "SELECT",
+        "admin_booking_operating_rule": "SELECT",
+        "admin_booking_operating_rule_version": "SELECT",
         "booking_slot_occupancy": "SELECT",
         "booking_order": "SELECT",
         "booking_order_snapshot": "SELECT",
@@ -226,6 +228,26 @@ def create_scoped_users(helpers, state: dict[str, object], passwords: dict[str, 
     execute_sql(helpers, state, "\n".join(statements))
     meta["status"] = "intake-writer-and-public-reader-grants-created"
     save_manifest(meta)
+
+
+def seed_operating_rule(helpers, state: dict[str, object]) -> None:
+    """Saves the studio defaults so the existing slot list and request are not refused."""
+    schema = str(state["meta"]["schema"])
+    q = helpers.sql_quote
+    created = datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S.%f")
+    payload = (
+        '{"minAdvanceHours":24,"maxAdvanceDays":30,'
+        '"pendingExpiryHours":48,"slotDurationMinutes":120}'
+    )
+    execute_sql(
+        helpers,
+        state,
+        f"INSERT INTO `{schema}`.admin_booking_operating_rule (singleton_id, current_version) "
+        f"VALUES (1, 1);\n"
+        f"INSERT INTO `{schema}`.admin_booking_operating_rule_version "
+        f"(version, payload_json, updated_by, updated_at) VALUES "
+        f"(1,{q(payload)},'miniapp-isolated-fixture',{q(created)});",
+    )
 
 
 def seed_slots(helpers, state: dict[str, object], count: int = 4) -> list[str]:
@@ -712,6 +734,7 @@ def run_fixture(helpers, evidence_name: str = "") -> int:
         create_schemas(helpers, state, passwords)
         run_migrations(helpers, state, tools, build, passwords)
         create_scoped_users(helpers, state, passwords)
+        seed_operating_rule(helpers, state)
         slots = seed_slots(helpers, state)
         print("MINIAPP_STAGE:public_api_with_synthetic_identity_sink")
         start_public_api(helpers, state, tools, passwords)

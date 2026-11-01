@@ -111,6 +111,13 @@ class AdminWebSecurityConfiguration {
         routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/reservations/pending"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/reservations/{reservationId}"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/slots"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/slots/board"),
+        routes.matcher(HttpMethod.POST, "/api/admin/v1/bookings/slots"),
+        routes.matcher(HttpMethod.POST, "/api/admin/v1/bookings/slots/weeks"),
+        routes.matcher(HttpMethod.POST, "/api/admin/v1/bookings/slots/{slotId}/close"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/operating-rules/current"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/operating-rules/versions"),
+        routes.matcher(HttpMethod.PUT, "/api/admin/v1/bookings/operating-rules"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/bookings/orders/{orderId}"),
         routes.matcher(
             HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/cancel"),

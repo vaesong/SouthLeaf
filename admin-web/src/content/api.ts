@@ -117,6 +117,20 @@ export interface CatalogDraftInput {
   featuredPackageIds: string[];
   featuredWorkIds: string[];
   mediaAltTexts: Record<string, string>;
+  heroSlides: HeroSlideInput[];
+}
+
+export type HeroTargetType = "WORK" | "PACKAGE" | "BUSINESS" | "ABOUT";
+
+export interface HeroSlideInput {
+  id: string;
+  mediaId: string;
+  title: string;
+  subtitle: string;
+  actionText: string;
+  target: { type: HeroTargetType; id: string };
+  enabled: boolean;
+  position: number;
 }
 export interface CatalogView {
   revision: number;

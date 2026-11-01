@@ -2,6 +2,7 @@ package cn.zhinan.uniapp.booking;
 
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.CommandRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.IdentityRow;
+import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OperatingWindow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OrderRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.Repository;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.RequestDraft;
@@ -25,6 +26,7 @@ final class FakeRepository implements Repository {
   final Map<String, SlotRow> slots = new LinkedHashMap<>();
   final Map<String, OrderRow> orders = new LinkedHashMap<>();
   boolean slotAvailable = true;
+  Optional<OperatingWindow> operatingRule = Optional.of(new OperatingWindow(1, 0, 180, 48, 120));
   int transactions;
 
   @Override
@@ -55,7 +57,18 @@ final class FakeRepository implements Repository {
 
   @Override
   public boolean slotAvailable(String slotId) {
-    return slotAvailable && slots.containsKey(slotId);
+    return findOpenSlot(slotId).isPresent();
+  }
+
+  @Override
+  public Optional<SlotRow> findOpenSlot(String slotId) {
+    if (!slotAvailable) return Optional.empty();
+    return Optional.ofNullable(slots.get(slotId));
+  }
+
+  @Override
+  public Optional<OperatingWindow> currentOperatingRule() {
+    return operatingRule;
   }
 
   @Override

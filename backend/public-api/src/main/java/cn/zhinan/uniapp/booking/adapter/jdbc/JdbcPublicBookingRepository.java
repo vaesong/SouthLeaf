@@ -3,6 +3,7 @@ package cn.zhinan.uniapp.booking.adapter.jdbc;
 import cn.zhinan.uniapp.booking.PublicBookingException;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.CommandRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.IdentityRow;
+import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OperatingWindow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OrderRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.Repository;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.RequestDraft;
@@ -133,6 +134,39 @@ public final class JdbcPublicBookingRepository implements Repository {
           Timestamp.from(from),
           Timestamp.from(to),
           limit);
+    } catch (DataAccessException failure) {
+      throw unavailable();
+    }
+  }
+
+  @Override
+  public Optional<SlotRow> findOpenSlot(String slotId) {
+    try {
+      List<SlotRow> rows =
+          jdbc.query(
+              "SELECT s.id, s.start_at, s.end_at, s.business_zone, s.display_offset, s.status"
+                  + " FROM booking_service_slot s"
+                  + " LEFT JOIN booking_slot_occupancy o ON o.slot_id = s.id"
+                  + " WHERE s.id = ? AND s.status = 'OPEN' AND o.slot_id IS NULL",
+              (rs, row) -> slot(rs),
+              slotId);
+      return rows.stream().findFirst();
+    } catch (DataAccessException failure) {
+      throw unavailable();
+    }
+  }
+
+  @Override
+  public Optional<OperatingWindow> currentOperatingRule() {
+    try {
+      List<String> payloads =
+          jdbc.query(
+              "SELECT CAST(v.payload_json AS CHAR) FROM admin_booking_operating_rule h"
+                  + " JOIN admin_booking_operating_rule_version v ON v.version = h.current_version"
+                  + " WHERE h.singleton_id = 1 AND h.current_version >= 1",
+              (rs, row) -> rs.getString(1));
+      if (payloads.isEmpty()) return Optional.empty();
+      return Optional.of(OperatingWindowJson.parse(payloads.getFirst()));
     } catch (DataAccessException failure) {
       throw unavailable();
     }

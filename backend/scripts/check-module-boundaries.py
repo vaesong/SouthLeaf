@@ -106,8 +106,10 @@ def check_client_boundaries():
     native = json.loads(native_manifest_path.read_text(encoding='utf-8'))
     admin_dependencies = set(admin.get('dependencies', {}))
     admin_dev_dependencies = set(admin.get('devDependencies', {}))
-    require({'vue', 'vue-router', 'element-plus'} <= admin_dependencies,
-            'admin-web must own its Vue 3 / router / Element Plus runtime stack')
+    require({'vue', 'vue-router'} <= admin_dependencies,
+            'admin-web must own its Vue 3 and router runtime')
+    require('element-plus' not in admin_dependencies and 'element-plus' not in admin_dev_dependencies,
+            'admin-web must not bring Element Plus back')
     require({'vite', 'typescript', 'vitest', 'vue-tsc'} <= admin_dev_dependencies,
             'admin-web must own its Vite / TypeScript validation stack')
     native_dependencies = set(native.get('dependencies', {})) | set(native.get('devDependencies', {}))

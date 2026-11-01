@@ -11,6 +11,7 @@ export const BUSINESS_IDS = [
 
 export const FEATURED_LIMIT = 3;
 export const FEATURED_WORK_LIMIT = 6;
+export const HERO_LIMIT = 5;
 
 export const PRICE_TYPES = [
   { value: "FIXED", label: "固定价" },
@@ -55,6 +56,7 @@ export function referencedMediaIds(draft: CatalogDraftInput): string[] {
     ...draft.channels.map((item) => item.qrMediaId),
     ...draft.businesses.map((item) => item.coverMediaId),
     ...draft.packages.map((item) => item.coverMediaId),
+    ...(draft.heroSlides ?? []).map((item) => item.mediaId),
   ].filter((id): id is string => typeof id === "string" && id.length > 0);
   return [...new Set(ids)];
 }
@@ -85,6 +87,12 @@ export function priceNeedsAmount(priceType: string): boolean {
 }
 
 export function normalizeDraft(draft: CatalogDraftInput): void {
+  if (!Array.isArray(draft.heroSlides)) draft.heroSlides = [];
+  draft.heroSlides.forEach((item, index) => {
+    item.position = index;
+    item.subtitle = item.subtitle ?? "";
+    if (item.target?.type === "ABOUT") item.target = { type: "ABOUT", id: "about" };
+  });
   draft.brand.logoMediaId = emptyToNull(draft.brand.logoMediaId);
   draft.team.forEach((item, index) => {
     item.position = index;

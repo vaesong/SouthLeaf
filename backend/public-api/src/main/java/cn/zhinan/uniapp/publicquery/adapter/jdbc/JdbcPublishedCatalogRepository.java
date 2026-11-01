@@ -276,7 +276,50 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
         strings(root.get("featuredBusinessIds")),
         strings(root.get("featuredPackageIds")),
         strings(root.get("featuredWorkIds")),
-        base.overlayReleases());
+        base.overlayReleases(),
+        heroSlides(root.get("heroSlides")));
+  }
+
+  /** Missing heroSlides is an older release, not a broken one. A present but unreadable list is. */
+  static List<HeroSlide> heroSlides(Object value) {
+    if (value == null) return List.of();
+    if (!(value instanceof List<?> list))
+      throw new CatalogStorageException("Catalog hero slides are invalid", null);
+    var slides = new ArrayList<HeroSlide>();
+    for (Object item : list) {
+      if (!(item instanceof Map<?, ?> row))
+        throw new CatalogStorageException("Catalog hero slide is invalid", null);
+      Object targetValue = row.get("target");
+      if (!(targetValue instanceof Map<?, ?> target))
+        throw new CatalogStorageException("Catalog hero slide is invalid", null);
+      Object position = row.get("position");
+      if (!(position instanceof Number))
+        throw new CatalogStorageException("Catalog hero slide is invalid", null);
+      slides.add(
+          new HeroSlide(
+              requiredText(row, "id"),
+              requiredText(row, "mediaId"),
+              requiredText(row, "title"),
+              slideText(row, "subtitle"),
+              requiredText(row, "actionText"),
+              requiredText(target, "type"),
+              requiredText(target, "id"),
+              Boolean.TRUE.equals(row.get("enabled")),
+              ((Number) position).intValue()));
+    }
+    return List.copyOf(slides);
+  }
+
+  private static String slideText(Map<?, ?> row, String key) {
+    Object value = row.get(key);
+    return value == null ? "" : String.valueOf(value);
+  }
+
+  private static String requiredText(Map<?, ?> row, String key) {
+    Object value = row.get(key);
+    if (!(value instanceof String text) || text.isEmpty())
+      throw new CatalogStorageException("Catalog hero slide is invalid", null);
+    return text;
   }
 
   private static boolean published(Map<String, Object> row) {
@@ -406,7 +449,8 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
         v1.featuredBusinesses(),
         v1.featuredPackages(),
         v1.featuredWorks(),
-        overlayReleases);
+        overlayReleases,
+        v1.heroSlides());
   }
 
   private List<Map<String, Object>> rows(String table, String release, String order) {

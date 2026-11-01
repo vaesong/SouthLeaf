@@ -14,6 +14,7 @@ import cn.zhinan.uniapp.booking.domain.PublicBookingViews.SlotView;
 import cn.zhinan.uniapp.booking.identity.SubjectExchange;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.CommandRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.IdentityRow;
+import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OperatingWindow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.OrderRow;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.Repository;
 import cn.zhinan.uniapp.booking.port.PublicBookingPorts.RequestDraft;
@@ -103,12 +104,16 @@ public final class PublicBookingService {
 
   public SlotPage openSlots(String from, String to) {
     ensureEnabled();
+    OperatingWindow rule = requireRule();
     Instant now = clock.instant();
     Instant[] window = PublicBookingRules.window(from, to, properties.businessZone(), now);
+    Instant[] allowed = intersect(window, rule, now);
     List<SlotView> items =
-        repository.listAvailableSlots(window[0], window[1], SLOT_LIMIT).stream()
-            .map(PublicBookingService::slotView)
-            .toList();
+        allowed == null
+            ? List.of()
+            : repository.listAvailableSlots(allowed[0], allowed[1], SLOT_LIMIT).stream()
+                .map(PublicBookingService::slotView)
+                .toList();
     return new SlotPage(items, from, to);
   }
 
@@ -125,6 +130,7 @@ public final class PublicBookingService {
     String digest =
         PublicBookingRules.digest(customerId, packageRef, slot, PublicBookingRules.SOURCE);
     Instant now = clock.instant();
+    OperatingWindow rule = requireRule();
     try {
       return repository.inTransaction(
           () -> {
@@ -137,7 +143,8 @@ public final class PublicBookingService {
                       throw new PublicBookingException(
                           PublicBookingException.ErrorCode.REQUEST_ALREADY_OPEN, open);
                     });
-            if (!repository.slotAvailable(slot))
+            SlotRow open = repository.findOpenSlot(slot).orElse(null);
+            if (open == null || !withinRule(open.startAt(), rule, now))
               throw new PublicBookingException(
                   PublicBookingException.ErrorCode.SLOT_UNAVAILABLE, "SLOT_UNAVAILABLE");
             String reservationId = UUID.randomUUID().toString();
@@ -148,7 +155,7 @@ public final class PublicBookingService {
                     customerId,
                     packageRef,
                     PublicBookingRules.SOURCE,
-                    now.plus(properties.requestLifetime()),
+                    now.plus(Duration.ofHours(rule.pendingExpiryHours())),
                     slot,
                     now,
                     actor,
@@ -248,6 +255,28 @@ public final class PublicBookingService {
 
   private static String displayName(String fingerprint) {
     return "微信用户 " + fingerprint.substring(0, 6).toUpperCase();
+  }
+
+  private OperatingWindow requireRule() {
+    OperatingWindow rule = repository.currentOperatingRule().orElse(null);
+    if (rule == null)
+      throw new PublicBookingException(
+          PublicBookingException.ErrorCode.RULES_UNCONFIGURED, "RULES_UNCONFIGURED");
+    return rule;
+  }
+
+  private static Instant[] intersect(Instant[] requested, OperatingWindow rule, Instant now) {
+    Instant earliest = now.plus(Duration.ofHours(rule.minAdvanceHours()));
+    Instant latest = now.plus(Duration.ofDays(rule.maxAdvanceDays())).plusNanos(1);
+    Instant from = requested[0].isAfter(earliest) ? requested[0] : earliest;
+    Instant to = requested[1].isBefore(latest) ? requested[1] : latest;
+    if (!from.isBefore(to)) return null;
+    return new Instant[] {from, to};
+  }
+
+  private static boolean withinRule(Instant start, OperatingWindow rule, Instant now) {
+    return !start.isBefore(now.plus(Duration.ofHours(rule.minAdvanceHours())))
+        && !start.isAfter(now.plus(Duration.ofDays(rule.maxAdvanceDays())));
   }
 
   private void ensureEnabled() {

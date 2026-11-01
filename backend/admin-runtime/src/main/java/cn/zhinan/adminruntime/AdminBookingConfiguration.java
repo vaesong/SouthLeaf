@@ -4,12 +4,16 @@ import cn.zhinan.adminbooking.adapter.jdbc.JdbcBookingAudit;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcCommandLedger;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcConnectionProvider;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcCustomerRepository;
+import cn.zhinan.adminbooking.adapter.jdbc.JdbcOperatingRuleRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcOrderRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcPackageFactCatalog;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcReservationRepository;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcScheduleRepository;
+import cn.zhinan.adminbooking.adapter.jdbc.JdbcSlotGuard;
 import cn.zhinan.adminbooking.adapter.jdbc.JdbcTransactionRunner;
 import cn.zhinan.adminbooking.application.BookingApplication;
+import cn.zhinan.adminbooking.application.OperatingRuleService;
+import cn.zhinan.adminbooking.application.SlotOpeningService;
 import cn.zhinan.adminbooking.port.BookingPorts.PackageCatalog;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,6 +36,30 @@ class AdminBookingConfiguration {
   @Bean
   JdbcConnectionProvider bookingConnections(VerifiedBookingDataSource verified) {
     return new JdbcConnectionProvider(verified.dataSource());
+  }
+
+  @Bean
+  OperatingRuleService operatingRuleService(
+      @Qualifier("bookingConnections") JdbcConnectionProvider connections, Clock clock) {
+    return new OperatingRuleService(
+        new JdbcOperatingRuleRepository(connections),
+        new JdbcCommandLedger(connections),
+        new JdbcTransactionRunner(connections),
+        clock);
+  }
+
+  @Bean
+  SlotOpeningService slotOpeningService(
+      @Qualifier("bookingConnections") JdbcConnectionProvider connections, Clock clock) {
+    var audit = new JdbcBookingAudit(connections);
+    return new SlotOpeningService(
+        new JdbcOperatingRuleRepository(connections),
+        new JdbcScheduleRepository(connections),
+        new JdbcSlotGuard(connections),
+        new JdbcCommandLedger(connections),
+        audit,
+        new JdbcTransactionRunner(connections),
+        clock);
   }
 
   @Bean

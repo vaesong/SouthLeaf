@@ -11,7 +11,8 @@ public class PublicBookingException extends RuntimeException {
     SLOT_UNAVAILABLE,
     REQUEST_ALREADY_OPEN,
     RESOURCE_UNAVAILABLE,
-    SERVICE_UNAVAILABLE
+    SERVICE_UNAVAILABLE,
+    RULES_UNCONFIGURED
   }
 
   private final ErrorCode errorCode;

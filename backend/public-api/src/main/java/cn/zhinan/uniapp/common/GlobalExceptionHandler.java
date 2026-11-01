@@ -48,7 +48,10 @@ public class GlobalExceptionHandler {
           case SESSION_REQUIRED, IDENTITY_REJECTED -> HttpStatus.UNAUTHORIZED;
           case RESOURCE_UNAVAILABLE -> HttpStatus.NOT_FOUND;
           case SLOT_UNAVAILABLE, REQUEST_ALREADY_OPEN -> HttpStatus.CONFLICT;
-          case IDENTITY_PROVIDER_UNCONFIGURED, PACKAGE_CATALOG_UNCONFIGURED, SERVICE_UNAVAILABLE ->
+          case IDENTITY_PROVIDER_UNCONFIGURED,
+                  PACKAGE_CATALOG_UNCONFIGURED,
+                  SERVICE_UNAVAILABLE,
+                  RULES_UNCONFIGURED ->
               HttpStatus.SERVICE_UNAVAILABLE;
         };
     String requestId = "req_" + UUID.randomUUID().toString().replace("-", "");
@@ -73,6 +76,7 @@ public class GlobalExceptionHandler {
       case REQUEST_ALREADY_OPEN -> "你已有一笔待确认的申请";
       case RESOURCE_UNAVAILABLE -> "预约记录不存在";
       case SERVICE_UNAVAILABLE -> "预约服务暂不可用";
+      case RULES_UNCONFIGURED -> "暂未开放预约，请稍后再来或直接联系我们";
     };
   }
 

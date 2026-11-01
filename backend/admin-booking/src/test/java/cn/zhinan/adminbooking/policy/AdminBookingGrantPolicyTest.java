@@ -97,4 +97,12 @@ class AdminBookingGrantPolicyTest {
     assertThat(AdminBookingGrantPolicy.isReadableByWriter("admin_work")).isTrue();
     assertThat(AdminBookingGrantPolicy.isOwnedTable("admin_work")).isFalse();
   }
+
+  @Test
+  void pendingRequestPreferencesAreReadableAndNotWritable() {
+    assertThat(AdminBookingGrantPolicy.OWNED_TABLES).doesNotContain("booking_request_preference");
+    assertThat(AdminBookingGrantPolicy.READ_ONLY_GRANTS.get("booking_request_preference"))
+        .containsExactly("SELECT");
+    assertThat(AdminBookingGrantPolicy.isReadableByWriter("booking_request_preference")).isTrue();
+  }
 }

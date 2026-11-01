@@ -17,6 +17,7 @@ const PUBLIC_ERROR_MESSAGES = {
   BOOKING_REQUEST_ALREADY_OPEN: "你已有一笔待确认的申请",
   BOOKING_RESOURCE_UNAVAILABLE: "预约记录不存在",
   BOOKING_SERVICE_UNAVAILABLE: "预约服务暂不可用",
+  BOOKING_RULES_UNCONFIGURED: "暂未开放预约，请稍后再来或直接联系我们",
 };
 const statusByCode = {
   OK: 200,
@@ -35,6 +36,7 @@ const statusByCode = {
   BOOKING_IDENTITY_PROVIDER_UNCONFIGURED: 503,
   BOOKING_PACKAGE_CATALOG_UNCONFIGURED: 503,
   BOOKING_SERVICE_UNAVAILABLE: 503,
+  BOOKING_RULES_UNCONFIGURED: 503,
 };
 // A resource that was just created answers 201; every other code has exactly one status. Without
 // this, a successful intake is read as a malformed response and the page says "please retry".

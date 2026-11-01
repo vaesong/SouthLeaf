@@ -219,6 +219,77 @@ class DatabasePublicApiIT {
   }
 
   @Test
+  void aPublishedHeroSlideIsReturnedInsteadOfTheWorkFallback() throws Exception {
+    var jdbc = writer();
+    var previous =
+        jdbc.queryForMap(
+            "SELECT release_id, visible, epoch FROM active_catalog_publication WHERE singleton_id=1");
+    String releaseId = java.util.UUID.randomUUID().toString();
+    String mediaId = java.util.UUID.randomUUID().toString();
+    String snapshot =
+        "{\"brand\":{\"name\":\"南叶\",\"englishName\":\"SOUTHLEAF\",\"discoveryHeading\":\"\",\"shareTitle\":\"\",\"tagline\":\"\",\"description\":\"\"},"
+            + "\"contact\":{\"phone\":\"\",\"address\":\"\",\"workingHours\":\"\"},"
+            + "\"team\":[],\"channels\":[],\"businesses\":[],\"packages\":[],"
+            + "\"featuredBusinessIds\":[],\"featuredPackageIds\":[],\"featuredWorkIds\":[],"
+            + "\"heroSlides\":[{\"id\":\"slide-about\",\"mediaId\":\""
+            + mediaId
+            + "\",\"title\":\"窗边\",\"subtitle\":\"\",\"actionText\":\"查看详情\","
+            + "\"target\":{\"type\":\"ABOUT\",\"id\":\"about\"},\"enabled\":true,\"position\":0}]}";
+    try {
+      jdbc.update(
+          "INSERT INTO public_catalog_release"
+              + " (release_id, revision, content_version, data_mode, snapshot_json, published_at)"
+              + " VALUES (?, 1, 'catalog-hero-it', 'DEMO', ?, UTC_TIMESTAMP(6))",
+          releaseId,
+          snapshot);
+      jdbc.update(
+          "INSERT INTO public_catalog_release_media (release_id, media_id, alt_text) VALUES (?, ?, ?)",
+          releaseId,
+          mediaId,
+          "窗边画面");
+      jdbc.update(
+          "INSERT INTO public_catalog_release_variant"
+              + " (release_id, media_id, variant, object_key, sha256, byte_length, width, height, content_type)"
+              + " VALUES (?, ?, 'thumbnail', 'hero-it-thumb', ?, 32, 8, 8, 'image/jpeg')",
+          releaseId,
+          mediaId,
+          "a".repeat(64));
+      jdbc.update(
+          "INSERT INTO public_catalog_release_variant"
+              + " (release_id, media_id, variant, object_key, sha256, byte_length, width, height, content_type)"
+              + " VALUES (?, ?, 'preview', 'hero-it-preview', ?, 32, 16, 16, 'image/jpeg')",
+          releaseId,
+          mediaId,
+          "b".repeat(64));
+      jdbc.update(
+          "INSERT INTO public_catalog_release_binding"
+              + " (release_id, media_id, owner_type, owner_id, position) VALUES (?, ?, 'HERO', 'slide-about', 0)",
+          releaseId,
+          mediaId);
+      jdbc.update(
+          "UPDATE active_catalog_publication SET release_id=?, visible=1, epoch=epoch+1 WHERE singleton_id=1",
+          releaseId);
+      mvc.perform(get("/api/v1/public/home"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.heroItems[0].title").value("窗边"))
+          .andExpect(jsonPath("$.data.heroItems[0].target").value("about"))
+          .andExpect(jsonPath("$.data.heroItems[0].targetId").value("about"))
+          .andExpect(jsonPath("$.data.heroItems[0].action").value("查看详情"))
+          .andExpect(jsonPath("$.data.heroItems[0].media.altText").value("窗边画面"));
+    } finally {
+      jdbc.update(
+          "UPDATE active_catalog_publication SET release_id=?, visible=?, epoch=? WHERE singleton_id=1",
+          previous.get("release_id"),
+          previous.get("visible"),
+          previous.get("epoch"));
+      jdbc.update("DELETE FROM public_catalog_release_binding WHERE release_id=?", releaseId);
+      jdbc.update("DELETE FROM public_catalog_release_variant WHERE release_id=?", releaseId);
+      jdbc.update("DELETE FROM public_catalog_release_media WHERE release_id=?", releaseId);
+      jdbc.update("DELETE FROM public_catalog_release WHERE release_id=?", releaseId);
+    }
+  }
+
+  @Test
   void newRepositoryAndConnectionReadPersistentState() {
     var ds = testDataSource();
     var repository =

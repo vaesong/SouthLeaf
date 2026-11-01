@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import cn.zhinan.uniapp.authorization.port.*;
+import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot;
 import cn.zhinan.uniapp.publicquery.port.*;
 import cn.zhinan.uniapp.support.CatalogFixture;
 import cn.zhinan.uniapp.works.application.PublicVisibilityPolicy;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class PublicQueryServiceTest {
@@ -39,6 +42,34 @@ class PublicQueryServiceTest {
     assertThat(home.data().businesses()).extracting(b -> b.id()).containsExactly("b2", "b1");
     assertThat(home.data().packages()).isEmpty();
     assertThat(home.data().heroItems()).hasSize(2);
+    assertThat(home.data().heroItems()).extracting(item -> item.target()).containsOnly("work");
+  }
+
+  @Test
+  void configuredHeroSlidesReplaceTheWorkFallbackUntilNoneRemainVisible() {
+    var visible =
+        List.of(
+            slide("later", "PACKAGE", "p1", 2),
+            slide("first", "ABOUT", "about", 0),
+            slide("hidden", "WORK", "w1", 1, false));
+    var home = service(withSlides(visible, true)).readHome();
+    assertThat(home.data().heroItems())
+        .extracting(item -> item.id(), item -> item.target(), item -> item.targetId())
+        .containsExactly(
+            org.assertj.core.groups.Tuple.tuple("first", "about", "about"),
+            org.assertj.core.groups.Tuple.tuple("later", "package", "p1"));
+    assertThat(home.data().heroItems().getFirst().subtitle()).isEmpty();
+    assertThat(home.data().heroItems().get(1).action()).isEqualTo("查看详情");
+    var skipped =
+        service(withSlides(List.of(slide("gone", "WORK", "missing", 0)), true)).readHome();
+    assertThat(skipped.data().heroItems())
+        .extracting(item -> item.id())
+        .containsExactly("w1", "w2");
+    var unbound =
+        service(withSlides(List.of(slide("plain", "ABOUT", "about", 0)), false)).readHome();
+    assertThat(unbound.data().heroItems())
+        .extracting(item -> item.id())
+        .containsExactly("w1", "w2");
   }
 
   @Test
@@ -125,6 +156,62 @@ class PublicQueryServiceTest {
         .isInstanceOf(RuntimeException.class);
     assertThatThrownBy(() -> s.readPackages(null, 0, null)).isInstanceOf(RuntimeException.class);
     assertThatThrownBy(() -> s.readPackages(null, 51, null)).isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  void heroBindingIsReadableOnlyForThatSlide() {
+    var snapshot = withSlides(List.of(slide("slide-1", "ABOUT", "about", 0)), true);
+    var p =
+        new CatalogProjection(
+            snapshot,
+            new PublicVisibilityPolicy(CatalogFixture::permittedBatch, CatalogFixture.CLOCK));
+    assertThat(p.media("slide-1", "m1", "preview")).isPresent();
+    assertThat(p.media("w1", "m1", "preview")).isPresent();
+    assertThat(p.media("someone-else", "m1", "preview")).isEmpty();
+  }
+
+  private PublicQueryService service(CatalogSnapshot snapshot) {
+    return new PublicQueryService(
+        new CatalogReadService(() -> snapshot, "demo"),
+        new PublicVisibilityPolicy(CatalogFixture::permittedBatch, CatalogFixture.CLOCK),
+        CatalogFixture.CLOCK);
+  }
+
+  private static CatalogSnapshot.HeroSlide slide(
+      String id, String type, String targetId, int position) {
+    return slide(id, type, targetId, position, true);
+  }
+
+  private static CatalogSnapshot.HeroSlide slide(
+      String id, String type, String targetId, int position, boolean enabled) {
+    return new CatalogSnapshot.HeroSlide(
+        id, "m1", "标题", "", "查看详情", type, targetId, enabled, position);
+  }
+
+  private static CatalogSnapshot withSlides(List<CatalogSnapshot.HeroSlide> slides, boolean bound) {
+    var base = CatalogFixture.snapshot();
+    var bindings = new ArrayList<>(base.bindings());
+    if (bound)
+      for (var slide : slides)
+        if (slide.enabled())
+          bindings.add(new CatalogSnapshot.Binding("HERO", slide.id(), "m1", slide.position()));
+    return new CatalogSnapshot(
+        base.releaseId(),
+        base.contentVersion(),
+        base.dataMode(),
+        base.approvalStatus(),
+        base.brand(),
+        base.contact(),
+        base.businesses(),
+        base.packages(),
+        base.works(),
+        base.assets(),
+        bindings,
+        base.featuredBusinesses(),
+        base.featuredPackages(),
+        base.featuredWorks(),
+        base.overlayReleases(),
+        slides);
   }
 
   @Test

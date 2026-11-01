@@ -40,6 +40,8 @@ BOOKING_TABLES = (
     "booking_command",
     "booking_notification_outbox",
     "booking_audit",
+    "admin_booking_operating_rule",
+    "admin_booking_operating_rule_version",
 )
 
 
@@ -384,6 +386,11 @@ def create_booking_and_outbox_users(helpers, state: dict[str, object], passwords
     statements.append(
         f"GRANT SELECT ON `{schema}`.admin_package_fact TO 'southleaf_booking_writer'@'localhost';"
     )
+    # Closing a slot and drawing the week board read pending preferences. The writer may only
+    # SELECT; inserts stay with the public booking account, and startup rejects any wider grant.
+    statements.append(
+        f"GRANT SELECT ON `{schema}`.booking_request_preference TO 'southleaf_booking_writer'@'localhost';"
+    )
     statements.extend(
         [
             f"GRANT SELECT, UPDATE ON `{schema}`.booking_notification_outbox TO 's6_outbox'@'localhost';",
@@ -405,6 +412,8 @@ def grant_synthetic_operator(helpers, state: dict[str, object], account_id: str)
         "ORDER_READ",
         "OUTBOX_READ",
         "OUTBOX_RECOVER",
+        "BOOKING_RULES_WRITE",
+        "SLOT_WRITE",
     )
     values = ",".join(f"({helpers.sql_quote(account_id)},{helpers.sql_quote(code)})" for code in codes)
     execute_sql(

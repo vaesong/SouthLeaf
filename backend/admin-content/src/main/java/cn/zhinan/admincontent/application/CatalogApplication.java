@@ -55,7 +55,7 @@ public final class CatalogApplication {
   public Preview preview(CatalogDraft draft) {
     try {
       draft.publishable();
-      publications.validateWorkReferences(draft.featuredWorkIds(), clock.instant());
+      publications.validateWorkReferences(draft.publicationWorkIds(), clock.instant());
       publications.validateMedia(toPortMedia(draft));
       return new Preview(true, null);
     } catch (ContentException blocked) {
@@ -87,7 +87,7 @@ public final class CatalogApplication {
             digest,
             canonicalPayload,
             media,
-            draft.featuredWorkIds(),
+            draft.publicationWorkIds(),
             clock.instant()));
   }
 

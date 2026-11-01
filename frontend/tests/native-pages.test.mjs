@@ -214,6 +214,25 @@ test("native present-only view fields are idempotent and preserve raw DTO text a
   assert.deepEqual(homeView(homeView(home())), homeView(home()));
   assert.equal(serviceViews([{ packages: [] }])[0].number, "01");
 });
+test("home hero follows the configured target and ignores an unknown one", () => {
+  const urls = [];
+  wx.navigateTo = ({ url }) => urls.push(url);
+  wx.switchTab = ({ url }) => urls.push(url);
+  const p = page("index/index");
+  p.openHero({ target: "work", targetId: "w1" });
+  p.openHero({ target: "package", targetId: "p1" });
+  p.openHero({ target: "business", targetId: "child" });
+  p.openHero({ target: "about", targetId: "about" });
+  p.openHero({ target: "unknown", targetId: "w1" });
+  p.openHero(null);
+  assert.deepEqual(urls, [
+    "/pages/works/workdetail?workId=w1",
+    "/pages/package/pkgdetail?packageId=p1",
+    "/pages/package/package",
+    "/pages/about/about",
+  ]);
+  assert.equal(app.globalData.serviceBusinessId, "child");
+});
 test("placeholder QR is never presented as a confirmed scannable account", () => {
   let previews = 0;
   wx.previewImage = () => {
