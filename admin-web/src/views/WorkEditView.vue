@@ -109,11 +109,18 @@ function fail(error: unknown): boolean {
   return failure.unknown;
 }
 
+function suggestedScopeRef(workId: string): string {
+  const now = new Date();
+  const day = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+  const compact = workId.replace(/-/g, "").slice(0, 8);
+  return `SQ-${day}-${compact}`;
+}
+
 function fill(view: WorkView) {
   work.value = view;
   form.title = view.title ?? "";
   form.summary = view.summary ?? "";
-  form.subjectScopeRef = view.subjectScopeRef ?? "";
+  form.subjectScopeRef = view.subjectScopeRef || suggestedScopeRef(view.workId);
   form.businessIds = view.businessIds.join(", ");
   form.selected = view.media.map((m) => m.mediaId);
   form.cover = view.coverMediaId ?? "";
@@ -254,8 +261,9 @@ function draftBody() {
 
 async function recordAuthorization() {
   if (!work.value) return;
-  if (!form.subjectScopeRef || scopeError.value) {
-    notice.value = "先填写授权编号。编号由你自己编，例如 SQ-2026-001。";
+  if (!form.subjectScopeRef.trim()) form.subjectScopeRef = suggestedScopeRef(workId);
+  if (scopeError.value) {
+    notice.value = "授权编号格式不对。";
     return;
   }
   if (form.selected.length === 0) {
@@ -323,12 +331,12 @@ onMounted(() => {
               v-model="form.subjectScopeRef"
               class="input"
               maxlength="64"
-              placeholder="自己编一个编号，例如 SQ-2026-001"
+              placeholder="SQ-20261101-a1b2c3d4"
               data-testid="work-scope-input"
               :disabled="!canEdit"
             />
             <p class="hint">
-              编号由你自己填写，用来标记这组照片。填好编号和图片后点「登记这份授权」，一年内可以按这组图片发布。换了图片要再登记一次。
+              编号已自动填好。选好图片后点「登记这份授权」即可，一年内可以按这组图片发布。换了图片要再登记一次。
             </p>
             <button
               v-if="canPublish"

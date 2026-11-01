@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, shallowRef, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
 import { authStoreKey } from "../auth/store";
 import {
   mediaContentPath,
@@ -36,6 +36,8 @@ const canEdit = computed(() => auth?.state.identity?.permissions.includes("CONTE
 const selected = ref<{ kind: "folder" | "image"; id: string }[]>([]);
 let anchor: { kind: "folder" | "image"; id: string } | null = null;
 const deleteOpen = ref(false);
+const viewer = ref<MediaView | null>(null);
+const dropHover = ref<string | null>(null);
 const childFolders = computed(() =>
   folders.value.filter((folder) => folder.parentId === folderId.value),
 );
@@ -55,10 +57,24 @@ const crumbs = computed(() => {
 
 let searchToken = 0;
 
+function folderPath(id: string | null): string {
+  if (!id) return "图片库";
+  const names: string[] = [];
+  let cursor: string | null = id;
+  const guard = new Set<string>();
+  while (cursor && !guard.has(cursor)) {
+    guard.add(cursor);
+    const found = folders.value.find((folder) => folder.folderId === cursor);
+    if (!found) return "图片库";
+    names.unshift(found.name);
+    cursor = found.parentId;
+  }
+  return ["图片库", ...names].join(" / ");
+}
+
 async function load() {
   const token = ++searchToken;
   loading.value = true;
-  notice.value = "";
   try {
     const [rows, dirs] = await Promise.all([
       api.listMedia("", folderId.value),
@@ -96,11 +112,35 @@ async function applySearch() {
   }
 }
 
+function openViewer(item: MediaView) {
+  if (item.status !== "READY") {
+    notice.value = "这张图片还在处理，暂时不能放大。";
+    return;
+  }
+  viewer.value = item;
+}
+
+function closeViewer() {
+  viewer.value = null;
+}
+
+function onViewerKey(event: KeyboardEvent) {
+  if (event.key === "Escape") closeViewer();
+}
+
+watch(viewer, (current) => {
+  if (current) window.addEventListener("keydown", onViewerKey);
+  else window.removeEventListener("keydown", onViewerKey);
+});
+
+onUnmounted(() => window.removeEventListener("keydown", onViewerKey));
+
 function openFolder(id: string | null) {
   folderId.value = id;
   keyword.value = "";
   selected.value = [];
   anchor = null;
+  notice.value = "";
   void load();
 }
 
@@ -190,18 +230,64 @@ function onImageDragStart(event: DragEvent, mediaId: string) {
   const ids = isSelected("image", mediaId)
     ? selected.value.filter((item) => item.kind === "image").map((item) => item.id)
     : [mediaId];
-  event.dataTransfer?.setData("text/media-id", ids.join("\n"));
-  event.dataTransfer?.setData("text/plain", ids.join("\n"));
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/media-id", ids.join("\n"));
+    event.dataTransfer.setData("text/plain", ids.join("\n"));
+  }
 }
 
-function onFolderDragOver(event: DragEvent) {
-  if (event.dataTransfer?.types.includes("text/media-id")) event.preventDefault();
+function onImageDragEnd() {
+  dropHover.value = null;
+}
+
+function acceptsImageDrag(event: DragEvent) {
+  const types = event.dataTransfer?.types;
+  return !!types && (types.includes("text/media-id") || types.includes("text/plain"));
+}
+
+function onFolderDragOver(event: DragEvent, key: string) {
+  if (!acceptsImageDrag(event)) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  dropHover.value = key;
+}
+
+function onFolderDragLeave(event: DragEvent, key: string) {
+  const current = event.currentTarget as HTMLElement;
+  const related = event.relatedTarget as Node | null;
+  if (related && current.contains(related)) return;
+  if (dropHover.value === key) dropHover.value = null;
 }
 
 async function onFolderDrop(event: DragEvent, target: string | null) {
-  const raw = event.dataTransfer?.getData("text/media-id") ?? "";
-  const ids = raw.split("\n").filter((id) => id && id !== target);
-  for (const id of ids) await moveMedia(id, target ?? "");
+  event.preventDefault();
+  dropHover.value = null;
+  const raw =
+    event.dataTransfer?.getData("text/media-id") || event.dataTransfer?.getData("text/plain") || "";
+  const ids = [
+    ...new Set(raw.split("\n").map((id) => id.trim()).filter((id) => id.length > 0)),
+  ];
+  if (!ids.length) return;
+  const place = folderPath(target);
+  busy.value = true;
+  notice.value = "";
+  try {
+    for (const id of ids) await api.moveMedia(id, target);
+    keyword.value = "";
+    folderId.value = target;
+    selected.value = [];
+    anchor = null;
+    await load();
+    notice.value = `已把 ${ids.length} 张图片放进「${place}」。`;
+  } catch (error) {
+    const failure = describeFailure(error);
+    notice.value = failure.text;
+    requestId.value = failure.requestId;
+    await load();
+  } finally {
+    busy.value = false;
+  }
 }
 
 async function createFolder() {
@@ -212,21 +298,6 @@ async function createFolder() {
   try {
     await api.createFolder(name, folderId.value);
     folderName.value = "";
-    await load();
-  } catch (error) {
-    const failure = describeFailure(error);
-    notice.value = failure.text;
-    requestId.value = failure.requestId;
-  } finally {
-    busy.value = false;
-  }
-}
-
-async function moveMedia(id: string, target: string) {
-  busy.value = true;
-  notice.value = "";
-  try {
-    await api.moveMedia(id, target || null);
     await load();
   } catch (error) {
     const failure = describeFailure(error);
@@ -289,7 +360,7 @@ onMounted(load);
     <div class="page-head">
       <div>
         <h1>图片库</h1>
-        <p>像文件夹一样管理。单击选中，按住 Ctrl 或 Shift 可以多选，再按删除。双击打开文件夹，把图片拖进去即可归类。</p>
+        <p>像文件夹一样管理。单击选中，按住 Ctrl 或 Shift 可以多选，再按删除。双击文件夹打开，双击图片放大。把图片拖到文件夹上松开，会进入那个文件夹。</p>
       </div>
       <div class="actions">
         <input
@@ -355,7 +426,9 @@ onMounted(load);
         type="button"
         class="btn btn-ghost btn-sm"
         :disabled="!folderId"
-        @dragover="onFolderDragOver"
+        :class="{ drop: dropHover === 'up' }"
+        @dragover="onFolderDragOver($event, 'up')"
+        @dragleave="onFolderDragLeave($event, 'up')"
         @drop="onFolderDrop($event, crumbs.at(-2)?.folderId ?? null)"
         @click="openFolder(crumbs.at(-2)?.folderId ?? null)"
       >
@@ -364,7 +437,9 @@ onMounted(load);
       <button
         type="button"
         class="btn btn-ghost btn-sm"
-        @dragover="onFolderDragOver"
+        :class="{ drop: dropHover === 'root' }"
+        @dragover="onFolderDragOver($event, 'root')"
+        @dragleave="onFolderDragLeave($event, 'root')"
         @drop="onFolderDrop($event, null)"
         @click="openFolder(null)"
       >
@@ -375,7 +450,9 @@ onMounted(load);
         :key="crumb.folderId"
         type="button"
         class="btn btn-ghost btn-sm"
-        @dragover="onFolderDragOver"
+        :class="{ drop: dropHover === crumb.folderId }"
+        @dragover="onFolderDragOver($event, crumb.folderId)"
+        @dragleave="onFolderDragLeave($event, crumb.folderId)"
         @drop="onFolderDrop($event, crumb.folderId)"
         @click="openFolder(crumb.folderId)"
       >
@@ -392,10 +469,11 @@ onMounted(load);
         :key="folder.folderId"
         type="button"
         class="tile"
-        :class="{ on: isSelected('folder', folder.folderId) }"
+        :class="{ on: isSelected('folder', folder.folderId), drop: dropHover === folder.folderId }"
         @click.stop="select('folder', folder.folderId, $event)"
         @dblclick.stop="openFolder(folder.folderId)"
-        @dragover="onFolderDragOver"
+        @dragover="onFolderDragOver($event, folder.folderId)"
+        @dragleave="onFolderDragLeave($event, folder.folderId)"
         @drop.stop="onFolderDrop($event, folder.folderId)"
       >
         <span class="folder-mark" aria-hidden="true"></span>
@@ -405,21 +483,44 @@ onMounted(load);
         v-for="item in media"
         :key="item.mediaId"
         class="tile"
+        role="button"
+        tabindex="0"
+        :aria-label="item.sourceFileName || '未命名图片'"
         :class="{ on: isSelected('image', item.mediaId) }"
         draggable="true"
         @click.stop="select('image', item.mediaId, $event)"
+        @dblclick.stop="openViewer(item)"
         @dragstart="onImageDragStart($event, item.mediaId)"
+        @dragend="onImageDragEnd"
       >
         <div class="ph">
           <img :src="mediaContentPath(item.mediaId, 'thumbnail')" alt="" />
         </div>
         <b>{{ item.sourceFileName || "未命名图片" }}</b>
+        <small v-if="keyword.trim()">{{ folderPath(item.folderId) }}</small>
         <StatusChip
           :tone="item.status === 'READY' ? 'live' : 'draft'"
           :text="mediaStatusLabel(item.status)"
         />
       </article>
       <p v-if="childFolders.length === 0 && media.length === 0" class="hint">这个文件夹是空的。</p>
+    </div>
+    <div
+      v-if="viewer"
+      class="viewer"
+      role="dialog"
+      aria-modal="true"
+      data-testid="media-viewer"
+      :aria-label="viewer.sourceFileName || '图片'"
+      @click="closeViewer"
+    >
+      <button class="viewer-close" type="button" @click.stop="closeViewer">关闭</button>
+      <img
+        :src="mediaContentPath(viewer.mediaId, 'preview')"
+        :alt="viewer.sourceFileName || ''"
+        @click.stop
+      />
+      <b>{{ viewer.sourceFileName || "未命名图片" }}</b>
     </div>
     <ConfirmDialog
       :open="deleteOpen"
@@ -463,10 +564,51 @@ onMounted(load);
   background: #fff8f2;
   border-color: var(--accent);
 }
+.tile.drop,
+.btn.drop {
+  outline: 2px solid var(--accent);
+  background: #fff1e4;
+}
+.tile small {
+  color: var(--muted, #8a7564);
+  font-size: 12px;
+}
 .tile .ph {
   width: 100%;
   height: 108px;
   border-radius: 10px;
+}
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 24px 24px;
+  background: rgba(30, 22, 14, 0.82);
+}
+.viewer img {
+  max-width: min(1200px, 94vw);
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+}
+.viewer b {
+  color: #fff;
+  font-weight: 560;
+}
+.viewer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #fff;
+  cursor: pointer;
 }
 .folder-mark {
   width: 72px;

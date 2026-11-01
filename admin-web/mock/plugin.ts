@@ -586,6 +586,18 @@ export function mockAdminApi(): Plugin {
           send(res, 200, envelope(folders));
           return;
         }
+        const moveMatch = path.match(/^\/api\/admin\/v1\/media\/([^/]+)\/folder$/);
+        if (moveMatch && method === "PUT") {
+          const found = media.find((item) => item.mediaId === decodeURIComponent(moveMatch[1]));
+          if (!found) {
+            send(res, 404, JSON.stringify({ code: "RESOURCE_UNAVAILABLE", requestId: "mock" }));
+            return;
+          }
+          const body = JSON.parse(await readBody(req)) as { folderId?: string | null };
+          found.folderId = body.folderId ?? null;
+          send(res, 200, envelope({ moved: true }));
+          return;
+        }
         if (path === "/api/admin/v1/media" && method === "GET") {
           const q = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
           const folderId = url.searchParams.get("folderId");
