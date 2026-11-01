@@ -341,6 +341,21 @@ export class AdminContentApi {
     });
   }
 
+  recordAuthorization(workId: string, version: number): Promise<{ recorded: boolean }> {
+    return this.write(`/works/${encodeURIComponent(workId)}/authorization`, {
+      method: "POST",
+      json: {},
+      ifMatch: etagOf(version),
+    });
+  }
+
+  deleteWork(workId: string, version: number): Promise<{ deleted: boolean }> {
+    return this.write(`/works/${encodeURIComponent(workId)}`, {
+      method: "DELETE",
+      ifMatch: etagOf(version),
+    });
+  }
+
   command(commandId: string): Promise<CommandView> {
     return this.read<CommandView>(`/commands/${encodeURIComponent(commandId)}`);
   }

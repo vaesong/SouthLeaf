@@ -275,6 +275,43 @@ public final class ContentApplication {
         command(actorId, "WITHDRAW", workId, expectedVersion, idempotencyKey));
   }
 
+  /** Hides the work from the mini program, then removes the admin case. */
+  public void deleteWork(String workId, int expectedVersion) {
+    if (expectedVersion < 1) throw new ContentException(ContentFailure.PRECONDITION_REQUIRED);
+    String id = ContentRules.uuid(workId);
+    StoredWork stored =
+        works
+            .find(id)
+            .orElseThrow(() -> new ContentException(ContentFailure.NOT_FOUND, "WORK_UNKNOWN"));
+    if (stored.version() != expectedVersion)
+      throw new ContentException(ContentFailure.VERSION_CONFLICT, "VERSION_CONFLICT");
+    publications.releaseWork(id, clock.instant());
+    works.delete(id, expectedVersion);
+  }
+
+  /**
+   * Records the number on the current draft against the current image set for one year. The number
+   * is chosen by the studio; this does not read an external authorization system.
+   */
+  public void recordAuthorization(String workId, int expectedVersion) {
+    if (expectedVersion < 1) throw new ContentException(ContentFailure.PRECONDITION_REQUIRED);
+    String id = ContentRules.uuid(workId);
+    StoredWork stored =
+        works
+            .find(id)
+            .orElseThrow(() -> new ContentException(ContentFailure.NOT_FOUND, "WORK_UNKNOWN"));
+    if (stored.version() != expectedVersion)
+      throw new ContentException(ContentFailure.VERSION_CONFLICT, "VERSION_CONFLICT");
+    WorkDraft draft = stored.draft().validated();
+    if (!ContentRules.scopeRef(draft.subjectScopeRef()) || draft.media().isEmpty())
+      throw new ContentException(ContentFailure.DRAFT_INCOMPLETE, "AUTHORIZATION_FIELDS");
+    publications.recordAuthorization(
+        id,
+        draft.subjectScopeRef(),
+        ContentRules.mediaScopeDigest(draft.mediaIds()),
+        clock.instant());
+  }
+
   /** Unknown-commit lookup by the same idempotency key; absence means "not committed". */
   public Optional<PublicationResult> publicationCommand(
       String actorId, String operation, String workId, String idempotencyKey) {

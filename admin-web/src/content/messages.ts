@@ -45,6 +45,7 @@ export function describeFailure(error: unknown): {
     FOLDER_UNKNOWN: "文件夹不存在。",
     BUSINESS_IN_USE: "这个业务还挂着作品，先改到别的业务再删除。",
     BUSINESS_LIMIT: "业务最多 30 个。",
+    AUTHORIZATION_FIELDS: "先填写授权编号并选好图片，再登记授权。",
     HOME_FEATURE_LIMIT: "精选最多 3 个业务、3 个套餐、6 个作品。",
     CHANNEL_UNCONFIRMED: "要公开的社交账号需要已上传的二维码、名称和账号。",
     HOME_BUSINESS_UNAVAILABLE: "精选业务必须是已经公开的业务。",

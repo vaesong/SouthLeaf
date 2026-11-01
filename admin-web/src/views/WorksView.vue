@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from "vue";
+import { computed, inject, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { authStoreKey } from "../auth/store";
 import AppIcon from "../components/AppIcon.vue";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 import MediaThumb from "../components/MediaThumb.vue";
 import StatusChip from "../components/StatusChip.vue";
 import { newIdempotencyKey, type WorkView } from "../content/api";
@@ -24,6 +25,7 @@ const notice = ref("");
 const requestId = ref("");
 const filter = ref("all");
 const keyword = ref("");
+const deleteTarget = ref<WorkView | null>(null);
 let createKey: string | null = null;
 const canEdit = computed(() => auth?.state.identity?.permissions.includes("CONTENT_EDIT") ?? false);
 
@@ -98,10 +100,36 @@ async function createWork() {
   }
 }
 
+async function removeWork() {
+  const target = deleteTarget.value;
+  deleteTarget.value = null;
+  if (!target) return;
+  busy.value = true;
+  notice.value = "";
+  try {
+    await api.deleteWork(target.workId, target.version);
+    if (route.params.workId === target.workId) await router.push({ name: "works" });
+    await load();
+  } catch (error) {
+    const failure = describeFailure(error);
+    notice.value = failure.text;
+    requestId.value = failure.requestId;
+  } finally {
+    busy.value = false;
+  }
+}
+
 onMounted(() => {
   void catalog?.load();
   void load();
 });
+
+watch(
+  () => route.params.workId,
+  (id, previous) => {
+    if (previous && !id) void load();
+  },
+);
 </script>
 
 <template>
@@ -166,10 +194,28 @@ onMounted(() => {
         <div class="work-body">
           <b>{{ work.title || "未命名" }}</b>
           <small>{{ businessLine(work) }} · {{ formatDate(work.updatedAt) }}更新</small>
+          <button
+            v-if="canEdit"
+            class="btn btn-danger-ghost"
+            type="button"
+            :data-testid="`delete-work-${work.workId}`"
+            @click.prevent.stop="deleteTarget = work"
+          >
+            删除
+          </button>
         </div>
       </RouterLink>
       <WorkEditView v-if="route.params.workId" :key="String(route.params.workId)" />
       <p v-if="visible.length === 0">没有符合条件的作品。</p>
     </div>
+    <ConfirmDialog
+      :open="deleteTarget !== null"
+      title="删除这组作品"
+      :message="`删除「${deleteTarget?.title || '未命名'}」后，列表里不再有它。已经发布的也会从小程序消失。图片仍留在图片库。`"
+      confirm-text="确认删除"
+      danger
+      @cancel="deleteTarget = null"
+      @confirm="removeWork"
+    />
   </div>
 </template>

@@ -44,7 +44,7 @@ const workId = String(route.params.workId);
 const work = ref<WorkView | null>(null);
 const preview = ref<PreviewView | null>(null);
 const library = ref<MediaView[]>([]);
-const busy = ref<"" | "load" | "save" | Operation>("load");
+const busy = ref<"" | "load" | "save" | "delete" | Operation>("load");
 const notice = ref("");
 const requestId = ref("");
 const lastCommand = ref<CommandView | null>(null);
@@ -52,6 +52,7 @@ const lastCommand = ref<CommandView | null>(null);
 const pending = ref<{ operation: Operation; version: number; key: string } | null>(null);
 const pickerOpen = ref(false);
 const withdrawOpen = ref(false);
+const deleteOpen = ref(false);
 const uploading = ref(false);
 
 const businessChoices = computed(() => {
@@ -156,7 +157,6 @@ function chooseMedia(mediaId: string) {
   } else if (outcome === "full") {
     notice.value = WORK_MEDIA_LIMIT_TEXT;
   }
-  pickerOpen.value = false;
 }
 
 async function uploadMedia(files: File[], folderId: string | null = null) {
@@ -199,17 +199,7 @@ async function save() {
   busy.value = "save";
   notice.value = "";
   try {
-    const saved = await api.saveDraft(workId, work.value.version, {
-      title: form.title,
-      summary: form.summary,
-      subjectScopeRef: form.subjectScopeRef,
-      businessIds: form.businessIds
-        .split(/[,\s]+/)
-        .map((id) => id.trim())
-        .filter((id) => id.length > 0),
-      media: form.selected.map((mediaId) => ({ mediaId, altText: "" })),
-      coverMediaId: form.cover || null,
-    });
+    const saved = await api.saveDraft(workId, work.value.version, draftBody());
     fill(saved);
     preview.value = await api.preview(workId);
     notice.value = "草稿已保存。";
@@ -248,6 +238,58 @@ function close() {
   void router.push({ name: "works" });
 }
 
+function draftBody() {
+  return {
+    title: form.title,
+    summary: form.summary,
+    subjectScopeRef: form.subjectScopeRef,
+    businessIds: form.businessIds
+      .split(/[,\s]+/)
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0),
+    media: form.selected.map((mediaId) => ({ mediaId, altText: "" })),
+    coverMediaId: form.cover || null,
+  };
+}
+
+async function recordAuthorization() {
+  if (!work.value) return;
+  if (!form.subjectScopeRef || scopeError.value) {
+    notice.value = "先填写授权编号。编号由你自己编，例如 SQ-2026-001。";
+    return;
+  }
+  if (form.selected.length === 0) {
+    notice.value = "先选好图片，再登记授权。";
+    return;
+  }
+  busy.value = "save";
+  notice.value = "";
+  try {
+    const saved = await api.saveDraft(workId, work.value.version, draftBody());
+    fill(saved);
+    await api.recordAuthorization(workId, saved.version);
+    preview.value = await api.preview(workId);
+    notice.value = "授权已登记。这个编号和当前图片在一年内有效。换了图片要再登记一次。";
+  } catch (error) {
+    fail(error);
+  } finally {
+    busy.value = "";
+  }
+}
+
+async function removeWork() {
+  if (!work.value) return;
+  busy.value = "delete";
+  notice.value = "";
+  try {
+    await api.deleteWork(workId, work.value.version);
+    await router.push({ name: "works" });
+  } catch (error) {
+    fail(error);
+    busy.value = "";
+  }
+}
+
 onMounted(() => {
   void catalog?.load();
   void load();
@@ -281,11 +323,23 @@ onMounted(() => {
               v-model="form.subjectScopeRef"
               class="input"
               maxlength="64"
-              placeholder="填写授权书上的编号，例如 SQ-2026-001"
+              placeholder="自己编一个编号，例如 SQ-2026-001"
               data-testid="work-scope-input"
               :disabled="!canEdit"
             />
-            <p class="hint">没有授权编号的作品不能发布</p>
+            <p class="hint">
+              编号由你自己填写，用来标记这组照片。填好编号和图片后点「登记这份授权」，一年内可以按这组图片发布。换了图片要再登记一次。
+            </p>
+            <button
+              v-if="canPublish"
+              class="btn btn-secondary"
+              type="button"
+              data-testid="record-authorization"
+              :disabled="busy !== ''"
+              @click="recordAuthorization"
+            >
+              登记这份授权
+            </button>
             <p v-if="scopeError" class="hint" style="color: var(--danger)">{{ scopeError }}</p>
           </div>
           <div class="field span-2">
@@ -380,6 +434,7 @@ onMounted(() => {
         :media="library"
         :uploading="uploading"
         :notice="notice"
+        multiple
         @close="pickerOpen = false"
         @choose="chooseMedia"
         @upload="uploadMedia"
@@ -388,6 +443,16 @@ onMounted(() => {
     <p v-else-if="busy === 'load'">正在读取作品…</p>
     <p v-else-if="notice" role="alert" data-testid="content-notice">{{ notice }}</p>
     <template v-if="work" #footer>
+      <button
+        v-if="canEdit"
+        class="btn btn-danger-ghost"
+        type="button"
+        data-testid="delete-work"
+        :disabled="busy !== ''"
+        @click="deleteOpen = true"
+      >
+        删除这组作品
+      </button>
       <button
         v-if="canPublish && work.publicationState === 'PUBLISHED'"
         class="btn btn-danger-ghost"
@@ -431,6 +496,18 @@ onMounted(() => {
       @confirm="
         withdrawOpen = false;
         run('withdraw');
+      "
+    />
+    <ConfirmDialog
+      :open="deleteOpen"
+      title="删除这组作品"
+      message="删除后列表里不再有它。已经发布的也会从小程序消失。图片仍留在图片库。"
+      confirm-text="确认删除"
+      danger
+      @cancel="deleteOpen = false"
+      @confirm="
+        deleteOpen = false;
+        removeWork();
       "
     />
   </SideDrawer>

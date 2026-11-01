@@ -310,6 +310,7 @@ export function mockAdminApi(): Plugin {
       businessIds: [plan[2]],
       media: [{ mediaId, altText: "虚构画面" }],
       coverMediaId: mediaId,
+      authorizationRecorded: false,
     };
   });
   let workSerial = 1;
@@ -642,6 +643,7 @@ export function mockAdminApi(): Plugin {
             businessIds: [],
             media: [],
             coverMediaId: null,
+            authorizationRecorded: false,
           };
           works.unshift(created);
           send(res, 200, envelope({ work: created, replayed: false }));
@@ -684,6 +686,34 @@ export function mockAdminApi(): Plugin {
               acceptedProvenance: "MOCK",
             }),
           );
+          return;
+        }
+        if (workMatch && method === "DELETE") {
+          const index = works.findIndex((item) => item.workId === decodeURIComponent(workMatch[1]));
+          if (index < 0) {
+            send(res, 404, JSON.stringify({ code: "NOT_FOUND", requestId: "mock" }));
+            return;
+          }
+          works.splice(index, 1);
+          send(res, 200, envelope({ deleted: true }));
+          return;
+        }
+        if (workMatch?.[2] === "/authorization" && method === "POST") {
+          const found = works.find((item) => item.workId === decodeURIComponent(workMatch[1]));
+          if (!found || !found.subjectScopeRef || found.media.length === 0) {
+            send(
+              res,
+              422,
+              JSON.stringify({
+                code: "PUBLICATION_BLOCKED",
+                reason: "AUTHORIZATION_FIELDS",
+                requestId: "mock",
+              }),
+            );
+            return;
+          }
+          found.authorizationRecorded = true;
+          send(res, 200, envelope({ recorded: true }));
           return;
         }
         if (

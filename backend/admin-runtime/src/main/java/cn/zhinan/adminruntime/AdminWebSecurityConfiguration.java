@@ -149,6 +149,8 @@ class AdminWebSecurityConfiguration {
         routes.matcher(HttpMethod.GET, "/api/admin/v1/works/{workId}/preview"),
         routes.matcher(HttpMethod.POST, "/api/admin/v1/works/{workId}/publish"),
         routes.matcher(HttpMethod.POST, "/api/admin/v1/works/{workId}/withdraw"),
+        routes.matcher(HttpMethod.POST, "/api/admin/v1/works/{workId}/authorization"),
+        routes.matcher(HttpMethod.DELETE, "/api/admin/v1/works/{workId}"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/content/catalog"),
         routes.matcher(HttpMethod.PUT, "/api/admin/v1/content/catalog"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/content/catalog/preview"),

@@ -107,6 +107,31 @@ public record CatalogDraft(
     return List.copyOf(ids);
   }
 
+  /** Drops homepage references to a work that is about to disappear. */
+  public CatalogDraft withoutWork(String workId) {
+    var featured = featuredWorkIds.stream().filter(id -> !workId.equals(id)).toList();
+    var slides =
+        heroSlides.stream()
+            .filter(
+                slide ->
+                    !("WORK".equals(slide.target().type()) && workId.equals(slide.target().id())))
+            .toList();
+    if (featured.size() == featuredWorkIds.size() && slides.size() == heroSlides.size())
+      return this;
+    return new CatalogDraft(
+        brand,
+        contact,
+        team,
+        channels,
+        businesses,
+        packages,
+        featuredBusinessIds,
+        featuredPackageIds,
+        featured,
+        mediaAltTexts,
+        slides);
+  }
+
   private List<MediaReference> mediaReferences(boolean publishedOnly) {
     var refs = new ArrayList<MediaReference>();
     addRef(refs, brand.logoMediaId(), "BRAND", "brand", 0);

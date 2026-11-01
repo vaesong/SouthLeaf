@@ -11,6 +11,7 @@ const props = defineProps<{
   modelValue?: string | null;
   uploading?: boolean;
   notice?: string;
+  multiple?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -27,6 +28,7 @@ const folders = ref<MediaFolder[]>([]);
 const folderId = ref<string | null>(null);
 const loaded = ref<MediaView[] | null>(null);
 const searching = ref(false);
+const picked = ref<string[]>([]);
 let searchSerial = 0;
 
 const shown = computed(() =>
@@ -39,9 +41,26 @@ const childFolders = computed(() =>
 watch(
   () => [props.open, keyword.value, props.media, folderId.value] as const,
   () => {
+    if (!props.open) picked.value = [];
     void refresh();
   },
 );
+
+function onPick(id: string) {
+  if (!props.multiple) {
+    emit("choose", id);
+    return;
+  }
+  picked.value = picked.value.includes(id)
+    ? picked.value.filter((item) => item !== id)
+    : [...picked.value, id];
+}
+
+function confirmPicks() {
+  for (const id of picked.value) emit("choose", id);
+  picked.value = [];
+  emit("close");
+}
 
 async function loadBrowser() {
   if (!props.open || !api?.listFolders) {
@@ -148,12 +167,15 @@ function onFile(event: Event) {
         :key="item.mediaId"
         type="button"
         class="pick"
-        :class="{ on: item.mediaId === modelValue, processing: item.status !== 'READY' }"
+        :class="{
+          on: props.multiple ? picked.includes(item.mediaId) : item.mediaId === modelValue,
+          processing: item.status !== 'READY',
+        }"
         data-testid="media-picker-item"
         :data-media-id="item.mediaId"
         :data-processing="item.status === 'READY' ? undefined : 'true'"
         :disabled="item.status !== 'READY'"
-        @click="emit('choose', item.mediaId)"
+        @click="onPick(item.mediaId)"
       >
         <div class="ph">
           <img :src="mediaContentPath(item.mediaId, 'thumbnail')" alt="" />
@@ -171,6 +193,16 @@ function onFile(event: Event) {
     </p>
     <template #footer>
       <button class="btn btn-secondary" type="button" @click="emit('close')">取消</button>
+      <button
+        v-if="multiple"
+        class="btn btn-accent"
+        type="button"
+        data-testid="media-picker-add"
+        :disabled="picked.length === 0"
+        @click="confirmPicks"
+      >
+        加入所选
+      </button>
     </template>
   </SideDrawer>
 </template>

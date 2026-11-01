@@ -11,6 +11,8 @@ import cn.zhinan.admincontent.domain.ContentRules;
 import cn.zhinan.admincontent.domain.WorkDraft;
 import cn.zhinan.admincontent.port.ContentPorts.PublicationCommand;
 import cn.zhinan.admincontent.port.ContentPorts.PublicationRepository;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -444,6 +446,75 @@ public final class JdbcPublicationRepository implements PublicationRepository {
   @Override
   public Optional<AuthorizationGate> gate(String workId) {
     return db.read(() -> readGate(workId, false));
+  }
+
+  @Override
+  public void releaseWork(String workId, Instant now) {
+    db.write(
+        () -> {
+          var stamp = ContentJdbc.ts(now);
+          int hidden =
+              db.jdbc.update(
+                  "UPDATE "
+                      + pub
+                      + "active_work_publication SET visible=0, changed_at=? WHERE work_id=?",
+                  stamp,
+                  workId);
+          if (hidden > 0) bumpEpoch(stamp);
+          List<String> commandIds =
+              db.jdbc.queryForList(
+                  "SELECT command_id FROM admin_publication_command WHERE work_id=?",
+                  String.class,
+                  workId);
+          for (String commandId : commandIds)
+            db.jdbc.update("DELETE FROM admin_publication_audit WHERE command_id=?", commandId);
+          db.jdbc.update("DELETE FROM admin_publication_command WHERE work_id=?", workId);
+          db.jdbc.update("DELETE FROM admin_work_publication_state WHERE work_id=?", workId);
+          db.jdbc.update("DELETE FROM admin_work_authorization_gate WHERE work_id=?", workId);
+          return null;
+        });
+  }
+
+  @Override
+  public void recordAuthorization(
+      String workId, String subjectScopeRef, String mediaScopeSha256, Instant now) {
+    String revision = "studio-" + ContentRules.newId();
+    String fact = ContentRules.sha256(workId + "|" + revision + "|" + mediaScopeSha256);
+    Instant from = now.minusSeconds(60);
+    Instant until = now.plus(365, ChronoUnit.DAYS);
+    db.write(
+        () -> {
+          int updated =
+              db.jdbc.update(
+                  "UPDATE admin_work_authorization_gate SET authority_revision=?, state='VALID', subject_scope_ref=?, media_scope_sha256=?, purpose=?, channel=?, valid_from=?, valid_until=?, provenance=?, fact_sha256=?, recorded_at=? WHERE work_id=?",
+                  revision,
+                  subjectScopeRef,
+                  mediaScopeSha256,
+                  ContentRules.PURPOSE,
+                  ContentRules.CHANNEL,
+                  ContentJdbc.ts(from),
+                  ContentJdbc.ts(until),
+                  mode.acceptedProvenance(),
+                  fact,
+                  ContentJdbc.ts(now),
+                  workId);
+          if (updated == 0)
+            db.jdbc.update(
+                "INSERT INTO admin_work_authorization_gate (work_id,authority_revision,state,subject_scope_ref,media_scope_sha256,purpose,channel,valid_from,valid_until,provenance,fact_sha256,recorded_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                workId,
+                revision,
+                "VALID",
+                subjectScopeRef,
+                mediaScopeSha256,
+                ContentRules.PURPOSE,
+                ContentRules.CHANNEL,
+                ContentJdbc.ts(from),
+                ContentJdbc.ts(until),
+                mode.acceptedProvenance(),
+                fact,
+                ContentJdbc.ts(now));
+          return null;
+        });
   }
 
   private Optional<AuthorizationGate> readGate(String workId, boolean lock) {

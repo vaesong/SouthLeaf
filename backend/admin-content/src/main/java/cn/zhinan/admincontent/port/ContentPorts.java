@@ -91,6 +91,9 @@ public final class ContentPorts {
 
     int saveDraft(String workId, int expectedVersion, WorkDraft draft, String actorId, Instant now);
 
+    /** Removes the draft and its versions. Publication rows must already be gone. */
+    void delete(String workId, int expectedVersion);
+
     List<StoredWork> list(int limit);
   }
 
@@ -110,6 +113,16 @@ public final class ContentPorts {
     Map<String, PublicationState> states(Collection<String> workIds);
 
     Optional<AuthorizationGate> gate(String workId);
+
+    /**
+     * Hides a published pointer and removes publication rows so the work case can be deleted.
+     * Historical public releases stay.
+     */
+    void releaseWork(String workId, Instant now);
+
+    /** Upserts the gate that publish compares with the current draft. */
+    void recordAuthorization(
+        String workId, String subjectScopeRef, String mediaScopeSha256, Instant now);
   }
 
   public record PublicationCommand(

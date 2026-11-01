@@ -456,6 +456,47 @@ class AdminContentController {
     return publication(request, workId, false);
   }
 
+  @PostMapping("/works/{workId}/authorization")
+  ResponseEntity<?> recordAuthorization(HttpServletRequest request, @PathVariable String workId) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_PUBLISH,
+        (principal, requestId) -> {
+          int expected = ifMatch(request);
+          requireEmptyObject(request);
+          content.recordAuthorization(workId, expected);
+          return ok(requestId, java.util.Map.of("recorded", true));
+        });
+  }
+
+  @DeleteMapping("/works/{workId}")
+  ResponseEntity<?> deleteWork(HttpServletRequest request, @PathVariable String workId) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          int expected = ifMatch(request);
+          content.deleteWork(workId, expected);
+          detachCatalogWork(principal.accountId(), workId);
+          return ok(requestId, java.util.Map.of("deleted", true));
+        });
+  }
+
+  /** Best effort: a stale homepage reference must not bring the deleted work back. */
+  private void detachCatalogWork(String actorId, String workId) {
+    try {
+      var stored = catalog.currentDraft();
+      if (stored.isEmpty()) return;
+      CatalogDraft current = readCatalog(stored.get().payloadJson());
+      CatalogDraft next = current.withoutWork(workId);
+      if (next == current) return;
+      catalog.saveDraft(
+          actorId, stored.get().revision(), next, CATALOG_JSON.writeValueAsString(next));
+    } catch (RuntimeException ignored) {
+      // The work is already deleted. Homepage publish will refuse a leftover reference.
+    }
+  }
+
   private ResponseEntity<?> publication(
       HttpServletRequest request, String workId, boolean publish) {
     return handle(

@@ -130,6 +130,28 @@ public final class JdbcWorkRepository implements WorkRepository {
         });
   }
 
+  @Override
+  public void delete(String workId, int expectedVersion) {
+    db.write(
+        () -> {
+          List<Integer> current =
+              db.jdbc.queryForList(
+                  "SELECT current_version FROM admin_work_case WHERE work_id=? FOR UPDATE",
+                  Integer.class,
+                  workId);
+          if (current.isEmpty())
+            throw new ContentException(ContentFailure.NOT_FOUND, "WORK_UNKNOWN");
+          if (current.get(0) != expectedVersion)
+            throw new ContentException(ContentFailure.VERSION_CONFLICT, "VERSION_CONFLICT");
+          db.jdbc.update("DELETE FROM admin_work_version_media WHERE work_id=?", workId);
+          db.jdbc.update("DELETE FROM admin_work_version_business WHERE work_id=?", workId);
+          db.jdbc.update("DELETE FROM admin_work_version WHERE work_id=?", workId);
+          if (db.jdbc.update("DELETE FROM admin_work_case WHERE work_id=?", workId) != 1)
+            throw new ContentException(ContentFailure.NOT_FOUND, "WORK_UNKNOWN");
+          return null;
+        });
+  }
+
   private void insertVersion(
       String workId, int version, WorkDraft draft, String actorId, Instant now) {
     db.jdbc.update(
