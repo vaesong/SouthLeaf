@@ -27,14 +27,13 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
  * JDK ImageIO decoder/encoder for the S2 synthetic profile. MIME is only a hint: the byte
- * signature, trailer, real decoder format, bounds and decoder warnings decide. Output is a fresh
- * raster encoded without any source metadata (EXIF/GPS/ICC/text chunks are not carried over).
+ * signature, a complete image, the real decoder format, bounds and decoder warnings decide. Bytes
+ * after a finished JPEG or PNG are ignored, because exporters such as WeChat append a trailer.
+ * Output is a fresh raster encoded without any source metadata (EXIF/GPS/ICC/text chunks are not
+ * carried over).
  */
 public final class ImageIoProcessor implements ImageProcessor {
   private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
-  private static final byte[] PNG_IEND = {
-    0, 0, 0, 0, 'I', 'E', 'N', 'D', (byte) 0xae, 0x42, 0x60, (byte) 0x82
-  };
 
   static {
     ImageIO.setUseCache(false);
@@ -45,20 +44,9 @@ public final class ImageIoProcessor implements ImageProcessor {
     if (bytes == null || bytes.length == 0) reject("MEDIA_EMPTY");
     if (bytes.length > ContentRules.MAX_UPLOAD_BYTES)
       throw new ContentException(ContentFailure.MEDIA_TOO_LARGE, "MEDIA_TOO_LARGE");
-    final String format;
-    if ("image/png".equals(declaredContentType)) format = "PNG";
-    else if ("image/jpeg".equals(declaredContentType)) format = "JPEG";
-    else throw new ContentException(ContentFailure.MEDIA_UNSUPPORTED_TYPE, "MEDIA_TYPE");
-    if (format.equals("PNG") && !(startsWith(bytes, PNG_SIGNATURE) && endsWith(bytes, PNG_IEND)))
-      reject("MEDIA_SIGNATURE");
-    if (format.equals("JPEG")
-        && !(bytes.length > 4
-            && (bytes[0] & 0xff) == 0xff
-            && (bytes[1] & 0xff) == 0xd8
-            && (bytes[2] & 0xff) == 0xff
-            && (bytes[bytes.length - 2] & 0xff) == 0xff
-            && (bytes[bytes.length - 1] & 0xff) == 0xd9)) reject("MEDIA_SIGNATURE");
-    BufferedImage decoded = decode(bytes, format);
+    final String format = imageFormat(declaredContentType);
+    byte[] image = format.equals("PNG") ? pngImage(bytes) : jpegImage(bytes);
+    BufferedImage decoded = decode(image, format);
     BufferedImage normalized = normalize(decoded, format);
     var variants = new ArrayList<EncodedVariant>(2);
     variants.add(encode("thumbnail", normalized, ContentRules.THUMBNAIL_EDGE, format));
@@ -190,15 +178,108 @@ public final class ImageIoProcessor implements ImageProcessor {
     return output.toByteArray();
   }
 
+  private static String imageFormat(String declaredContentType) {
+    if (declaredContentType == null)
+      throw new ContentException(ContentFailure.MEDIA_UNSUPPORTED_TYPE, "MEDIA_TYPE");
+    String declared = declaredContentType.trim().toLowerCase(java.util.Locale.ROOT);
+    int parameter = declared.indexOf(';');
+    if (parameter >= 0) declared = declared.substring(0, parameter).trim();
+    if ("image/png".equals(declared) || "image/x-png".equals(declared)) return "PNG";
+    if ("image/jpeg".equals(declared)
+        || "image/jpg".equals(declared)
+        || "image/pjpeg".equals(declared)) return "JPEG";
+    throw new ContentException(ContentFailure.MEDIA_UNSUPPORTED_TYPE, "MEDIA_TYPE");
+  }
+
+  /** Keeps one complete PNG, including its IEND chunk, and drops any exporter trailer. */
+  private static byte[] pngImage(byte[] bytes) {
+    if (!startsWith(bytes, PNG_SIGNATURE)) reject("MEDIA_SIGNATURE");
+    int offset = PNG_SIGNATURE.length;
+    while (offset + 12 <= bytes.length) {
+      long length = Integer.toUnsignedLong(readInt(bytes, offset));
+      long chunkEnd = offset + 12L + length;
+      if (length > Integer.MAX_VALUE - 12 || chunkEnd > bytes.length) reject("MEDIA_SIGNATURE");
+      boolean iend =
+          bytes[offset + 4] == 'I'
+              && bytes[offset + 5] == 'E'
+              && bytes[offset + 6] == 'N'
+              && bytes[offset + 7] == 'D';
+      offset = (int) chunkEnd;
+      if (iend) return Arrays.copyOf(bytes, offset);
+    }
+    reject("MEDIA_SIGNATURE");
+    throw new IllegalStateException("unreachable");
+  }
+
+  /** Keeps one complete JPEG through its real end marker, and drops any exporter trailer. */
+  private static byte[] jpegImage(byte[] bytes) {
+    if (bytes.length < 4 || u(bytes, 0) != 0xff || u(bytes, 1) != 0xd8 || u(bytes, 2) != 0xff)
+      reject("MEDIA_SIGNATURE");
+    int offset = 2;
+    while (offset < bytes.length) {
+      if (u(bytes, offset) != 0xff) reject("MEDIA_SIGNATURE");
+      while (offset < bytes.length && u(bytes, offset) == 0xff) offset++;
+      if (offset >= bytes.length) reject("MEDIA_SIGNATURE");
+      int marker = u(bytes, offset++);
+      if (marker == 0xd9) return Arrays.copyOf(bytes, offset);
+      if (marker == 0x00 || marker == 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (marker == 0xda) {
+        offset = skipSegment(bytes, offset);
+        offset = jpegEnd(bytes, offset);
+        return Arrays.copyOf(bytes, offset);
+      }
+      offset = skipSegment(bytes, offset);
+    }
+    reject("MEDIA_SIGNATURE");
+    throw new IllegalStateException("unreachable");
+  }
+
+  private static int jpegEnd(byte[] bytes, int offset) {
+    while (offset < bytes.length) {
+      if (u(bytes, offset) != 0xff) {
+        offset++;
+        continue;
+      }
+      int markerAt = offset + 1;
+      while (markerAt < bytes.length && u(bytes, markerAt) == 0xff) markerAt++;
+      if (markerAt >= bytes.length) reject("MEDIA_SIGNATURE");
+      int marker = u(bytes, markerAt);
+      if (marker == 0x00) {
+        offset = markerAt + 1;
+        continue;
+      }
+      if (marker >= 0xd0 && marker <= 0xd7) {
+        offset = markerAt + 1;
+        continue;
+      }
+      if (marker == 0xd9) return markerAt + 1;
+      reject("MEDIA_SIGNATURE");
+    }
+    reject("MEDIA_SIGNATURE");
+    throw new IllegalStateException("unreachable");
+  }
+
+  private static int skipSegment(byte[] bytes, int offset) {
+    if (offset + 1 >= bytes.length) reject("MEDIA_SIGNATURE");
+    int length = (u(bytes, offset) << 8) | u(bytes, offset + 1);
+    if (length < 2 || offset + length > bytes.length) reject("MEDIA_SIGNATURE");
+    return offset + length;
+  }
+
+  private static int readInt(byte[] bytes, int offset) {
+    return (u(bytes, offset) << 24)
+        | (u(bytes, offset + 1) << 16)
+        | (u(bytes, offset + 2) << 8)
+        | u(bytes, offset + 3);
+  }
+
+  private static int u(byte[] bytes, int offset) {
+    return bytes[offset] & 0xff;
+  }
+
   private static boolean startsWith(byte[] bytes, byte[] prefix) {
     return bytes.length >= prefix.length
         && Arrays.equals(bytes, 0, prefix.length, prefix, 0, prefix.length);
-  }
-
-  private static boolean endsWith(byte[] bytes, byte[] suffix) {
-    return bytes.length >= suffix.length
-        && Arrays.equals(
-            bytes, bytes.length - suffix.length, bytes.length, suffix, 0, suffix.length);
   }
 
   private static void reject(String reason) {

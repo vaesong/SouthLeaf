@@ -68,7 +68,7 @@ class ImageIoProcessorTest {
         () -> processor.process(Arrays.copyOf(png, png.length - 20), "image/png"),
         ContentFailure.MEDIA_REJECTED);
     byte[] appended = Arrays.copyOf(png, png.length + 4);
-    expect(() -> processor.process(appended, "image/png"), ContentFailure.MEDIA_REJECTED);
+    assertThat(processor.process(appended, "image/png").sourceWidth()).isEqualTo(64);
     byte[] truncatedJpeg = Arrays.copyOf(jpeg, jpeg.length / 2 + 2);
     truncatedJpeg[truncatedJpeg.length - 2] = (byte) 0xff;
     truncatedJpeg[truncatedJpeg.length - 1] = (byte) 0xd9;
@@ -84,6 +84,21 @@ class ImageIoProcessorTest {
         .isInstanceOf(ContentException.class)
         .extracting(e -> ((ContentException) e).failure())
         .isEqualTo(ContentFailure.MEDIA_REJECTED);
+  }
+
+  @Test
+  void acceptsACompleteImageWithAnExporterTrailer() throws Exception {
+    byte[] jpeg = jpeg(80, 40);
+    byte[] wechat = Arrays.copyOf(jpeg, jpeg.length + 16);
+    System.arraycopy(
+        "wechat-trailer".getBytes(StandardCharsets.US_ASCII), 0, wechat, jpeg.length, 14);
+    assertThat(processor.process(wechat, "image/jpeg").sourceWidth()).isEqualTo(80);
+    assertThat(processor.process(wechat, "image/jpg").sourceFormat()).isEqualTo("JPEG");
+    assertThat(processor.process(jpeg, "image/jpeg; charset=binary").sourceHeight()).isEqualTo(40);
+
+    byte[] png = pngWithTextChunk(48, 32, "x");
+    byte[] extra = Arrays.copyOf(png, png.length + 8);
+    assertThat(processor.process(extra, "image/x-png").sourceHeight()).isEqualTo(32);
   }
 
   @Test
