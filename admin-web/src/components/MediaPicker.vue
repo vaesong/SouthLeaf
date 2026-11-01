@@ -121,26 +121,28 @@ function onFile(event: Event) {
         @change="onFile"
       />
     </div>
-    <div v-if="childFolders.length" class="folder-row">
+    <div v-if="folders.length" class="folder-row">
+      <button type="button" class="btn btn-ghost btn-sm" @click="openFolder(null)">图片库</button>
       <button
         v-if="folderId"
         type="button"
         class="btn btn-ghost btn-sm"
         @click="openFolder(folders.find((folder) => folder.folderId === folderId)?.parentId ?? null)"
       >
-        返回上一级
-      </button>
-      <button
-        v-for="folder in childFolders"
-        :key="folder.folderId"
-        type="button"
-        class="btn btn-secondary btn-sm"
-        @click="openFolder(folder.folderId)"
-      >
-        {{ folder.name }}
+        向上
       </button>
     </div>
     <div class="picker-grid">
+      <button
+        v-for="folder in keyword.trim() ? [] : childFolders"
+        :key="folder.folderId"
+        type="button"
+        class="pick folder-pick"
+        @click="openFolder(folder.folderId)"
+      >
+        <span class="folder-mark" aria-hidden="true"></span>
+        <div class="t"><span>{{ folder.name }}</span></div>
+      </button>
       <button
         v-for="item in shown"
         :key="item.mediaId"
@@ -164,8 +166,8 @@ function onFile(event: Event) {
     </div>
     <p v-if="notice" class="hint" role="alert" data-testid="media-picker-notice">{{ notice }}</p>
     <p v-if="searching" class="hint">正在查找…</p>
-    <p v-else-if="shown.length === 0" class="hint">
-      {{ keyword.trim() ? "没有匹配的图片。" : "图片库里还没有图片。" }}
+    <p v-else-if="shown.length === 0 && (keyword.trim() || childFolders.length === 0)" class="hint">
+      {{ keyword.trim() ? "没有匹配的图片。" : "这个文件夹是空的。" }}
     </p>
     <template #footer>
       <button class="btn btn-secondary" type="button" @click="emit('close')">取消</button>
@@ -183,6 +185,15 @@ function onFile(event: Event) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+.folder-mark {
+  display: block;
+  width: 64px;
+  height: 48px;
+  margin: 22px auto 0;
+  border-radius: 8px 8px 10px 10px;
+  background: linear-gradient(#f3d7a4, #e2b56a);
+  box-shadow: inset 0 8px 0 #f8e7c4;
 }
 .drawer-tools .input {
   flex: 1;

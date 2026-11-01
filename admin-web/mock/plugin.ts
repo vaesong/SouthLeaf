@@ -270,7 +270,11 @@ export function mockAdminApi(): Plugin {
   let revision = 3;
   const versions = [{ revision: 3, updatedBy: "mock-operator", updatedAt: "2026-11-01T01:00:00Z" }];
   const commands = new Map<string, unknown>();
-  const folders: { folderId: string; parentId: string | null; name: string }[] = [];
+  const folders: { folderId: string; parentId: string | null; name: string }[] = [
+    { folderId: "folder-wechat", parentId: null, name: "微信客片" },
+    { folderId: "folder-qr", parentId: null, name: "二维码" },
+    { folderId: "folder-wechat-nov", parentId: "folder-wechat", name: "11月" },
+  ];
   const media = MEDIA.map((mediaId, index) => ({
     mediaId,
     status: index === 18 ? "PROCESSING" : "READY",
@@ -279,7 +283,7 @@ export function mockAdminApi(): Plugin {
     sourceHeight: 600,
     createdAt: "2026-11-01T01:00:00Z",
     sourceFileName: `mock-${index + 1}.png`,
-    folderId: null,
+    folderId: index < 4 ? "folder-wechat" : index < 7 ? "folder-qr" : null,
     variants: [],
   }));
   const workPlan = [
