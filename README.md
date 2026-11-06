@@ -1,13 +1,22 @@
-# SouthLeaf — 公开展示与阶段二后台建设
+# SouthLeaf — 摄影工作室展示、预约与后台
 
-摄影工作室公开展示小程序：品牌、作品、业务、套餐、成员及联系渠道。阶段一只验收演示内容与工程能力，不交付后台或生产发布。真实内容、权属/客户授权材料、后台上传维护、正式 AppID/域名/TLS/生产凭据由阶段二交付。
+单个摄影工作室的微信小程序和管理后台。顾客浏览品牌、作品、业务与套餐，并提交待确认预约。工作室在后台维护内容、图片和档期，确认后占档并生成订单。这一阶段不收款。在线支付、退款、履约完成和私密成片属于阶段三，尚未实现。
+
+## 当前状态（2026-11-06）
+
+阶段一公开展示演示已经交付。阶段二开发联调（2A，S0–S6）已有隔离验收，G2A 十一条成立，全仓库验证见实施跟踪 §26。阶段二真实接入（2B / S7）尚未开始：正式 AppID、品牌与价格、作品授权材料、真实档期、通知模板、域名证书和对象存储都还没接入。
+
+`main` 与 `origin/main` 对齐到 `cc87086`。工程收口之后已提交的后台增量包括简体暖色工作室界面，首页轮播、预约规则与档期配置，图片库文件夹与多选，30MB 的 JPEG/PNG，以及作品多图、授权登记和发布。工作区里还有未提交的小程序「温润轻奢」界面改动，验收记录尚未补上。
+
+事实与证据以 [阶段二实施跟踪](docs/开发与演示/阶段二实施跟踪.md) 为准。本文以前写的「管理运行时尚未开放」和「S1-C2 进行中」已过时。
 
 ## 技术与目录
 
-- `frontend/`：唯一正式客户端，原生微信 `App / Page / Component`；六页面、四 tab，零 npm 运行依赖，Prettier 为唯一 npm 开发依赖。
-- `backend/`：Java 21 / Spring Boot 4.1.1 / Spring JDBC / MySQL；现为七模块 reactor（含独立凭据 crypto），公开 API、管理安全核心/适配器、运行时和显式迁移 CLI 分产物；管理运行时尚未开放。
-- `docs/`：需求、架构、设计、运行与验收证据。
-- `tools/`：文档校验、源码候选指纹等工程工具。
+- `frontend/`：顾客端，原生微信小程序。五个标签（首页、作品、服务、关于、我的），另有作品详情、套餐详情和预约页。运行时零 npm 依赖，Prettier 是唯一 npm 开发依赖。
+- `admin-web/`：工作室后台，Vue 3 / TypeScript / Vite。页面由 `admin-runtime` 与管理 API 同源提供。
+- `backend/`：Java 21 / Spring Boot 4.1.1 / Spring JDBC / MySQL。十个 Maven 模块；父 POM 只做聚合，不直接运行 Spring Boot。公开 API 与管理运行时是两个进程。迁移由显式 CLI 执行，不在应用启动时自动跑。公开库迁移到 V4，管理库迁移到 V15。
+- `docs/`：需求、架构、计划、设计与验收证据。
+- `tools/`：文档链接检查等工程工具。
 
 ## 本机验证（cmd.exe）
 
@@ -18,7 +27,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-DatabaseIntegra
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Start-PublicApi.ps1
 ```
 
-前端在 `frontend`（API 已启动）：
+公开 API 默认只读，监听 `127.0.0.1:8090`。管理端网页、内容和预约要对应的环境开关齐全才启动。全仓库门禁是 `scripts/Verify-StageTwoGate.ps1`，它使用一次性隔离实例。
+
+前端在 `frontend`（公开 API 已启动）：
 
 ```bat
 npm ci --ignore-scripts --registry=https://registry.npmjs.org
@@ -29,38 +40,29 @@ npm run build:demo
 npm run test:contract
 ```
 
-微信开发者工具导入 `frontend/dist/build/mp-weixin`，不是源码目录或旧 `unpackage`。demo 使用明确游客 AppID，仅用于工具演示。API origin 必须显式配置，不能把手机自身 127.0.0.1 当作电脑。
+微信开发者工具导入 `frontend/dist/build/mp-weixin`，不是源码目录或旧 `unpackage`。demo 使用明确游客 AppID，仅用于工具演示。API origin 必须显式配置，不能把手机自身 127.0.0.1 当作电脑。正式构建用 `npm run build:release`，读取 `frontend/config/release.json`。
+
+后台在 `admin-web`：
+
+```bat
+npm ci
+npm test
+npm run build
+npm run format:check
+```
+
+页面只请求相对路径 `/api/admin/v1/...`。会话是 HttpOnly Cookie，CSRF 令牌只留在内存，不写入浏览器存储。UI 与 API 必须从同一个已配置的 HTTPS 来源提供。普通 Vite 开发服务器不能作为认证验收环境。
 
 ## 交付入口
 
+- [阶段二实施跟踪](docs/开发与演示/阶段二实施跟踪.md)
+- [P03 分批交付与编码计划](docs/计划/P03_阶段二分批交付与编码执行计划.md)
+- [阶段二 G2A 退出对照](docs/开发与演示/阶段二G2A退出对照.md)
+- [阶段二 2B 对接清单](docs/开发与演示/阶段二2B对接清单.md)
 - [阶段一收敛交付记录](docs/开发与演示/阶段一收敛交付记录.md)
 - [运行、初始化与复验指南](docs/开发与演示/阶段一演示运行指南.md)
 - [文档索引](docs/README.md)
 - [公开 API](docs/接口/public-api.openapi.json)
+- [管理 API](docs/接口/admin-api.openapi.json)
 
-不自动提交 Git。生成物、安装依赖和本机配置不属于源码；只读运行账号不负责迁移。已应用 V1 不改写，旧库不作兜底。阶段一验收不代表正式上线、安全零风险或阶段二后台已经完成。
-
-## 阶段二当前进度
-
-S1-A 模块/构建/产物隔离已完成；当前不是可登录后台。代码位于 `backend/public-api`、`admin-security-core`、`admin-security-jdbc`、`admin-db-policy`、`admin-runtime`、`admin-migration-cli`，C1 新增 `admin-credential-crypto`。公开行为和 V1/V2 迁移字节保持；不在聚合父直接运行 Spring Boot。
-
-- [P03 分批交付与编码计划](docs/计划/P03_阶段二分批交付与编码执行计划.md)
-- [S1-A 模块迁移与验证指南](docs/开发与演示/阶段二S1-A模块迁移与验证指南.md)
-- [阶段二实施跟踪](docs/开发与演示/阶段二实施跟踪.md)
-
-旧阶段一冻结/导出清单仅用于其历史 checkout，不对当前阶段二源树重新冻结。管理 Writer 守卫及本地/独立 MySQL 最小权限验证已完成；C1 凭据核心/KDF 有历史验证；C2 JDBC 凭据、认证事件及非 Web 登录组合已有源码，当前正在收口验证；账号 CLI、HTTP/后台 UI、业务与生产接入仍按后续门禁实施。现有服务不会因源树迁移自动更新；重启/部署另按授权执行。
-
-### S1-B 当前状态
-
-非 Web 管理配置/私有池/身份-TLS-grants-角色守卫及独立测试实例的真实最小权限验证已完成，仍不是可登录后台或生产部署。[S1-B 复验指南](docs/开发与演示/阶段二S1-B管理启动守卫与验证指南.md)；[证据](docs/开发与演示/证据/stage-two-s1b-runtime-validation.json)。本轮已获授权的独立测试实例已正常关闭；原服务/授权保持，不放宽迁移 TLS。S1-C1 结果见下节。
-
-### S1-C1 当前状态
-
-纯 Java 凭据端口/登录编排与独立 Argon2id adapter 已实现，本地 234 单元/架构 + 42 MySQL IT、独立权限回归及两份依赖扫描通过。核心无技术库依赖，公开产物不含密码库；runtime 尚未接线 login/crypto，不是可登录后台。下一步 C2 JDBC/认证事件，再完成 C3 账号生命周期与 S1-D HTTP/UI。[C1 指南](docs/开发与演示/阶段二S1-C1凭据核心与KDF验证指南.md)。
-
-
-### S1-C2 当前进行中（2026-10-24）
-
-V3 认证事件、JDBC 凭据/事件短事务、版本化精确权限及非 Web 组合已有源码；独立管理范围真实 IT/运行探针已通过，测试证书按用户要求复用原私钥续发30天。完整公开回归因既定测试入口不可达仍 BLOCKED，不能标记整个 C2 已验收或可登录 Web 后台。前述 C1 未接线属于历史候选。见[C2 指南](docs/开发与演示/阶段二S1-C2凭据持久化与接线验证指南.md)。
-
-总体保持 2A 开发联调（S0–S6）→G2A→S7/2B 真实接入→G2B/G3 授权开放。后台界面从 S1-D 登录开始，S2–S6 与各业务切片同步交付。完整步骤、文档/代码/测试/对接及当前 C2 顺序见 [P03](docs/计划/P03_阶段二分批交付与编码执行计划.md) §12；真实结果见[实施跟踪](docs/开发与演示/阶段二实施跟踪.md)。本次规划确认不授权生产操作或提交推送。
+不自动提交 Git。生成物、安装依赖和本机配置不属于源码。只读运行账号不负责迁移。已应用的迁移不改写。阶段二 2A 验收不代表正式上线，也不代表支付或私密交付已经开始。
