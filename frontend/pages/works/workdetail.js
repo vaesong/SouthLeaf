@@ -12,6 +12,7 @@ function present(data) {
     ...data,
     availableMedia: galleryMedia(data.work),
     work: workView(data.work),
+    showStatusBar: ["loading", "unavailable", "error"].includes(data.status),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.work.meta?.dataMode ?? "")
       : "",
@@ -58,6 +59,10 @@ Page({
     return {
       title: this.data.work.title || "公开作品",
       path: `/pages/works/workdetail?workId=${encodeURIComponent(this.data.id)}`,
+      imageUrl:
+        this.data.work?.coverMedia?.src ||
+        this.data.availableMedia?.[0]?.src ||
+        "",
     };
   },
   onLoad(options) {
@@ -180,5 +185,10 @@ Page({
   },
   handleMarkGalleryMediaFailedError(event) {
     this.markGalleryMediaFailed(event.currentTarget.dataset.arg0);
+  },
+  handleBookSameTap() {
+    wx.navigateTo({
+      url: "/pages/booking/booking",
+    });
   },
 });

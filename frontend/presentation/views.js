@@ -6,6 +6,10 @@ const workView = (work) => ({
 const brandView = (brand) => ({
   ...brand,
   initial: brand.name ? brand.name.slice(0, 1) : "",
+  team: (brand.team || []).map((member) => ({
+    ...member,
+    initial: member.name ? String(member.name).slice(0, 1) : "",
+  })),
 });
 const teamView = (team) =>
   team.map((member) => ({ ...member, initial: member.name.slice(0, 1) }));
@@ -14,6 +18,10 @@ const homeView = (home) => ({
   brand: brandView(home.brand),
   featuredWorks: home.featuredWorks.map(workView),
   secondaryWorks: home.featuredWorks.slice(1, 3).map(workView),
+  packages: (home.packages || []).map((pkg) => ({
+    ...pkg,
+    priceLabel: priceLabel(pkg),
+  })),
 });
 const serviceViews = (groups) =>
   groups.map((group, index) => ({

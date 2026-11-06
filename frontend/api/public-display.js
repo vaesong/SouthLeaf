@@ -1,8 +1,18 @@
+const yuanLabel = (value, fallback) => {
+  if (typeof value !== "string") return fallback;
+  const text = value.trim();
+  if (!text) return fallback;
+  if (text.startsWith("¥") || text.startsWith("￥") || !/^\d/.test(text))
+    return text;
+  return `¥${text}`;
+};
+
 const priceLabel = (pkg = {}) => {
   if (pkg.priceType === "INQUIRY") return "价格请询";
-  if (pkg.priceType === "FROM") return pkg.displayPrice || "起价以确认资料为准";
+  if (pkg.priceType === "FROM")
+    return yuanLabel(pkg.displayPrice, "起价以确认资料为准");
   if (pkg.priceType === "FIXED")
-    return pkg.displayPrice || "价格以确认资料为准";
+    return yuanLabel(pkg.displayPrice, "价格以确认资料为准");
   return "价格待公布";
 };
 

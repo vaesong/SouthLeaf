@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>枝南影像 · 小程序设计稿 v2 · 三个方向</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --serif-cn: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --serif-en: "Cormorant Garamond", "Times New Roman", serif;
+    --sans: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e7e2da; font-family: var(--sans); color: #1d1a17; -webkit-font-smoothing: antialiased; }
+  img { display: block; }
+
+  .intro { max-width: 1280px; margin: 0 auto; padding: 64px 40px 8px; }
+  .intro small { font-family: var(--serif-en); font-style: italic; font-size: 18px; letter-spacing: 2px; color: #7a6f63; }
+  .intro h1 { font-family: var(--serif-cn); font-weight: 500; font-size: 34px; letter-spacing: 6px; margin-top: 6px; }
+  .intro p { font-size: 14px; color: #5d554d; line-height: 1.9; margin-top: 12px; max-width: 760px; }
+  .jump { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+  .jump a { text-decoration: none; color: #1d1a17; font-size: 13px; letter-spacing: 2px; padding: 10px 18px; border: 1px solid rgba(0,0,0,.18); border-radius: 22px; }
+
+  .direction { max-width: 1280px; margin: 56px auto 0; padding: 48px 40px 64px; border-top: 1px solid rgba(0,0,0,.12); display: grid; grid-template-columns: 300px 1fr; gap: 48px; }
+  .d-copy .tag { font-family: var(--serif-en); font-size: 64px; line-height: 1; color: #b49a6e; }
+  .d-copy h2 { font-family: var(--serif-cn); font-weight: 500; font-size: 26px; letter-spacing: 6px; margin-top: 10px; }
+  .d-copy .en { font-family: var(--serif-en); font-style: italic; font-size: 17px; color: #7a6f63; margin-top: 2px; }
+  .d-copy .mood { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .d-copy .mood span { font-size: 12px; letter-spacing: 2px; padding: 4px 12px; background: rgba(255,255,255,.6); border-radius: 12px; }
+  .d-copy p { font-size: 13px; line-height: 2; color: #4f4840; margin-top: 18px; }
+  .d-copy .wow { margin-top: 18px; padding: 14px 16px; background: #fff; font-size: 12px; line-height: 1.9; color: #4f4840; }
+  .d-copy .wow b { display: block; font-size: 12px; letter-spacing: 2px; color: #1d1a17; margin-bottom: 4px; }
+  .d-copy .ref { font-size: 12px; color: #8a8076; margin-top: 14px; letter-spacing: 1px; }
+  .phones { display: flex; gap: 40px; flex-wrap: wrap; }
+  .ph-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .ph-wrap > span { font-size: 12px; letter-spacing: 3px; color: #6d655c; }
+
+  .phone { width: 375px; height: 812px; border-radius: 46px; background: #0b0b0b; padding: 10px; box-shadow: 0 50px 90px -40px rgba(30,20,10,.55), 0 0 0 1px rgba(0,0,0,.25); }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 37px; overflow: hidden; }
+  .scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+  .status { position: absolute; z-index: 50; top: 0; left: 0; right: 0; height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 26px 0 32px; font-size: 13px; font-weight: 600; pointer-events: none; }
+  .capsule { position: absolute; z-index: 50; top: 50px; right: 12px; width: 86px; height: 30px; border-radius: 16px; display: flex; align-items: center; justify-content: space-around; font-size: 12px; pointer-events: none; }
+  .homebar { position: absolute; z-index: 60; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; border-radius: 4px; }
+  .hscroll { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .hscroll::-webkit-scrollbar { display: none; }
+
+  /* =========================================================
+     A · 暗房 NOIR
+     ========================================================= */
+  .noir { background: #0d0b0a; color: #efe8dd; --gold: #c6a56b; --dim: rgba(239,232,221,.55); --hair: rgba(198,165,107,.28); }
+  .noir .status { color: #fff; }
+  .noir .capsule { border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.25); color: #fff; }
+  .noir .homebar { background: #fff; opacity: .8; }
+  .noir .scroll { padding-bottom: 90px; }
+  .noir::after { content: ""; position: absolute; inset: 0; background: var(--grain); opacity: .07; pointer-events: none; z-index: 45; mix-blend-mode: screen; }
+
+  .n-hero { position: relative; height: 792px; overflow: hidden; }
+  .kb { position: absolute; inset: 0; }
+  .kb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: kb 24s infinite; }
+  .kb img:nth-child(2) { animation-delay: 6s; }
+  .kb img:nth-child(3) { animation-delay: 12s; }
+  .kb img:nth-child(4) { animation-delay: 18s; }
+  @keyframes kb { 0% { opacity: 0; transform: scale(1.14); } 4% { opacity: 1; } 25% { opacity: 1; } 30% { opacity: 0; transform: scale(1); } 100% { opacity: 0; } }
+  .n-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 80% at 50% 45%, rgba(13,11,10,0) 40%, rgba(13,11,10,.55) 100%), linear-gradient(180deg, rgba(13,11,10,.7) 0%, rgba(13,11,10,.1) 30%, rgba(13,11,10,.1) 45%, rgba(13,11,10,.94) 88%, #0d0b0a 100%); }
+  .n-mark { position: absolute; z-index: 3; top: 92px; left: 0; right: 0; text-align: center; }
+  .n-mark .w { font-family: var(--serif-en); font-weight: 300; font-size: 26px; letter-spacing: 14px; padding-left: 14px; }
+  .n-mark .s { font-size: 10px; letter-spacing: 6px; color: var(--gold); margin-top: 6px; padding-left: 6px; }
+  .n-copy { position: absolute; z-index: 3; left: 26px; right: 26px; bottom: 54px; }
+  .n-copy .no { font-family: var(--serif-en); font-size: 13px; letter-spacing: 3px; color: var(--gold); display: flex; align-items: center; gap: 12px; }
+  .n-copy .no i { width: 60px; height: 1px; background: var(--hair); position: relative; overflow: hidden; }
+  .n-copy .no i::after { content: ""; position: absolute; inset: 0; background: var(--gold); transform-origin: left; animation: prog 6s linear infinite; }
+  @keyframes prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .n-copy h1 { font-family: var(--serif-en); font-style: italic; font-weight: 300; font-size: 64px; line-height: .92; margin: 18px 0 16px; letter-spacing: -1px; }
+  .n-copy .cn { font-family: var(--serif-cn); font-size: 15px; letter-spacing: 8px; color: rgba(239,232,221,.85); }
+  .n-copy .row { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+  .n-scroll { display: flex; align-items: center; gap: 10px; font-family: var(--serif-en); font-size: 12px; letter-spacing: 4px; color: var(--dim); }
+  .n-scroll i { width: 1px; height: 34px; background: var(--hair); position: relative; overflow: hidden; }
+  .n-scroll i::after { content: ""; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--gold); animation: drip 2.2s ease-in-out infinite; }
+  @keyframes drip { to { top: 100%; } }
+  .n-btn { font-size: 13px; letter-spacing: 5px; padding: 13px 26px; border: 1px solid var(--gold); color: var(--gold); }
+  .n-btn.solid { background: var(--gold); color: #0d0b0a; }
+
+  .n-belief { padding: 72px 36px 40px; text-align: center; }
+  .n-belief .k { font-family: var(--serif-en); font-style: italic; font-size: 15px; color: var(--gold); letter-spacing: 2px; }
+  .n-belief p { font-family: var(--serif-cn); font-size: 17px; line-height: 2.4; letter-spacing: 3px; margin-top: 22px; color: rgba(239,232,221,.9); }
+  .n-belief .rule { width: 1px; height: 56px; background: linear-gradient(var(--gold), transparent); margin: 34px auto 0; }
+
+  .n-chap { position: relative; padding: 40px 0 34px; }
+  .n-chap .num { position: absolute; z-index: 2; top: 0; font-family: var(--serif-en); font-weight: 300; font-size: 150px; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--gold); opacity: .9; }
+  .n-chap.l .num { right: 22px; } .n-chap.r .num { left: 22px; }
+  .n-chap .pic { width: 78%; height: 400px; object-fit: cover; }
+  .n-chap.r .pic { margin-left: auto; }
+  .n-chap .cap { padding: 22px 26px 0; }
+  .n-chap.r .cap { text-align: right; }
+  .n-chap .cap .e { font-family: var(--serif-en); font-style: italic; font-size: 15px; color: var(--gold); }
+  .n-chap .cap .t { font-family: var(--serif-cn); font-size: 22px; letter-spacing: 6px; margin-top: 6px; }
+  .n-chap .cap .p { font-size: 12px; letter-spacing: 2px; color: var(--dim); margin-top: 10px; }
+  .n-chap .cap .p b { font-family: var(--serif-en); font-weight: 400; font-size: 18px; color: #efe8dd; margin-right: 6px; }
+
+  .n-strip-h { padding: 52px 26px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .n-strip-h .t { font-family: var(--serif-en); font-weight: 300; font-size: 36px; font-style: italic; line-height: 1; }
+  .n-strip-h .t small { display: block; font-family: var(--serif-cn); font-style: normal; font-size: 12px; letter-spacing: 6px; color: var(--gold); margin-top: 10px; }
+  .n-strip-h a { font-size: 11px; letter-spacing: 3px; color: var(--dim); }
+  .n-strip { gap: 14px; padding: 0 26px; }
+  .n-frame { flex: none; width: 200px; }
+  .n-frame img { width: 200px; height: 280px; object-fit: cover; filter: saturate(.85); }
+  .n-frame .c { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; letter-spacing: 2px; }
+  .n-frame .c em { font-family: var(--serif-en); color: var(--gold); font-style: normal; }
+
+  .n-visit { margin: 60px 26px 0; padding: 34px 0 10px; border-top: 1px solid var(--hair); text-align: center; }
+  .n-visit .t { font-family: var(--serif-en); font-style: italic; font-weight: 300; font-size: 30px; }
+  .n-visit p { font-size: 12px; letter-spacing: 2px; color: var(--dim); line-height: 2; margin-top: 12px; }
+  .n-visit .n-btn { display: inline-block; margin-top: 26px; }
+
+  .n-tab { position: absolute; z-index: 40; left: 0; right: 0; bottom: 0; height: 82px; padding: 14px 18px 0; display: flex; justify-content: space-around; background: linear-gradient(180deg, rgba(13,11,10,0), rgba(13,11,10,.96) 35%); font-size: 11px; letter-spacing: 3px; color: rgba(239,232,221,.45); }
+  .n-tab span.on { color: #efe8dd; position: relative; }
+  .n-tab span.on::after { content: ""; position: absolute; left: 50%; top: 22px; width: 14px; height: 1px; margin-left: -7px; background: var(--gold); }
+
+  .n-cover { position: relative; height: 600px; }
+  .n-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .n-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,11,10,.45), rgba(13,11,10,0) 25%, rgba(13,11,10,0) 55%, #0d0b0a); }
+  .n-cover .cp { position: absolute; z-index: 2; left: 26px; right: 26px; bottom: 10px; }
+  .n-cover .cp .e { font-family: var(--serif-en); font-style: italic; font-size: 16px; color: var(--gold); }
+  .n-cover .cp h2 { font-family: var(--serif-cn); font-weight: 400; font-size: 34px; letter-spacing: 8px; margin-top: 8px; }
+  .n-back { position: absolute; z-index: 50; top: 52px; left: 18px; font-family: var(--serif-en); font-size: 26px; color: #fff; line-height: 1; }
+  .n-meta { display: flex; gap: 0; margin: 26px 26px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+  .n-meta div { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; letter-spacing: 3px; color: var(--dim); }
+  .n-meta div + div { border-left: 1px solid var(--hair); }
+  .n-meta b { display: block; font-family: var(--serif-en); font-weight: 400; font-size: 20px; color: #efe8dd; letter-spacing: 1px; margin-bottom: 2px; }
+  .n-text { padding: 28px 26px 10px; font-family: var(--serif-cn); font-size: 14px; line-height: 2.3; letter-spacing: 2px; color: rgba(239,232,221,.82); }
+  .n-shot { margin-top: 34px; }
+  .n-shot img { width: 100%; object-fit: cover; }
+  .n-shot .lb { display: flex; justify-content: space-between; padding: 12px 26px 0; font-family: var(--serif-en); font-size: 12px; letter-spacing: 3px; color: var(--gold); }
+  .n-shot.inset { padding: 0 48px; }
+  .n-shot.inset .lb { padding: 12px 0 0; }
+  .n-dock { position: absolute; z-index: 40; left: 0; right: 0; bottom: 0; padding: 26px 26px 34px; background: linear-gradient(180deg, rgba(13,11,10,0), #0d0b0a 40%); display: flex; gap: 14px; align-items: center; }
+  .n-dock .n-btn { flex: 1; text-align: center; }
+
+  /* =========================================================
+     B · 画廊 GALLERY
+     ========================================================= */
+  .gal { background: #f3efe9; color: #1f1c19; --ac: #9b7b55; --mut: #8d847a; --line: rgba(31,28,25,.14); }
+  .gal .status { color: #1f1c19; }
+  .gal .capsule { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: #1f1c19; }
+  .gal .homebar { background: #1f1c19; }
+  .gal .scroll { padding-bottom: 96px; }
+  .g-top { padding: 54px 22px 0; font-family: var(--serif-en); font-size: 13px; letter-spacing: 6px; }
+  .g-hero { position: relative; height: 560px; margin-top: 18px; }
+  .g-vert { position: absolute; left: 18px; top: 6px; writing-mode: vertical-rl; font-family: var(--serif-cn); font-size: 46px; letter-spacing: 22px; font-weight: 500; line-height: 1; }
+  .g-vert small { font-size: 12px; letter-spacing: 6px; color: var(--mut); margin-top: 14px; font-weight: 400; }
+  .g-hero .pic { position: absolute; right: 0; top: 0; width: 262px; height: 430px; overflow: hidden; }
+  .g-hero .pic img { width: 100%; height: 100%; object-fit: cover; animation: drift 14s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: scale(1.08) translateY(-8px); } to { transform: scale(1.0) translateY(8px); } }
+  .g-hero .pic2 { position: absolute; left: 76px; top: 300px; width: 120px; height: 160px; object-fit: cover; border: 6px solid #f3efe9; }
+  .g-hero .line1 { position: absolute; left: 22px; bottom: 6px; font-family: var(--serif-en); font-style: italic; font-weight: 300; font-size: 46px; line-height: .95; }
+  .badge { position: absolute; right: 18px; top: 380px; width: 104px; height: 104px; border-radius: 50%; background: #1f1c19; color: #f3efe9; display: flex; align-items: center; justify-content: center; }
+  .badge svg { position: absolute; inset: 0; width: 100%; height: 100%; animation: spin 18s linear infinite; }
+  .badge svg text { font-size: 8.6px; letter-spacing: 1px; fill: #f3efe9; font-family: var(--sans); }
+  .badge b { font-family: var(--serif-cn); font-weight: 400; font-size: 13px; letter-spacing: 2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .g-tag { padding: 34px 22px 0 92px; font-family: var(--serif-cn); font-size: 14px; line-height: 2.2; letter-spacing: 2px; color: #4b443d; }
+
+  .g-index { padding: 60px 22px 0; }
+  .g-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 14px; border-bottom: 1px solid #1f1c19; }
+  .g-h b { font-family: var(--serif-en); font-weight: 400; font-size: 28px; font-style: italic; }
+  .g-h span { font-size: 11px; letter-spacing: 3px; color: var(--mut); }
+  .g-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .g-row .n { font-family: var(--serif-en); font-size: 15px; color: var(--ac); }
+  .g-row .t { font-family: var(--serif-cn); font-size: 17px; letter-spacing: 3px; }
+  .g-row .t small { display: block; font-family: var(--serif-en); font-style: italic; font-size: 13px; letter-spacing: 1px; color: var(--mut); margin-top: 2px; }
+  .g-row .p { text-align: right; font-family: var(--serif-en); font-size: 18px; }
+  .g-row .p small { display: block; font-size: 10px; font-family: var(--sans); letter-spacing: 2px; color: var(--mut); }
+  .g-row img { grid-column: 1 / -1; width: 100%; height: 0; object-fit: cover; transition: height .4s; }
+  .g-row.open img { height: 200px; margin-top: 6px; }
+
+  .g-coll { padding: 64px 22px 0; }
+  .g-coll .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; margin-top: 24px; }
+  .g-coll .a { grid-column: 1 / -1; }
+  .g-coll .a img { width: 100%; height: 260px; object-fit: cover; }
+  .g-coll .b img { width: 100%; height: 220px; object-fit: cover; }
+  .g-coll .c { margin-top: 56px; }
+  .g-coll .c img { width: 100%; height: 190px; object-fit: cover; }
+  .label { margin-top: 10px; font-size: 11px; line-height: 1.6; color: var(--mut); letter-spacing: 1px; }
+  .label b { display: block; font-family: var(--serif-cn); font-weight: 500; font-size: 14px; color: #1f1c19; letter-spacing: 2px; }
+
+  .g-team { padding: 64px 22px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .g-team .h { grid-column: 1 / -1; }
+  .arch { width: 100%; height: 200px; object-fit: cover; border-radius: 200px 200px 0 0; }
+  .g-foot { padding: 60px 22px 0; text-align: center; }
+  .g-foot .w { font-family: var(--serif-en); font-weight: 300; font-size: 40px; font-style: italic; line-height: 1; }
+  .g-foot p { font-size: 11px; letter-spacing: 2px; color: var(--mut); line-height: 2; margin-top: 14px; }
+
+  .g-tab { position: absolute; z-index: 40; left: 12px; right: 12px; bottom: 22px; height: 54px; border-radius: 27px; background: #1f1c19; color: rgba(243,239,233,.5); display: flex; justify-content: space-around; align-items: center; font-size: 12px; letter-spacing: 3px; box-shadow: 0 18px 30px -12px rgba(31,28,25,.5); }
+  .g-tab span.on { color: #1f1c19; background: #f3efe9; padding: 7px 14px; border-radius: 16px; }
+
+  .g-back { position: absolute; z-index: 50; top: 52px; left: 18px; font-family: var(--serif-en); font-size: 26px; line-height: 1; }
+  .g-dcover { padding: 96px 40px 0; }
+  .g-dcover img { width: 100%; height: 400px; object-fit: cover; border-radius: 200px 200px 0 0; }
+  .g-dtitle { text-align: center; padding: 30px 22px 0; }
+  .g-dtitle .e { font-family: var(--serif-en); font-style: italic; font-size: 16px; color: var(--ac); }
+  .g-dtitle h2 { font-family: var(--serif-cn); font-weight: 500; font-size: 30px; letter-spacing: 10px; margin-top: 8px; padding-left: 10px; }
+  .g-card { margin: 30px 22px 0; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #1f1c19; }
+  .g-card div { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 13px; letter-spacing: 2px; }
+  .g-card div small { display: block; font-size: 10px; color: var(--mut); letter-spacing: 3px; margin-bottom: 4px; }
+  .g-text { padding: 28px 22px 0; font-family: var(--serif-cn); font-size: 14px; line-height: 2.3; letter-spacing: 1px; color: #4b443d; text-indent: 2em; }
+  .g-pics { padding: 40px 0 0; display: grid; gap: 40px; }
+  .g-pics .w1 { padding: 0 22px; }
+  .g-pics .w1 img { width: 100%; height: 440px; object-fit: cover; }
+  .g-pics .w2 { width: 66%; margin-left: auto; padding-right: 22px; }
+  .g-pics .w2 img { width: 100%; height: 300px; object-fit: cover; }
+  .g-pics .w3 { width: 58%; padding-left: 22px; }
+  .g-pics .w3 img { width: 100%; height: 260px; object-fit: cover; }
+  .g-dock { position: absolute; z-index: 40; left: 12px; right: 12px; bottom: 22px; height: 56px; border-radius: 28px; background: #1f1c19; color: #f3efe9; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 24px; font-size: 12px; letter-spacing: 2px; }
+  .g-dock b { background: #f3efe9; color: #1f1c19; font-weight: 400; padding: 12px 20px; border-radius: 22px; letter-spacing: 4px; font-size: 13px; }
+
+  /* =========================================================
+     C · 胶片手记 FILM DIARY
+     ========================================================= */
+  .film { background: #efe5d6; color: #2b241e; --or: #e8743b; --mut: #8b7d6c; --kraft: #d8c3a2; }
+  .film::after { content: ""; position: absolute; inset: 0; background: var(--grain); opacity: .16; pointer-events: none; z-index: 45; mix-blend-mode: multiply; }
+  .film .status { color: #2b241e; }
+  .film .capsule { border: 1px solid rgba(43,36,30,.18); background: rgba(255,255,255,.55); color: #2b241e; }
+  .film .homebar { background: #2b241e; }
+  .film .scroll { padding-bottom: 96px; }
+  .f-head { padding: 96px 24px 0; }
+  .f-head .e { font-family: var(--serif-en); font-style: italic; font-size: 15px; color: var(--mut); }
+  .f-head h1 { font-family: var(--serif-cn); font-weight: 500; font-size: 34px; letter-spacing: 8px; margin-top: 4px; }
+  .f-head .d { display: inline-block; margin-top: 10px; font-family: "Courier New", monospace; font-size: 12px; color: var(--or); letter-spacing: 2px; border: 1px solid var(--or); padding: 2px 8px; transform: rotate(-2deg); }
+  .stack { position: relative; height: 470px; margin-top: 8px; }
+  .print { position: absolute; background: #fbf8f2; padding: 10px 10px 46px; box-shadow: 0 18px 30px -14px rgba(60,40,20,.45), 0 2px 4px rgba(60,40,20,.15); }
+  .print img { width: 100%; object-fit: cover; }
+  .print .stamp { position: absolute; right: 18px; bottom: 56px; font-family: "Courier New", monospace; font-weight: 700; font-size: 13px; color: #ff9a4d; text-shadow: 0 0 6px rgba(255,120,40,.8); letter-spacing: 1px; }
+  .print .hand { position: absolute; left: 14px; right: 14px; bottom: 12px; font-family: var(--serif-en); font-style: italic; font-size: 16px; color: #5b4f43; }
+  .p1 { left: 18px; top: 40px; width: 200px; transform: rotate(-7deg); }
+  .p1 img { height: 250px; }
+  .p2 { right: 16px; top: 10px; width: 190px; transform: rotate(6deg); }
+  .p2 img { height: 230px; }
+  .p3 { left: 74px; top: 150px; width: 220px; transform: rotate(-1deg); animation: sway 6s ease-in-out infinite; z-index: 3; }
+  .p3 img { height: 260px; }
+  @keyframes sway { 0%,100% { transform: rotate(-1.5deg) translateY(0); } 50% { transform: rotate(1deg) translateY(-6px); } }
+  .tape { position: absolute; top: -12px; left: 50%; width: 70px; height: 22px; margin-left: -35px; background: rgba(232,214,180,.75); transform: rotate(-3deg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .f-quote { padding: 24px 30px 0; font-family: var(--serif-cn); font-size: 16px; line-height: 2.2; letter-spacing: 3px; }
+  .f-quote em { font-style: normal; background: linear-gradient(transparent 62%, rgba(232,116,59,.25) 62%); }
+
+  .f-sec { padding: 52px 24px 18px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .f-sec .t { font-family: var(--serif-cn); font-size: 21px; letter-spacing: 5px; }
+  .f-sec .t small { display: block; font-family: var(--serif-en); font-style: italic; font-size: 14px; letter-spacing: 1px; color: var(--mut); }
+  .f-sec a { font-size: 11px; letter-spacing: 2px; color: var(--mut); }
+  .roll { background: #1e1a17; padding: 22px 0; position: relative; }
+  .roll::before, .roll::after { content: ""; position: absolute; left: 0; right: 0; height: 10px; background: repeating-linear-gradient(90deg, transparent 0 8px, #efe5d6 8px 16px, transparent 16px 24px); opacity: .85; }
+  .roll::before { top: 6px; } .roll::after { bottom: 6px; }
+  .roll .hscroll { gap: 8px; padding: 0 14px; }
+  .fr { flex: none; position: relative; }
+  .fr img { width: 150px; height: 210px; object-fit: cover; }
+  .fr span { position: absolute; left: 6px; bottom: -14px; font-family: "Courier New", monospace; font-size: 9px; color: var(--or); letter-spacing: 1px; }
+  .fr i { position: absolute; left: 8px; bottom: 8px; font-style: normal; font-size: 11px; letter-spacing: 2px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+
+  .tickets { padding: 0 24px; display: grid; gap: 16px; }
+  .ticket { display: grid; grid-template-columns: 96px 1fr 78px; background: #fbf8f2; box-shadow: 0 10px 22px -16px rgba(60,40,20,.5); position: relative; }
+  .ticket img { width: 96px; height: 118px; object-fit: cover; }
+  .ticket .m { padding: 16px 14px; }
+  .ticket .m b { display: block; font-family: var(--serif-cn); font-weight: 500; font-size: 16px; letter-spacing: 3px; }
+  .ticket .m small { display: block; font-size: 11px; color: var(--mut); line-height: 1.7; margin-top: 6px; }
+  .ticket .r { border-left: 1px dashed rgba(43,36,30,.28); display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--kraft); }
+  .ticket .r b { font-family: var(--serif-en); font-weight: 500; font-size: 22px; }
+  .ticket .r small { font-size: 10px; letter-spacing: 2px; color: #5b4f43; }
+  .ticket::before, .ticket::after { content: ""; position: absolute; right: 70px; width: 14px; height: 14px; border-radius: 50%; background: #efe5d6; }
+  .ticket::before { top: -7px; } .ticket::after { bottom: -7px; }
+
+  .f-note { margin: 52px 24px 0; padding: 26px 22px; background: #fbf8f2; position: relative; transform: rotate(-1deg); box-shadow: 0 10px 22px -16px rgba(60,40,20,.5); }
+  .f-note .tape { left: 30px; margin-left: 0; }
+  .f-note b { font-family: var(--serif-cn); font-weight: 500; font-size: 17px; letter-spacing: 4px; }
+  .f-note p { font-size: 12px; line-height: 2; color: #5b4f43; margin-top: 10px; letter-spacing: 1px; }
+  .f-note .who { display: flex; gap: 10px; margin-top: 16px; align-items: center; font-family: var(--serif-en); font-style: italic; font-size: 15px; color: var(--mut); }
+  .f-note .who img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #fbf8f2; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  .f-note .who img + img { margin-left: -18px; }
+
+  .f-tab { position: absolute; z-index: 40; left: 0; right: 0; bottom: 0; height: 84px; background: #fbf8f2; border-top: 1px solid rgba(43,36,30,.12); display: flex; justify-content: space-around; padding-top: 14px; font-size: 11px; letter-spacing: 2px; color: var(--mut); }
+  .f-tab span.on { color: #2b241e; font-weight: 600; }
+  .f-tab span.on::before { content: "●"; color: var(--or); font-size: 6px; display: block; text-align: center; margin-bottom: 2px; }
+
+  .f-back { position: absolute; z-index: 50; top: 52px; left: 18px; font-family: var(--serif-en); font-size: 26px; line-height: 1; }
+  .f-dcover { padding: 98px 22px 0; }
+  .f-dcover .print { position: relative; padding: 12px 12px 54px; transform: rotate(-1.2deg); }
+  .f-dcover .print img { height: 380px; }
+  .f-dtitle { padding: 30px 24px 0; }
+  .f-dtitle .lbl { display: flex; gap: 8px; }
+  .f-dtitle .lbl span { font-size: 11px; letter-spacing: 2px; padding: 3px 10px; background: var(--kraft); }
+  .f-dtitle h2 { font-family: var(--serif-cn); font-weight: 500; font-size: 28px; letter-spacing: 6px; margin-top: 12px; }
+  .f-dtitle p { font-family: var(--serif-cn); font-size: 14px; line-height: 2.2; letter-spacing: 1px; color: #5b4f43; margin-top: 14px; }
+  .f-scatter { position: relative; height: 760px; margin-top: 30px; }
+  .f-scatter .print { padding: 8px 8px 30px; }
+  .f-scatter .s1 { left: 22px; top: 0; width: 210px; transform: rotate(-4deg); }
+  .f-scatter .s1 img { height: 270px; }
+  .f-scatter .s2 { right: 18px; top: 200px; width: 170px; transform: rotate(5deg); }
+  .f-scatter .s2 img { height: 220px; }
+  .f-scatter .s3 { left: 40px; top: 400px; width: 240px; transform: rotate(-2deg); }
+  .f-scatter .s3 img { height: 300px; }
+  .f-scatter .print .hand { bottom: 6px; font-size: 13px; }
+  .f-dock { position: absolute; z-index: 40; left: 0; right: 0; bottom: 0; padding: 14px 22px 32px; background: #fbf8f2; border-top: 1px solid rgba(43,36,30,.12); display: flex; gap: 12px; align-items: center; }
+  .f-dock .c { font-family: "Courier New", monospace; font-size: 11px; color: var(--or); letter-spacing: 1px; }
+  .f-dock b { flex: 1; text-align: center; background: #2b241e; color: #fbf8f2; font-weight: 400; padding: 15px 0; letter-spacing: 5px; font-size: 14px; border-radius: 2px; }
+
+  .ask { max-width: 1280px; margin: 0 auto; padding: 40px 40px 100px; font-size: 14px; color: #4f4840; line-height: 2; }
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <small>ZhiNan Studio · Mini Program · v2</small>
+  <h1>三个方向，挑一个有感觉的</h1>
+  <p>v1 太「稳妥」，所以这一版把三种完全不同的气质推到极致。每个方向都有首页和作品详情两屏，可以在手机里上下滚动，部分元素会动。图片和文案都是线上真实数据。</p>
+  <nav class="jump"><a href="#noir">A · 暗房</a><a href="#gallery">B · 画廊</a><a href="#film">C · 胶片手记</a></nav>
+</header>
+
+<!-- ===================== A NOIR ===================== -->
+<section class="direction" id="noir">
+  <div class="d-copy">
+    <div class="tag">A</div>
+    <h2>暗房</h2>
+    <div class="en">The Darkroom</div>
+    <div class="mood"><span>电影感</span><span>高级</span><span>沉浸</span><span>夜色里的金</span></div>
+    <p>整个小程序像一间关了灯的展厅：近黑底色让照片自己发光，香槟金只用在细线和数字上。首页第一屏就是一部无声短片，照片缓慢推近、交叉淡入。</p>
+    <div class="wow"><b>记忆点</b>开屏全屏慢推镜头；金色描边的罗马数字章节号（I / II / III）；英文斜体大标题。</div>
+    <div class="ref">参考气质：徕卡、Aesop、电影海报</div>
+  </div>
+  <div class="phones">
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen noir">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <div class="scroll">
+          <div class="n-hero">
+            <div class="kb"><img data-m="606037a7-b264-4151-9897-ff2d58c29191" /><img data-m="ff9ca391-223e-44ea-b2a1-d61c4ab1872c" /><img data-m="5f9da193-a757-41b7-b0cf-f3f426ea83e3" /><img data-m="254c2408-6538-48be-ba23-cb2bb3e4e369" /></div>
+            <div class="n-mark"><div class="w">ZHINAN</div><div class="s">枝 南 影 像</div></div>
+            <div class="n-copy">
+              <div class="no">01<i></i>04</div>
+              <h1>Tender<br />Light.</h1>
+              <div class="cn">定格真实与温暖</div>
+              <div class="row"><span class="n-scroll"><i></i>SCROLL</span><span class="n-btn">预约拍摄</span></div>
+            </div>
+          </div>
+          <div class="n-belief">
+            <div class="k">— Our Belief —</div>
+            <p>用镜头收藏<br />你生活里柔软的光</p>
+            <div class="rule"></div>
+          </div>
+          <div class="n-chap l"><span class="num">I</span><img class="pic" data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /><div class="cap"><div class="e">Family Portrait</div><div class="t">亲子全家福</div><div class="p"><b>¥999</b>起 · 查看详情</div></div></div>
+          <div class="n-chap r"><span class="num">II</span><img class="pic" data-m="3a455924-4425-4794-add7-5e92250c3aac" /><div class="cap"><div class="e">Portrait</div><div class="t">个人写真</div><div class="p"><b>¥328</b>查看详情</div></div></div>
+          <div class="n-chap l"><span class="num">III</span><img class="pic" data-m="c0619be3-cc04-43a2-ae3a-55dd2af1f6ac" /><div class="cap"><div class="e">First Birthday</div><div class="t">儿童周岁照</div><div class="p"><b>¥328</b>起 · 查看详情</div></div></div>
+          <div class="n-strip-h"><div class="t">Stories<small>近 期 作 品</small></div><a>全部 →</a></div>
+          <div class="hscroll n-strip">
+            <div class="n-frame"><img data-m="82b7ede1-116c-4852-8409-55040300bacf" /><div class="c"><span>全家福-03</span><em>01</em></div></div>
+            <div class="n-frame"><img data-m="99cbd02d-9a6e-42c7-94ab-b2c046fe299e" /><div class="c"><span>女生写真-001</span><em>02</em></div></div>
+            <div class="n-frame"><img data-m="ac239eaa-65f7-47f7-80cc-fbacffce91e6" /><div class="c"><span>小孩-02</span><em>03</em></div></div>
+            <div class="n-frame"><img data-m="41d257d8-81ae-4cca-bbb6-5df2cf9ff86e" /><div class="c"><span>情侣写真-001</span><em>04</em></div></div>
+          </div>
+          <div class="n-visit">
+            <div class="t">Visit the Studio</div>
+            <p>东莞 · 凤岗镇逸菲酒店三楼 3008<br />每日 9:00 — 21:00</p>
+            <span class="n-btn solid">预约一次拍摄</span>
+          </div>
+        </div>
+        <div class="n-tab"><span class="on">首页</span><span>作品</span><span>服务</span><span>关于</span><span>我的</span></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>首页</span>
+    </div>
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen noir">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <span class="n-back">‹</span>
+        <div class="scroll">
+          <div class="n-cover"><img data-m="82b7ede1-116c-4852-8409-55040300bacf" /><div class="cp"><div class="e">Family Stories · No.01</div><h2>全家福-03</h2></div></div>
+          <div class="n-meta"><div><b>12</b>FRAMES</div><div><b>2026</b>YEAR</div><div><b>全家福</b>SERIES</div></div>
+          <p class="n-text">时光会走远，但爱意会留存在影像里。在轻松的互动中，记录下家人的拥抱与欢笑，把一家人整整齐齐的温暖，变成值得反复翻看的岁月故事。</p>
+          <div class="n-shot"><img style="height:480px" data-m="0d5a3b1d-b205-4ff7-9495-55b16b293332" /><div class="lb"><span>FRAME 02</span><span>/ 12</span></div></div>
+          <div class="n-shot inset"><img style="height:360px" data-m="606037a7-b264-4151-9897-ff2d58c29191" /><div class="lb"><span>FRAME 03</span><span>/ 12</span></div></div>
+          <div class="n-shot"><img style="height:440px" data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /><div class="lb"><span>FRAME 04</span><span>/ 12</span></div></div>
+          <div style="height:120px"></div>
+        </div>
+        <div class="n-dock"><span class="n-btn">分享</span><span class="n-btn solid" style="flex:2">预约同款拍摄</span></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>作品详情</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== B GALLERY ===================== -->
+<section class="direction" id="gallery">
+  <div class="d-copy">
+    <div class="tag">B</div>
+    <h2>画廊</h2>
+    <div class="en">The Gallery</div>
+    <div class="mood"><span>艺术书</span><span>留白</span><span>东方</span><span>克制</span></div>
+    <p>像翻一本艺术画册：大面积留白、竖排的「枝南影像」、不对称的图片摆放。服务做成画册目录，每张作品下面有一张像美术馆那样的小标签。</p>
+    <div class="wow"><b>记忆点</b>竖排大字号品牌名；一直旋转的圆形「预约拍摄」徽章；拱门形的人像照片；悬浮的深色胶囊导航。</div>
+    <div class="ref">参考气质：Kinfolk 杂志、美术馆展签、日式书籍装帧</div>
+  </div>
+  <div class="phones">
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen gal">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <div class="scroll">
+          <div class="g-top">ZHINAN</div>
+          <div class="g-hero">
+            <div class="g-vert">枝南影像<small>EST. 2026</small></div>
+            <div class="pic"><img data-m="5f9da193-a757-41b7-b0cf-f3f426ea83e3" /></div>
+            <img class="pic2" data-m="ac239eaa-65f7-47f7-80cc-fbacffce91e6" />
+            <div class="badge">
+              <svg viewBox="0 0 100 100"><defs><path id="ring" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" /></defs><text><textPath href="#ring" textLength="236" lengthAdjust="spacing">BOOK A SESSION · 预约拍摄 · SINCE 2026 ·</textPath></text></svg>
+              <b>预约</b>
+            </div>
+            <div class="line1">Moments,<br />kept softly.</div>
+          </div>
+          <p class="g-tag">不刻意改变，<br />只点亮你本来的美。</p>
+
+          <div class="g-index">
+            <div class="g-h"><b>Index</b><span>拍摄服务 · 03</span></div>
+            <div class="g-row open"><span class="n">01</span><span class="t">亲子全家福<small>Family</small></span><span class="p">999<small>起</small></span><img data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /></div>
+            <div class="g-row"><span class="n">02</span><span class="t">个人写真<small>Portrait</small></span><span class="p">328<small>元</small></span><img data-m="3a455924-4425-4794-add7-5e92250c3aac" /></div>
+            <div class="g-row"><span class="n">03</span><span class="t">儿童周岁照<small>First Birthday</small></span><span class="p">328<small>起</small></span><img data-m="c0619be3-cc04-43a2-ae3a-55dd2af1f6ac" /></div>
+          </div>
+
+          <div class="g-coll">
+            <div class="g-h"><b>Selected Works</b><span>全部 →</span></div>
+            <div class="grid">
+              <div class="a"><img data-m="0d5a3b1d-b205-4ff7-9495-55b16b293332" /><div class="label"><b>全家福-02</b>Family · 2026 · 12 frames</div></div>
+              <div class="b"><img data-m="99cbd02d-9a6e-42c7-94ab-b2c046fe299e" /><div class="label"><b>女生写真-001</b>Portrait · 2026</div></div>
+              <div class="c"><img data-m="41d257d8-81ae-4cca-bbb6-5df2cf9ff86e" /><div class="label"><b>情侣写真-001</b>Couple · 2026</div></div>
+            </div>
+          </div>
+
+          <div class="g-team">
+            <div class="g-h h"><b>The People</b><span>一起记录的人</span></div>
+            <div><img class="arch" data-m="e69fe4dc-21f8-4ed8-a09e-5973df6b9434" /><div class="label"><b>安娜</b>摄影师 · Photographer</div></div>
+            <div><img class="arch" data-m="9a36db9c-acde-4ea2-aece-7e6454a7e493" /><div class="label"><b>方女士</b>化妆师 · Make-up</div></div>
+          </div>
+          <div class="g-foot"><div class="w">See you soon.</div><p>东莞 · 凤岗镇逸菲酒店三楼 3008<br />每日 9:00 — 21:00 · 183 6551 9973</p></div>
+        </div>
+        <div class="g-tab"><span class="on">首页</span><span>作品</span><span>服务</span><span>关于</span><span>我的</span></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>首页（点目录行可展开图片）</span>
+    </div>
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen gal">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <span class="g-back">‹</span>
+        <div class="scroll">
+          <div class="g-dcover"><img data-m="82b7ede1-116c-4852-8409-55040300bacf" /></div>
+          <div class="g-dtitle"><div class="e">Family Stories</div><h2>全家福-03</h2></div>
+          <div class="g-card">
+            <div><small>系列</small>全家福 · 孕照</div>
+            <div><small>张数</small>12 张</div>
+            <div><small>拍摄</small>安娜</div>
+            <div><small>年份</small>2026</div>
+          </div>
+          <p class="g-text">时光会走远，但爱意会留存在影像里。在轻松的互动中，记录下家人的拥抱与欢笑，把一家人整整齐齐的温暖，变成值得反复翻看的岁月故事。</p>
+          <div class="g-pics">
+            <div class="w1"><img data-m="0d5a3b1d-b205-4ff7-9495-55b16b293332" /><div class="label">02 / 12</div></div>
+            <div class="w2"><img data-m="606037a7-b264-4151-9897-ff2d58c29191" /><div class="label">03 / 12</div></div>
+            <div class="w3"><img data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /><div class="label">04 / 12</div></div>
+          </div>
+          <div style="height:120px"></div>
+        </div>
+        <div class="g-dock"><span>喜欢这组？</span><b>预约同款</b></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>作品详情</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== C FILM ===================== -->
+<section class="direction" id="film">
+  <div class="d-copy">
+    <div class="tag">C</div>
+    <h2>胶片手记</h2>
+    <div class="en">Film Diary</div>
+    <div class="mood"><span>温暖</span><span>有人情味</span><span>复古</span><span>手作感</span></div>
+    <p>像一本贴满照片的手账：纸张颗粒、冲洗出来的相纸、胶带、橙色日期戳、底片条。轻奢感来自质感和细节，而不是距离感，更贴近你们「两个女生开的照相馆」的温度。</p>
+    <div class="wow"><b>记忆点</b>首页叠放的三张相纸（最上面那张会轻轻晃）；带齿孔的底片条横向滑动；套餐做成可撕的票根。</div>
+    <div class="ref">参考气质：胶片相机、手账、独立照相馆</div>
+  </div>
+  <div class="phones">
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen film">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <div class="scroll">
+          <div class="f-head"><div class="e">ZhiNan Studio · Film Diary</div><h1>枝南影像</h1><span class="d">'26 11 01</span></div>
+          <div class="stack">
+            <div class="print p1"><img data-m="99cbd02d-9a6e-42c7-94ab-b2c046fe299e" /><span class="hand">softly, her</span></div>
+            <div class="print p2"><img data-m="ac239eaa-65f7-47f7-80cc-fbacffce91e6" /><span class="hand">first birthday</span></div>
+            <div class="print p3"><span class="tape"></span><img data-m="ff9ca391-223e-44ea-b2a1-d61c4ab1872c" /><span class="stamp">'26 11 01</span><span class="hand">a sunny afternoon</span></div>
+          </div>
+          <p class="f-quote">把每一份<em>平凡的温暖</em>，<br />都拍成值得长久珍藏的故事。</p>
+
+          <div class="f-sec"><div class="t"><small>Contact Sheet</small>近期作品</div><a>全部 →</a></div>
+          <div class="roll"><div class="hscroll">
+            <div class="fr"><img data-m="82b7ede1-116c-4852-8409-55040300bacf" /><i>全家福-03</i><span>▸ 24A</span></div>
+            <div class="fr"><img data-m="41d257d8-81ae-4cca-bbb6-5df2cf9ff86e" /><i>情侣写真</i><span>▸ 25</span></div>
+            <div class="fr"><img data-m="0d5a3b1d-b205-4ff7-9495-55b16b293332" /><i>全家福-02</i><span>▸ 25A</span></div>
+            <div class="fr"><img data-m="99cbd02d-9a6e-42c7-94ab-b2c046fe299e" /><i>女生写真</i><span>▸ 26</span></div>
+          </div></div>
+
+          <div class="f-sec"><div class="t"><small>Tickets</small>拍摄服务</div><a>全部 →</a></div>
+          <div class="tickets">
+            <div class="ticket"><img data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /><div class="m"><b>亲子全家福</b><small>在轻松的家庭互动中，捕捉真实的拥抱与欢笑</small></div><div class="r"><b>999</b><small>元起</small></div></div>
+            <div class="ticket"><img data-m="3a455924-4425-4794-add7-5e92250c3aac" /><div class="m"><b>个人写真</b><small>美不是改变，而是点亮你本来的样子</small></div><div class="r"><b>328</b><small>元</small></div></div>
+            <div class="ticket"><img data-m="c0619be3-cc04-43a2-ae3a-55dd2af1f6ac" /><div class="m"><b>儿童周岁照</b><small>在玩耍里定格第一个里程碑</small></div><div class="r"><b>328</b><small>元起</small></div></div>
+          </div>
+
+          <div class="f-note">
+            <span class="tape"></span>
+            <b>你好，我们是枝南</b>
+            <p>两位 95 后女生，开了一家风格和审美在线的照相馆。遇见皆是同频和缘分，我们想给你的，是最珍贵的照片。</p>
+            <div class="who"><img data-m="e69fe4dc-21f8-4ed8-a09e-5973df6b9434" /><img data-m="9a36db9c-acde-4ea2-aece-7e6454a7e493" /><span>— 安娜 & 方女士</span></div>
+          </div>
+        </div>
+        <div class="f-tab"><span class="on">首页</span><span>作品</span><span>服务</span><span>关于</span><span>我的</span></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>首页</span>
+    </div>
+    <div class="ph-wrap">
+      <div class="phone"><div class="screen film">
+        <div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="capsule">··· ｜ ◎</div>
+        <span class="f-back">‹</span>
+        <div class="scroll">
+          <div class="f-dcover"><div class="print"><span class="tape"></span><img data-m="82b7ede1-116c-4852-8409-55040300bacf" /><span class="stamp">'26 11 01</span><span class="hand">our little family · No.03</span></div></div>
+          <div class="f-dtitle">
+            <div class="lbl"><span>全家福</span><span>孕照</span><span>12 张</span></div>
+            <h2>全家福-03</h2>
+            <p>时光会走远，但爱意会留存在影像里。在轻松的互动中，记录下家人的拥抱与欢笑，把一家人整整齐齐的温暖，变成值得反复翻看的岁月故事。</p>
+          </div>
+          <div class="f-scatter">
+            <div class="print s1"><img data-m="0d5a3b1d-b205-4ff7-9495-55b16b293332" /><span class="hand">02 · hold on tight</span></div>
+            <div class="print s2"><img data-m="606037a7-b264-4151-9897-ff2d58c29191" /><span class="hand">03</span></div>
+            <div class="print s3"><span class="tape"></span><img data-m="2fe250bc-2d24-4f45-8872-f83883a12d8e" /><span class="hand">04 · laughing</span></div>
+          </div>
+        </div>
+        <div class="f-dock"><span class="c">12 EXP.</span><b>预约同款拍摄</b></div>
+        <div class="homebar"></div>
+      </div></div>
+      <span>作品详情</span>
+    </div>
+  </div>
+</section>
+
+<p class="ask">看完告诉我哪个方向最接近你想要的感觉，也可以混搭（比如「A 的黑金 + C 的相纸」）。选定后我会把这个方向扩展到全部 8 个页面。</p>
+
+<script>
+  const base = "https://api.seekway.xyz/api/v1/public/media/";
+  document.querySelectorAll("img[data-m]").forEach((img) => {
+    img.src = base + img.dataset.m + "/preview/content";
+    img.alt = "";
+  });
+  document.querySelectorAll(".g-row").forEach((row) => {
+    row.addEventListener("click", () => {
+      document.querySelectorAll(".g-row").forEach((r) => r.classList.toggle("open", r === row && !row.classList.contains("open")));
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>枝南影像 · 「关于我们」页面排版优化提案（主理人与品牌理念）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sans: -apple-system, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+    --serif-soft: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+    --en-clean: "Plus Jakarta Sans", -apple-system, sans-serif;
+
+    /* 视觉设计基调：温润奶玉 + 焦糖茶暖棕 */
+    --bg-warm: #F4EFEA;
+    --card-porcelain: #FFFFFF;
+    --accent-caramel: #8E5636;
+    --accent-soft: #F5EAE1;
+    --accent-tag-bg: rgba(142, 86, 54, 0.08);
+    --ink-charcoal: #26201B;
+    --ink-subtle: #75685B;
+    --ink-light: #A39688;
+    --line-subtle: rgba(38, 32, 27, 0.07);
+    --shadow-soft: 0 10px 28px -10px rgba(50, 35, 20, 0.07), 0 2px 6px rgba(50, 35, 20, 0.02);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #EAE3D8;
+    color: var(--ink-charcoal);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  /* 顶部总控台 */
+  .header-console {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(234, 227, 216, 0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(38, 32, 27, 0.08);
+    padding: 16px 36px;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .console-brand h1 {
+    font-family: var(--serif-soft); font-size: 20px; letter-spacing: 2px; font-weight: 500;
+  }
+  .console-brand p {
+    font-size: 12px; color: var(--ink-subtle); margin-top: 3px;
+  }
+
+  .nav-tabs-group {
+    display: flex; gap: 8px; background: rgba(255, 255, 255, 0.7); padding: 4px; border-radius: 24px;
+    border: 1px solid rgba(38, 32, 27, 0.06);
+  }
+  .nav-tab-btn {
+    padding: 8px 18px; border-radius: 20px; border: 0; background: transparent;
+    font-size: 13px; font-weight: 500; color: var(--ink-subtle); cursor: pointer; transition: all .15s;
+  }
+  .nav-tab-btn.active {
+    background: var(--ink-charcoal); color: #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .nav-tab-btn.btn-diff {
+    background: rgba(142, 86, 54, 0.12); color: var(--accent-caramel); font-weight: 600;
+  }
+  .nav-tab-btn.btn-diff.active {
+    background: var(--accent-caramel); color: #FFF;
+  }
+
+  /* 主舞台 */
+  .design-stage {
+    max-width: 1440px; margin: 30px auto 0; padding: 0 36px;
+  }
+  .stage-panel { display: none; }
+  .stage-panel.active { display: grid; grid-template-columns: 410px 1fr; gap: 40px; align-items: flex-start; animation: fadeUp .2s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* 手机模型机身 */
+  .phone-wrapper {
+    position: sticky; top: 96px;
+  }
+  .phone-shell {
+    width: 375px; min-height: 760px; max-height: 840px; border-radius: 46px; background: #1C1713; padding: 10px;
+    box-shadow: 0 30px 70px -20px rgba(40, 25, 12, 0.35), 0 0 0 1px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+  .phone-screen {
+    position: relative; width: 100%; flex: 1; border-radius: 36px; overflow: hidden;
+    background: var(--bg-warm); color: var(--ink-charcoal); display: flex; flex-direction: column;
+  }
+  .screen-scroll-area {
+    flex: 1; overflow-y: auto; scrollbar-width: none; padding: 20px 18px 40px;
+  }
+  .screen-scroll-area::-webkit-scrollbar { display: none; }
+
+  /* 模拟微信小程序顶部胶囊 */
+  .mp-status-bar {
+    height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px;
+    font-size: 13px; font-weight: 600; color: #26201B;
+  }
+  .mp-topbar {
+    padding: 8px 18px 12px;
+  }
+  .mp-topbar .eyebrow {
+    font-size: 10px; letter-spacing: 2.5px; color: var(--accent-caramel); font-family: var(--en-clean); font-weight: 600;
+  }
+  .mp-topbar h2 {
+    font-family: var(--serif-soft); font-size: 24px; letter-spacing: 2px; font-weight: 600; margin-top: 4px;
+  }
+  .mp-topbar .sub {
+    font-size: 12px; color: var(--ink-subtle); margin-top: 4px; line-height: 1.5;
+  }
+
+  /* 方案解构说明卡片（右侧栏） */
+  .brief-panel {
+    background: #FFFFFF; border-radius: 24px; padding: 32px 36px;
+    box-shadow: 0 8px 30px -10px rgba(50,35,20,0.06); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .brief-badge {
+    display: inline-block; font-size: 11px; letter-spacing: 1.5px; font-weight: 600; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-caramel); margin-bottom: 12px;
+  }
+  .brief-panel h3 {
+    font-family: var(--serif-soft); font-size: 24px; letter-spacing: 2px; font-weight: 600; margin-bottom: 8px;
+  }
+  .brief-panel .desc {
+    font-size: 14px; line-height: 1.8; color: var(--ink-subtle); margin-bottom: 24px;
+  }
+  .brief-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;
+  }
+  .brief-card {
+    background: var(--bg-warm); padding: 16px 18px; border-radius: 16px;
+  }
+  .brief-card b {
+    display: block; font-size: 13px; color: var(--accent-caramel); margin-bottom: 6px;
+  }
+  .brief-card p {
+    font-size: 12px; line-height: 1.7; color: var(--ink-charcoal);
+  }
+  .spec-checklist {
+    border-top: 1px solid var(--line-subtle); padding-top: 20px;
+  }
+  .spec-checklist h4 {
+    font-size: 13px; letter-spacing: 1px; color: var(--ink-subtle); margin-bottom: 12px; text-transform: uppercase;
+  }
+  .spec-checklist ul {
+    list-style: none; display: flex; flex-direction: column; gap: 10px;
+  }
+  .spec-checklist li {
+    font-size: 13px; line-height: 1.6; color: var(--ink-charcoal); display: flex; align-items: flex-start; gap: 8px;
+  }
+  .spec-checklist li span.icon {
+    color: var(--accent-caramel); font-weight: bold; flex: none;
+  }
+
+  /* =========================================================================
+     公共组件样式定义
+     ========================================================================= */
+
+  /* 擅长领域标签共通 */
+  .specialties-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+  }
+  .spec-chip {
+    display: inline-flex; align-items: center;
+    padding: 3px 9px; border-radius: 6px; font-size: 10.5px; letter-spacing: 0.5px;
+    background: var(--accent-tag-bg); color: var(--accent-caramel); font-weight: 500;
+  }
+
+  /* -------------------------------------------------------------------------
+     方案一：生活杂志·专访手记流（强烈推荐）
+     特色：
+     1. 品牌介绍采用「杂志扉页手记」，左侧焦糖色细流线，人文宋体呼吸感左对齐，去除生硬白框
+     2. 主理人采用「横向大卡排版」，左侧 4:5 典雅竖肖像，右侧姓名、角色、擅长标签、完整走心心声，彻底消灭截断
+     ------------------------------------------------------------------------- */
+
+  /* 方案一：序言手记卡（优雅通透，无厚重大白框） */
+  .manifesto-style-1 {
+    position: relative; margin: 4px 0 24px; padding: 18px 18px 18px 20px;
+    background: #FFFFFF; border-radius: 20px; box-shadow: var(--shadow-soft);
+    border-left: 3.5px solid var(--accent-caramel);
+  }
+  .manifesto-style-1 .quote-tag {
+    font-size: 10px; letter-spacing: 2px; color: var(--accent-caramel); font-family: var(--en-clean); font-weight: 600;
+    display: block; margin-bottom: 6px; text-transform: uppercase;
+  }
+  .manifesto-style-1 p {
+    font-family: var(--serif-soft); font-size: 14.5px; line-height: 1.9; color: var(--ink-charcoal);
+    letter-spacing: 0.8px;
+  }
+  .manifesto-style-1 .sign {
+    font-size: 11px; color: var(--ink-subtle); margin-top: 10px; text-align: right; letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  /* 方案一：主理人专访横卡 */
+  .section-h {
+    font-family: var(--serif-soft); font-size: 17px; letter-spacing: 2px; font-weight: 600;
+    margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-h small {
+    font-size: 11px; color: var(--accent-caramel); font-weight: normal; font-family: var(--sans);
+  }
+  .founder-horizontal-card {
+    background: #FFFFFF; border-radius: 20px; padding: 14px; margin-bottom: 14px;
+    box-shadow: var(--shadow-soft); display: flex; gap: 14px; align-items: stretch;
+  }
+  .founder-horizontal-card .portrait-box {
+    width: 110px; flex: none; border-radius: 14px; overflow: hidden; background: #E8E0D5; position: relative;
+  }
+  .founder-horizontal-card .portrait-box img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .founder-horizontal-card .content-box {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .founder-horizontal-card .header-line {
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .founder-horizontal-card .header-line .name {
+    font-family: var(--serif-soft); font-size: 17px; font-weight: 600; letter-spacing: 1px;
+  }
+  .founder-horizontal-card .header-line .role {
+    font-size: 10.5px; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-caramel);
+    font-weight: 500;
+  }
+  .founder-horizontal-card .bio-full {
+    font-size: 11.5px; line-height: 1.75; color: var(--ink-subtle); margin-top: 8px;
+    /* 不截断，舒展自然读完 */
+  }
+
+  /* -------------------------------------------------------------------------
+     方案二：画廊双联·黄金比例卡（紧凑双列平衡）
+     特色：
+     1. 品牌介绍采用「温润信笺微框」，配合手记印章微标
+     2. 主理人保留双列并排形式，但彻底重构：
+        - 肖像高度收敛为 240px，消灭巨大压迫感；
+        - 卡片高度自适应内容，不硬切截断；
+        - 优雅内嵌擅长标签，视觉规整和谐。
+     ------------------------------------------------------------------------- */
+  .manifesto-style-2 {
+    margin: 4px 0 24px; padding: 22px 20px; text-align: center;
+    background: #FFFFFF; border-radius: 20px; box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(142, 86, 54, 0.12); position: relative;
+  }
+  .manifesto-style-2 .stamp {
+    position: absolute; top: 12px; right: 16px; font-size: 9px; letter-spacing: 1px;
+    padding: 2px 6px; border-radius: 4px; border: 1px dashed var(--accent-caramel); color: var(--accent-caramel);
+    opacity: 0.7; font-family: var(--en-clean);
+  }
+  .manifesto-style-2 p {
+    font-family: var(--serif-soft); font-size: 14px; line-height: 2.1; color: var(--ink-charcoal);
+    letter-spacing: 1px;
+  }
+
+  .founder-duo-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .founder-duo-card {
+    background: #FFFFFF; border-radius: 18px; padding: 10px; box-shadow: var(--shadow-soft);
+    display: flex; flex-direction: column;
+  }
+  .founder-duo-card .portrait-box {
+    width: 100%; height: 160px; /* 相比 210px 大幅缩小，避免压迫 */
+    border-radius: 12px; overflow: hidden; background: #E8E0D5;
+  }
+  .founder-duo-card .portrait-box img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .founder-duo-card .info-block {
+    padding: 10px 4px 4px; display: flex; flex-direction: column; flex: 1;
+  }
+  .founder-duo-card .title-row {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;
+  }
+  .founder-duo-card .title-row .name {
+    font-family: var(--serif-soft); font-size: 15px; font-weight: 600; letter-spacing: 1px;
+  }
+  .founder-duo-card .title-row .role {
+    font-size: 9.5px; padding: 2px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-caramel);
+  }
+  .founder-duo-card .bio-adaptive {
+    font-size: 11px; line-height: 1.65; color: var(--ink-subtle); margin-top: 6px;
+    /* 自然展示完整，不截断 */
+  }
+
+  /* -------------------------------------------------------------------------
+     方案三：主理人联名信笺·叙事融合流
+     特色：
+     1. 将品牌寄语直接与主理人合璧为「安娜与方女士的写给你的第一封信」
+     2. 顶部双人微像并列，文字以第一人称叙述，随后自然分流至各自专业专长
+     ------------------------------------------------------------------------- */
+  .narrative-card {
+    background: #FFFFFF; border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow-soft);
+    margin-bottom: 20px;
+  }
+  .narrative-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--line-subtle);
+  }
+  .narrative-header .tag {
+    font-family: var(--serif-soft); font-size: 15px; font-weight: 600; letter-spacing: 1px; color: var(--ink-charcoal);
+  }
+  .narrative-header .duo-faces {
+    display: flex;
+  }
+  .narrative-header .duo-faces img {
+    width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #FFF;
+  }
+  .narrative-header .duo-faces img + img { margin-left: -10px; }
+  .narrative-card .letter-body {
+    font-family: var(--serif-soft); font-size: 14px; line-height: 2.1; color: var(--ink-charcoal);
+    letter-spacing: 0.8px;
+  }
+  .narrative-card .signature {
+    margin-top: 14px; text-align: right; font-size: 12px; color: var(--accent-caramel); font-family: var(--serif-soft);
+  }
+
+  /* -------------------------------------------------------------------------
+     对照页：现状问题还原（Before）
+     ------------------------------------------------------------------------- */
+  .manifesto-current {
+    margin-top: 8rpx; padding: 20px 16px; background: #ffffff; border-radius: 16px;
+    box-shadow: 0 4px 16px -6px rgba(50, 35, 20, 0.06); font-family: var(--serif-soft);
+    font-size: 14px; line-height: 2; letter-spacing: 1px; text-align: center;
+  }
+  .manifesto-current .mark {
+    font-size: 32px; line-height: 0.8; color: var(--accent-caramel); opacity: 0.7; display: block; margin-bottom: 8px;
+  }
+  .founder-current-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;
+  }
+  .founder-current-card {
+    background: #ffffff; border-radius: 16px; padding: 8px; box-shadow: 0 4px 16px -6px rgba(50, 35, 20, 0.06);
+  }
+  .founder-current-card .portrait-box {
+    width: 100%; height: 210px; border-radius: 10px; overflow: hidden; background: #eae3d8;
+  }
+  .founder-current-card .portrait-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .founder-current-card .name-row {
+    display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; padding: 0 4px;
+  }
+  .founder-current-card .name-row b { font-family: var(--serif-soft); font-size: 14px; }
+  .founder-current-card .name-row span {
+    font-size: 9px; padding: 2px 6px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-caramel);
+  }
+  .founder-current-card .bio-truncated {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    font-size: 11px; line-height: 1.5; color: var(--ink-subtle); margin-top: 4px; padding: 0 4px 4px;
+  }
+  .problem-tag {
+    display: inline-block; font-size: 10px; color: #DC2626; background: #FEE2E2; padding: 2px 6px; border-radius: 4px;
+    margin-top: 4px;
+  }
+
+  /* 通用联系渠道底栏示意 */
+  .channel-card-demo {
+    margin-top: 24px; padding: 18px 16px; background: #ffffff; border-radius: 18px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .channel-card-demo h4 {
+    font-family: var(--serif-soft); font-size: 15px; font-weight: 600; margin-bottom: 12px;
+  }
+  .channel-line-demo {
+    display: flex; justify-content: space-between; align-items: center; padding: 10px 0;
+    border-bottom: 1px solid var(--line-subtle); font-size: 12px;
+  }
+  .channel-line-demo:last-child { border-bottom: none; }
+  .channel-line-demo .val { color: var(--ink-subtle); }
+  .channel-line-demo .btn { color: var(--accent-caramel); font-size: 11px; }
+
+</style>
+</head>
+<body>
+
+<!-- 顶部总控台 -->
+<header class="header-console">
+  <div class="console-brand">
+    <h1>枝南影像 · 「关于我们」界面设计提案</h1>
+    <p>针对品牌介绍呆板、主理人大图压迫、文字截断及擅长标签缺失的重构方案</p>
+  </div>
+  <div class="nav-tabs-group">
+    <button class="nav-tab-btn active" onclick="switchStage('stage-1', this)">方案一：生活杂志·专访手记流 (强烈推荐)</button>
+    <button class="nav-tab-btn" onclick="switchStage('stage-2', this)">方案二：画廊双联·黄金比例卡</button>
+    <button class="nav-tab-btn" onclick="switchStage('stage-3', this)">方案三：人文信笺·叙事融合流</button>
+    <button class="nav-tab-btn btn-diff" onclick="switchStage('stage-before', this)">⚠️ 当前线上问题对照 (Before)</button>
+  </div>
+</header>
+
+<main class="design-stage">
+
+  <!-- =========================================================================
+       方案一：生活杂志·专访手记流 (强烈推荐)
+       ========================================================================= -->
+  <section id="stage-1" class="stage-panel active">
+    <div class="phone-wrapper">
+      <div class="phone-shell">
+        <div class="phone-screen">
+          <div class="mp-status-bar">
+            <span>9:41</span>
+            <span>5G 􀛨</span>
+          </div>
+          <div class="screen-scroll-area">
+            <div class="mp-topbar">
+              <span class="eyebrow">ABOUT US</span>
+              <h2>关于枝南</h2>
+              <p class="sub">两位主理人，把日子拍成可以长久翻看的故事。</p>
+            </div>
+
+            <!-- 1. 序言手记卡（左侧焦糖色艺术细线，温润左对齐排版，呼吸透气） -->
+            <div class="manifesto-style-1">
+              <span class="quote-tag">STUDIO PHILOSOPHY · 相馆初心</span>
+              <p>“两位 95 后女生，开了一家风格和审美在线的照相馆。遇见皆是同频和缘分，我们想给你的是最珍贵的照片。”</p>
+              <div class="sign">—— 枝南影像 · 记录你生活里柔软的光</div>
+            </div>
+
+            <!-- 2. 主理人专访横卡：左侧 4:5 典雅竖肖像，右侧姓名、角色、擅长标签、完整心声 -->
+            <div class="section-h">
+              <span>主理人档案</span>
+              <small>安娜 &amp; 方女士</small>
+            </div>
+
+            <!-- 摄影师：安娜 -->
+            <div class="founder-horizontal-card">
+              <div class="portrait-box">
+                <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="安娜" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" />
+              </div>
+              <div class="content-box">
+                <div>
+                  <div class="header-line">
+                    <span class="name">安娜</span>
+                    <span class="role">摄影师</span>
+                  </div>
+                  <!-- 擅长标签（优雅呈现，不再丢失） -->
+                  <div class="specialties-row">
+                    <span class="spec-chip">自然情绪抓拍</span>
+                    <span class="spec-chip">胶片光影</span>
+                    <span class="spec-chip">亲子引导</span>
+                  </div>
+                </div>
+                <!-- 完整心声：彻底取消 line-clamp 截断，从容完整阅读 -->
+                <p class="bio-full">用镜头安静陪伴，捕捉你不经意的笑意，把每一个被温柔看见的瞬间，都变成长久的珍藏。</p>
+              </div>
+            </div>
+
+            <!-- 化妆师：方女士 -->
+            <div class="founder-horizontal-card">
+              <div class="portrait-box">
+                <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="方女士" onerror="this.src='https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80'" />
+              </div>
+              <div class="content-box">
+                <div>
+                  <div class="header-line">
+                    <span class="name">方女士</span>
+                    <span class="role">化妆师</span>
+                  </div>
+                  <!-- 擅长标签 -->
+                  <div class="specialties-row">
+                    <span class="spec-chip">日杂清透底妆</span>
+                    <span class="spec-chip">氛围感造型</span>
+                    <span class="spec-chip">原生毛流感</span>
+                  </div>
+                </div>
+                <!-- 完整心声 -->
+                <p class="bio-full">美不是改变，而是轻轻点亮你本来的样子，让镜头前的你自在舒展，拥有属于自己的质感光芒。</p>
+              </div>
+            </div>
+
+            <!-- 官方通道 -->
+            <div class="channel-card-demo">
+              <h4>官方通道</h4>
+              <div class="channel-line-demo">
+                <span>微信沟通</span>
+                <span class="val">zhinan_studio</span>
+                <span class="btn">复制</span>
+              </div>
+              <div class="channel-line-demo">
+                <span>小红书</span>
+                <span class="val">枝南影像</span>
+                <span class="btn">复制</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧解构分析 -->
+    <div class="brief-panel">
+      <span class="brief-badge">方案一 · 生活杂志手记流</span>
+      <h3>为什么这是最具质感与阅读舒适度的方案？</h3>
+      <p class="desc">
+        将原本傻大的生硬白框与严重截断的双列小卡，重构为类似日本生活方式杂志《暮しの手帖》/《FUDGE》的专访人物手记。
+      </p>
+
+      <div class="brief-grid">
+        <div class="brief-card">
+          <b>✦ 解决理念介绍生硬呆板</b>
+          <p>摈弃了居中大引号的公文感。改用左侧焦糖细引线+左对齐人文宋体，排版舒展透气，像画册首页的编者序（Editor’s Note），自然亲切。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 解决肖像压迫与文字截断</b>
+          <p>改用横向图文大卡（左图右文）。图片保持 110px 黄金人像竖幅，留出右侧完整的文本空间，主理人心声（bio）100% 完整展示，不再出现令人抓狂的省略号。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 优雅呈现「擅长领域」</b>
+          <p>在姓名与角色下方，以焦糖色微光标签（`specialties`）自然流动展示，让客户一眼看清安娜擅长情绪光影、方女士擅长清透日杂妆。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 极佳的垂直节奏</b>
+          <p>两位主理人纵向展开，每张卡片层次分明，浏览时指尖滑动自然流畅，不再有两列挤在一起左右对不齐的局促感。</p>
+        </div>
+      </div>
+
+      <div class="spec-checklist">
+        <h4>技术落地要点</h4>
+        <ul>
+          <li><span class="icon">✓</span> 样式升级为 `.founder-horizontal-card`，消除 `-webkit-line-clamp`。</li>
+          <li><span class="icon">✓</span> WXML 遍历渲染 `member.specialties`，类名采用 `.spec-chip`，完美兼容现有自动化测试。</li>
+          <li><span class="icon">✓</span> 适配各种长度的主理人介绍，文字多时卡片自适应撑开，文字少时不留冗余空白。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       方案二：画廊双联·黄金比例卡
+       ========================================================================= -->
+  <section id="stage-2" class="stage-panel">
+    <div class="phone-wrapper">
+      <div class="phone-shell">
+        <div class="phone-screen">
+          <div class="mp-status-bar">
+            <span>9:41</span>
+            <span>5G 􀛨</span>
+          </div>
+          <div class="screen-scroll-area">
+            <div class="mp-topbar">
+              <span class="eyebrow">ABOUT US</span>
+              <h2>关于枝南</h2>
+              <p class="sub">两位主理人，把日子拍成可以长久翻看的故事。</p>
+            </div>
+
+            <!-- 理念介绍：信笺印章微框 -->
+            <div class="manifesto-style-2">
+              <span class="stamp">FOUNDED 2026</span>
+              <p>“两位 95 后女生，开了一家风格和审美在线的照相馆。<br/>遇见皆是同频和缘分，我们想给你的是最珍贵的照片。”</p>
+            </div>
+
+            <!-- 主理人双列并排：重构肖像比例 (高度由 210px 降为 160px) + 擅长标签 + 自然高度展开 -->
+            <div class="section-h">
+              <span>主理人</span>
+              <small>双肖像画廊</small>
+            </div>
+
+            <div class="founder-duo-grid">
+              <!-- 安娜 -->
+              <div class="founder-duo-card">
+                <div class="portrait-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="安娜" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" />
+                </div>
+                <div class="info-block">
+                  <div class="title-row">
+                    <span class="name">安娜</span>
+                    <span class="role">摄影师</span>
+                  </div>
+                  <div class="specialties-row">
+                    <span class="spec-chip">情绪抓拍</span>
+                    <span class="spec-chip">胶片感</span>
+                  </div>
+                  <p class="bio-adaptive">用镜头安静陪伴，捕捉你不经意的笑意，把每一个被温柔看见的瞬间变成长久珍藏。</p>
+                </div>
+              </div>
+
+              <!-- 方女士 -->
+              <div class="founder-duo-card">
+                <div class="portrait-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="方女士" onerror="this.src='https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80'" />
+                </div>
+                <div class="info-block">
+                  <div class="title-row">
+                    <span class="name">方女士</span>
+                    <span class="role">化妆师</span>
+                  </div>
+                  <div class="specialties-row">
+                    <span class="spec-chip">日杂底妆</span>
+                    <span class="spec-chip">氛围感</span>
+                  </div>
+                  <p class="bio-adaptive">美不是改变，而是轻轻点亮你本来的样子，让镜头前的你自在舒展，拥有质感光芒。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 官方通道 -->
+            <div class="channel-card-demo">
+              <h4>官方通道</h4>
+              <div class="channel-line-demo">
+                <span>微信沟通</span>
+                <span class="val">zhinan_studio</span>
+                <span class="btn">复制</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧解构分析 -->
+    <div class="brief-panel">
+      <span class="brief-badge">方案二 · 画廊双联黄金比例卡</span>
+      <h3>如果仍然希望两位主理人并排并列：</h3>
+      <p class="desc">
+        保留左右双列对比的“并肩合作”感，但彻底修正此前图大文缩、生硬截断的硬伤。
+      </p>
+
+      <div class="brief-grid">
+        <div class="brief-card">
+          <b>✦ 压制图片过大比例</b>
+          <p>将单张肖像高度从 210px (420rpx) 压缩到 160px (320rpx)，从头重脚轻恢复为黄金人像取景比例。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 自适应高度取消截断</b>
+          <p>文字不再被强制 clamp 在两行。卡片高度随文字自然伸展，整段走心文字完整表达。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 精致紧凑的擅长标签</b>
+          <p>在姓名下方紧凑排列 2 个核心擅长标签，不抢夺文字视觉重心。</p>
+        </div>
+        <div class="brief-card">
+          <b>✦ 权衡点</b>
+          <p>因为双列宽度受限（约 160px），标签如果字数较多可能需要换行；如果两位主理人的文字长度差异较大，两张卡片的高度可能会有些许高低差。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       方案三：人文信笺·叙事融合流
+       ========================================================================= -->
+  <section id="stage-3" class="stage-panel">
+    <div class="phone-wrapper">
+      <div class="phone-shell">
+        <div class="phone-screen">
+          <div class="mp-status-bar">
+            <span>9:41</span>
+            <span>5G 􀛨</span>
+          </div>
+          <div class="screen-scroll-area">
+            <div class="mp-topbar">
+              <span class="eyebrow">ABOUT US</span>
+              <h2>关于枝南</h2>
+              <p class="sub">两位主理人，把日子拍成可以长久翻看的故事。</p>
+            </div>
+
+            <!-- 将寄语与主理人合璧为一封致客人的亲笔信 -->
+            <div class="narrative-card">
+              <div class="narrative-header">
+                <span class="tag">致来到枝南的你</span>
+                <div class="duo-faces">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="安娜" />
+                  <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="方女士" />
+                </div>
+              </div>
+              <div class="letter-body">
+                “我们是两位 95 后女生。开这家照相馆的初心很简单：不迎合工业化的流水线摆拍，只想用最舒适的审美和温度，为你记录下真实、动人、值得被珍藏的瞬间。”
+              </div>
+              <div class="signature">—— 安娜（摄影） &amp; 方女士（妆造）</div>
+            </div>
+
+            <!-- 随后展开两人更专业的技能矩阵 -->
+            <div class="founder-horizontal-card" style="margin-bottom:12px;">
+              <div class="portrait-box" style="width:96px;">
+                <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="安娜" />
+              </div>
+              <div class="content-box">
+                <div class="header-line">
+                  <span class="name">安娜 · 摄影主理</span>
+                </div>
+                <div class="specialties-row">
+                  <span class="spec-chip">情绪捕捉</span>
+                  <span class="spec-chip">复古胶片</span>
+                  <span class="spec-chip">光影构图</span>
+                </div>
+                <p class="bio-full">用镜头安静陪伴，捕捉你不经意的笑意。</p>
+              </div>
+            </div>
+
+            <div class="founder-horizontal-card">
+              <div class="portrait-box" style="width:96px;">
+                <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="方女士" />
+              </div>
+              <div class="content-box">
+                <div class="header-line">
+                  <span class="name">方女士 · 美学主理</span>
+                </div>
+                <div class="specialties-row">
+                  <span class="spec-chip">定制妆造</span>
+                  <span class="spec-chip">清透裸感</span>
+                  <span class="spec-chip">服装搭配</span>
+                </div>
+                <p class="bio-full">美不是改变，而是轻轻点亮你本来的样子。</p>
+              </div>
+            </div>
+
+            <div class="channel-card-demo">
+              <h4>官方通道</h4>
+              <div class="channel-line-demo">
+                <span>微信沟通</span>
+                <span class="val">zhinan_studio</span>
+                <span class="btn">复制</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧解构分析 -->
+    <div class="brief-panel">
+      <span class="brief-badge">方案三 · 人文信笺叙事流</span>
+      <h3>合二为一，强调品牌温度与故事感</h3>
+      <p class="desc">
+        将原本割裂的“相馆寄语”与“主理人”融合成一封真诚的来信，右上角并排并列两位女生的圆形肖像，仪式感十足。
+      </p>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       现状对照：当前线上存在的问题 (Before)
+       ========================================================================= -->
+  <section id="stage-before" class="stage-panel">
+    <div class="phone-wrapper">
+      <div class="phone-shell" style="border: 2px dashed #DC2626;">
+        <div class="phone-screen">
+          <div class="mp-status-bar">
+            <span>9:41</span>
+            <span>当前现状截图还原</span>
+          </div>
+          <div class="screen-scroll-area">
+            <div class="mp-topbar">
+              <span class="eyebrow">ABOUT US</span>
+              <h2>关于枝南</h2>
+              <p class="sub">两位主理人，把日子拍成可以长久翻看的故事。</p>
+            </div>
+
+            <!-- 问题 1：生硬的大白块 + 突兀的居中大引号 -->
+            <div class="manifesto-current">
+              <span class="mark">“</span>
+              <p>两位95后女生，开了一家风格和审美在线的照相馆。<br/>遇见皆是同频和缘分，我们想给你的是最珍贵的照片</p>
+            </div>
+            <div class="problem-tag">⚠️ 痛点 1: 生硬大白框，居中排版空洞，缺少摄影画册的呼吸感</div>
+
+            <div class="section-h" style="margin-top:18px;">
+              <span>主理人</span>
+            </div>
+
+            <!-- 问题 2：图片占了 70% 高度 (420rpx)，文字只有 2 行且被 line-clamp 硬性截断 -->
+            <div class="founder-current-grid">
+              <div class="founder-current-card">
+                <div class="portrait-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="安娜" />
+                </div>
+                <div class="name-row">
+                  <b>安娜</b>
+                  <span>摄影师</span>
+                </div>
+                <p class="bio-truncated">用镜头安静陪伴，捕捉你不经意的笑意，把每一个被温柔看见...</p>
+                <div class="problem-tag">⚠️ 痛点 2: 文字被...强制截断！</div>
+                <div class="problem-tag">⚠️ 痛点 3: 擅长标签完全没有显示！</div>
+              </div>
+
+              <div class="founder-current-card">
+                <div class="portrait-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="方女士" />
+                </div>
+                <div class="name-row">
+                  <b>方女士</b>
+                  <span>化妆师</span>
+                </div>
+                <p class="bio-truncated">美不是改变，而是轻轻点亮你本来的样子，让镜头前的你自在...</p>
+                <div class="problem-tag">⚠️ 痛点 2: 后半句完全读不到！</div>
+                <div class="problem-tag">⚠️ 痛点 3: 擅长标签未展示！</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧现状剖析 -->
+    <div class="brief-panel" style="border-left: 4px solid #DC2626;">
+      <span class="brief-badge" style="background:#FEE2E2; color:#DC2626;">现状深度复盘</span>
+      <h3>当前实现的主要矛盾与视觉缺陷</h3>
+      <p class="desc">
+        您截图中的问题完全命中当前实现的结构性瓶颈，主要集中在以下三个方面：
+      </p>
+
+      <div class="brief-grid">
+        <div class="brief-card" style="background:#FFF5F5;">
+          <b style="color:#DC2626;">1. 理念介绍单调空洞</b>
+          <p>采用普通的 `<view class="manifesto">` 居中卡片，一个大号引号 `“` 占据了过多视觉重量，文字在宽大的白色矩形内居中，显得生硬、机械，缺乏女性摄影工作室温润精致的气质。</p>
+        </div>
+        <div class="brief-card" style="background:#FFF5F5;">
+          <b style="color:#DC2626;">2. 肖像过大与文字截断冲突</b>
+          <p>双列卡片中图片高度被硬编码为 `420rpx`，直接吃掉了 70% 的版面；下方文字又设置了 `-webkit-line-clamp: 2`，直接导致主理人心声（bio）被腰斩，温度尽失。</p>
+        </div>
+        <div class="brief-card" style="background:#FFF5F5;">
+          <b style="color:#DC2626;">3. 擅长标签（specialties）代码遗漏</b>
+          <p>后台数据与 API 中明明有 `member.specialties`（如“自然情绪抓拍”、“胶片光影”等），但在 `about.wxml` 中完全遗漏了循环渲染逻辑，导致辛苦配置的标签完全看不见。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function switchStage(stageId, btn) {
+    document.querySelectorAll('.stage-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(stageId).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

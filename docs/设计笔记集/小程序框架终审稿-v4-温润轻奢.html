@@ -1,0 +1,1924 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>枝南影像 · 小程序前端架构结合方案（温润轻奢·以画为主）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sans: -apple-system, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+    --serif-soft: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+    --en-clean: "Plus Jakarta Sans", -apple-system, sans-serif;
+
+    /* 核心调色板：燕麦暖底 + 瓷白卡片 + 焦糖茶暖棕 */
+    --bg-warm: #F4EFEA;
+    --card-porcelain: #FFFFFF;
+    --accent-caramel: #8E5636;
+    --accent-soft: #F5EAE1;
+    --ink-charcoal: #26201B;
+    --ink-subtle: #75685B;
+    --ink-light: #A39688;
+    --line-subtle: rgba(38, 32, 27, 0.07);
+    --shadow-soft: 0 12px 32px -10px rgba(50, 35, 20, 0.08), 0 2px 6px rgba(50, 35, 20, 0.02);
+    --shadow-float: 0 18px 40px -12px rgba(45, 30, 15, 0.16);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #EAE3D8;
+    color: var(--ink-charcoal);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 90px;
+  }
+
+  /* 顶部总控台 */
+  .header-console {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(234, 227, 216, 0.94);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(38, 32, 27, 0.08);
+    padding: 16px 40px;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .console-brand h1 {
+    font-family: var(--serif-soft); font-size: 20px; letter-spacing: 3px; font-weight: 500;
+  }
+  .console-brand p {
+    font-size: 12px; color: var(--ink-subtle); margin-top: 3px;
+  }
+
+  .nav-tabs-group {
+    display: flex; gap: 8px; background: rgba(255, 255, 255, 0.65); padding: 4px; border-radius: 24px;
+    border: 1px solid rgba(38, 32, 27, 0.06);
+  }
+  .nav-tab-btn {
+    padding: 7px 16px; border-radius: 20px; border: 0; background: transparent;
+    font-size: 13px; font-weight: 500; color: var(--ink-subtle); cursor: pointer; transition: all .15s;
+  }
+  .nav-tab-btn.active {
+    background: var(--ink-charcoal); color: #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* 主舞台 */
+  .design-stage {
+    max-width: 1680px; margin: 32px auto 0; padding: 0 40px;
+  }
+  .stage-panel { display: none; }
+  .stage-panel.active { display: block; animation: fadeUp .25s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* 方案解构说明卡 */
+  .design-brief {
+    background: #FFFFFF; border-radius: 20px; padding: 28px 36px; margin-bottom: 32px;
+    box-shadow: 0 4px 20px -8px rgba(50,35,20,0.06); border: 1px solid rgba(38,32,27,0.05);
+    display: grid; grid-template-columns: 320px 1fr; gap: 40px; align-items: center;
+  }
+  .brief-main h2 {
+    font-family: var(--serif-soft); font-size: 24px; letter-spacing: 4px; font-weight: 500;
+  }
+  .brief-main .en {
+    font-family: var(--en-clean); font-size: 13px; color: var(--accent-caramel); letter-spacing: 2px; margin-top: 4px;
+  }
+  .brief-main p {
+    font-size: 13px; line-height: 1.8; color: var(--ink-subtle); margin-top: 12px;
+  }
+  .brief-features {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .feat-item { padding: 12px 16px; border-radius: 12px; background: var(--bg-warm); }
+  .feat-item b { display: block; font-size: 13px; color: var(--accent-caramel); margin-bottom: 4px; }
+  .feat-item p { font-size: 12px; line-height: 1.6; color: var(--ink-charcoal); }
+
+  /* 多机对比横向阵列 */
+  .mockup-row {
+    display: flex; gap: 32px; overflow-x: auto; padding-bottom: 24px; justify-content: flex-start;
+  }
+  .mockup-item {
+    display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none;
+  }
+  .mockup-label {
+    font-size: 13px; letter-spacing: 2px; color: var(--ink-charcoal); font-weight: 500;
+  }
+
+  /* 手机模型机身 */
+  .phone-shell {
+    width: 375px; height: 812px; border-radius: 46px; background: #1C1713; padding: 10px;
+    box-shadow: 0 35px 80px -25px rgba(40, 25, 12, 0.35), 0 0 0 1px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .phone-screen {
+    position: relative; width: 100%; height: 100%; border-radius: 36px; overflow: hidden;
+    background: var(--bg-warm); color: var(--ink-charcoal); display: flex; flex-direction: column;
+  }
+
+  /* 微信小程序系统层 */
+  .mp-status {
+    position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 26px 0 30px;
+    font-size: 13px; font-weight: 600; pointer-events: none;
+  }
+  .mp-capsule-btn {
+    position: absolute; top: 48px; right: 12px; z-index: 50;
+    width: 86px; height: 30px; border-radius: 16px;
+    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+    border: 1px solid rgba(38, 32, 27, 0.08); display: flex; align-items: center; justify-content: space-around;
+    font-size: 11px; pointer-events: none;
+  }
+  .mp-homebar {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 4px; border-radius: 4px; background: var(--ink-charcoal); opacity: .7;
+    z-index: 60; pointer-events: none;
+  }
+
+  .screen-scroll-area {
+    flex: 1; overflow-y: auto; scrollbar-width: none; padding-bottom: 96px;
+  }
+  .screen-scroll-area::-webkit-scrollbar { display: none; }
+
+  /* =========================================================================
+     核心视觉元素系统（1 + 5 融合精髓）
+     ========================================================================= */
+
+  /* 顶部优雅极简微标（无在线胶囊、无压迫感） */
+  .brand-header-bar {
+    padding: 56px 20px 14px; display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .brand-header-bar .logo-cn {
+    font-family: var(--serif-soft); font-size: 22px; letter-spacing: 4px; font-weight: 600;
+  }
+  .brand-header-bar .tagline {
+    font-size: 11px; letter-spacing: 1.5px; color: var(--ink-subtle); margin-top: 2px;
+  }
+
+  /* 沉浸式温润卡片：焦点作品 */
+  .hero-focus-card {
+    margin: 6px 18px 0; border-radius: 24px; overflow: hidden; position: relative; height: 420px;
+    background: #E8E0D5; box-shadow: var(--shadow-soft);
+  }
+  .hero-focus-card img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-focus-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(244,239,234,0.1) 0%, transparent 40%, rgba(35,28,22,0.78) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 22px 20px; color: #FFF;
+  }
+  .hero-focus-overlay .sub-tag {
+    font-size: 10px; letter-spacing: 2px; opacity: .85; text-transform: uppercase;
+  }
+  .hero-focus-overlay h3 {
+    font-family: var(--serif-soft); font-size: 22px; letter-spacing: 3px; font-weight: 500; margin-top: 4px;
+  }
+  .hero-focus-overlay p {
+    font-size: 12px; opacity: .9; margin-top: 4px; line-height: 1.6;
+  }
+
+  /* 现代圆润分类药丸（继承 5 的轻快切换体验） */
+  .filter-pills-scroll {
+    display: flex; gap: 8px; padding: 20px 18px 12px; overflow-x: auto; scrollbar-width: none;
+  }
+  .pill-item {
+    flex: none; padding: 7px 16px; border-radius: 20px; font-size: 12px; letter-spacing: 1px;
+    background: var(--card-porcelain); color: var(--ink-subtle); border: 1px solid rgba(38,32,27,0.06);
+    cursor: pointer; transition: all .15s;
+  }
+  .pill-item.active {
+    background: var(--ink-charcoal); color: #FFF; border-color: var(--ink-charcoal); font-weight: 500;
+  }
+
+  /* 瓷白画册式瀑布流（看作品核心体验） */
+  .works-section { padding: 4px 18px 0; }
+  .section-title-row {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px;
+  }
+  .section-title-row h4 {
+    font-family: var(--serif-soft); font-size: 17px; letter-spacing: 2px; font-weight: 600;
+  }
+  .section-title-row span {
+    font-size: 11px; color: var(--accent-caramel); letter-spacing: 1px;
+  }
+
+  .works-waterfall {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .work-porcelain-card {
+    background: var(--card-porcelain); border-radius: 18px; overflow: hidden; padding: 6px;
+    box-shadow: 0 6px 18px -6px rgba(50, 35, 20, 0.05); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .work-porcelain-card img {
+    width: 100%; object-fit: cover; border-radius: 14px;
+  }
+  .work-card-text {
+    padding: 8px 6px 6px;
+  }
+  .work-card-text .cat {
+    font-size: 10px; color: var(--accent-caramel); letter-spacing: 1px; display: block;
+  }
+  .work-card-text .title {
+    font-family: var(--serif-soft); font-size: 14px; letter-spacing: 1px; font-weight: 500; margin-top: 2px; display: block;
+  }
+  .work-card-text .summary {
+    font-size: 11px; color: var(--ink-subtle); margin-top: 4px; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  /* 首页无分层对齐排版方案 */
+  /* 方案 A: 图文一体·无缝大画卡（无外层白框分层，文字浮在图片下方微暗影上，绝对等高齐平） */
+  .home-layout-overlay {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .home-overlay-card {
+    position: relative; height: 215px; border-radius: 18px; overflow: hidden;
+    background: #E8E0D5; box-shadow: 0 4px 16px -6px rgba(50,35,20,0.06);
+  }
+  .home-overlay-card img { width: 100%; height: 100%; object-fit: cover; }
+  .home-overlay-card .mask {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(25,18,13,0.78) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 12px 10px; color: #FFF;
+  }
+  .home-overlay-card .mask .cat { font-size: 9px; letter-spacing: 1.5px; opacity: .85; }
+  .home-overlay-card .mask .t { font-family: var(--serif-soft); font-size: 14px; letter-spacing: 1px; font-weight: 500; margin-top: 2px; }
+  .home-overlay-card .mask .s { font-size: 10px; opacity: .8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 方案 B: 美术馆展签排版（彻底去掉外层白框分层，照片直接落在大底上，下方规整文字完全对齐） */
+  .home-layout-gallery {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .home-gallery-item {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .home-gallery-item .pic-wrap {
+    width: 100%; height: 175px; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 4px 14px -6px rgba(50,35,20,0.08); background: #E8E0D5;
+  }
+  .home-gallery-item .pic-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .home-gallery-item .label-wrap {
+    padding: 0 2px;
+  }
+  .home-gallery-item .label-wrap .t {
+    font-family: var(--serif-soft); font-size: 13.5px; font-weight: 500; letter-spacing: 0.5px; display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .home-gallery-item .label-wrap .d {
+    font-size: 11px; color: var(--ink-subtle); margin-top: 3px; display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;
+  }
+
+  /* 方案 C: 头牌大画报 + 齐平双联（杂志层次，绝对齐平） */
+  .home-layout-lead {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .home-lead-primary {
+    position: relative; height: 230px; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 8px 24px -10px rgba(50,35,20,0.1); background: #E8E0D5;
+  }
+  .home-lead-primary img { width: 100%; height: 100%; object-fit: cover; }
+  .home-lead-primary .mask {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 35%, rgba(25,18,13,0.8) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 16px 18px; color: #FFF;
+  }
+  .home-lead-primary .mask .cat { font-size: 10px; letter-spacing: 2px; opacity: .85; }
+  .home-lead-primary .mask .t { font-family: var(--serif-soft); font-size: 17px; letter-spacing: 2px; font-weight: 500; margin-top: 4px; }
+  .home-lead-primary .mask .s { font-size: 11.5px; opacity: .9; margin-top: 4px; line-height: 1.5; }
+  .home-lead-duo {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .home-lead-duo .sub-card {
+    position: relative; height: 150px; border-radius: 16px; overflow: hidden;
+    background: #E8E0D5; box-shadow: 0 4px 14px -6px rgba(50,35,20,0.06);
+  }
+  .home-lead-duo .sub-card img { width: 100%; height: 100%; object-fit: cover; }
+  .home-lead-duo .sub-card .mask {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(25,18,13,0.75) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 10px 10px; color: #FFF;
+  }
+  .home-lead-duo .sub-card .mask .t { font-family: var(--serif-soft); font-size: 13px; font-weight: 500; }
+  .home-lead-duo .sub-card .mask .cat { font-size: 9px; opacity: .8; margin-top: 2px; }
+
+  /* 温情工作室理念卡片 */
+  .studio-story-card {
+    margin: 24px 18px 0; background: var(--card-porcelain); border-radius: 22px; padding: 22px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .studio-story-card .quote {
+    font-family: var(--serif-soft); font-size: 15px; line-height: 2; letter-spacing: 2px; color: var(--ink-charcoal);
+  }
+  .studio-profile {
+    display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-subtle);
+  }
+  .studio-avatars { display: flex; }
+  .studio-avatars img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid #FFF; }
+  .studio-avatars img + img { margin-left: -10px; }
+  .studio-meta b { font-size: 12px; letter-spacing: 1px; display: block; }
+  .studio-meta small { font-size: 11px; color: var(--ink-subtle); display: block; margin-top: 2px; }
+
+  /* =========================================================================
+     全页面高级感温润组件规范（服务 / 关于 / 我的 / 预约）
+     ========================================================================= */
+
+  /* 04 服务列表（章节式画册呈现） */
+  .svc-chapter-card {
+    margin: 0 18px 20px; background: var(--card-porcelain); border-radius: 24px; padding: 18px 18px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .svc-chapter-head {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;
+  }
+  .svc-chapter-head .ch-idx {
+    font-family: var(--serif-soft); font-size: 20px; color: var(--accent-caramel); font-weight: 500;
+  }
+  .svc-chapter-head .ch-name {
+    font-family: var(--serif-soft); font-size: 18px; letter-spacing: 3px; font-weight: 600; margin-left: 8px;
+  }
+  .svc-chapter-head .ch-en {
+    font-family: var(--en-clean); font-size: 12px; color: var(--ink-light); letter-spacing: 1.5px;
+  }
+  .svc-chapter-cover {
+    width: 100%; height: 210px; object-fit: cover; border-radius: 16px; display: block;
+  }
+  .svc-package-item {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-subtle);
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .svc-package-item .copy b {
+    font-family: var(--serif-soft); font-size: 15px; letter-spacing: 1px; display: block;
+  }
+  .svc-package-item .copy p {
+    font-size: 11.5px; color: var(--ink-subtle); line-height: 1.6; margin-top: 4px; max-width: 200px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .svc-package-item .price-col {
+    text-align: right; flex: none;
+  }
+  .svc-package-item .price-col .val {
+    font-family: var(--serif-soft); font-size: 18px; color: var(--accent-caramel); font-weight: 600;
+  }
+  .svc-package-item .price-col small { font-size: 10px; color: var(--ink-light); }
+  .svc-package-item .price-col .btn-view {
+    font-size: 11px; color: var(--ink-charcoal); letter-spacing: 1px; display: block; margin-top: 4px;
+    border-bottom: 1px solid var(--accent-caramel); padding-bottom: 1px;
+  }
+
+  /* 05 服务详情（三栏规整数据 + 精致条目清单） */
+  .pkg-head-block {
+    padding: 0 4px 18px;
+  }
+  .pkg-head-block .cat-tag {
+    font-size: 10px; letter-spacing: 2px; color: var(--accent-caramel); text-transform: uppercase;
+  }
+  .pkg-head-block h2 {
+    font-family: var(--serif-soft); font-size: 24px; letter-spacing: 3px; font-weight: 600; margin: 6px 0 8px;
+  }
+  .pkg-head-block .summary-text {
+    font-size: 12.5px; line-height: 1.85; color: var(--ink-subtle);
+  }
+  .pkg-metrics-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 24px;
+    background: var(--bg-warm); padding: 14px 10px; border-radius: 16px;
+  }
+  .pkg-metric-cell { text-align: center; }
+  .pkg-metric-cell:not(:last-child) { border-right: 1px solid rgba(38,32,27,0.08); }
+  .pkg-metric-cell b {
+    font-family: var(--serif-soft); font-size: 18px; color: var(--ink-charcoal); display: block;
+  }
+  .pkg-metric-cell span {
+    font-size: 10px; color: var(--ink-subtle); letter-spacing: 1px; margin-top: 2px; display: block;
+  }
+  .pkg-section-title {
+    font-family: var(--serif-soft); font-size: 16px; letter-spacing: 2px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px; margin: 20px 0 12px;
+  }
+  .pkg-section-title::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-caramel);
+  }
+  .pkg-check-list { display: flex; flex-direction: column; gap: 8px; }
+  .pkg-check-row {
+    background: var(--bg-warm); padding: 10px 14px; border-radius: 12px;
+    display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-charcoal);
+  }
+  .pkg-check-row .num {
+    font-family: var(--en-clean); font-size: 11px; color: var(--accent-caramel); font-weight: 600;
+  }
+  .pkg-tips-card {
+    margin-top: 20px; background: #FAF5EE; border: 1px solid rgba(142,86,54,0.12);
+    border-radius: 16px; padding: 14px 16px;
+  }
+  .pkg-tips-card b {
+    font-size: 12px; color: var(--accent-caramel); letter-spacing: 1px; display: block; margin-bottom: 6px;
+  }
+  .pkg-tips-card p {
+    font-size: 11.5px; line-height: 1.7; color: var(--ink-subtle);
+  }
+
+  /* 06 关于相馆（真实真诚主理人双肖像 + 便捷联系卡） */
+  .about-manifesto-card {
+    margin: 10px 18px 20px; background: var(--card-porcelain); border-radius: 24px; padding: 24px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05); text-align: center;
+  }
+  .about-manifesto-card .mark {
+    font-family: var(--serif-soft); font-size: 36px; line-height: .6; color: var(--accent-caramel); opacity: .7;
+  }
+  .about-manifesto-card p {
+    font-family: var(--serif-soft); font-size: 15px; line-height: 2.2; letter-spacing: 2px;
+    color: var(--ink-charcoal); margin-top: 14px;
+  }
+  .about-team-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 18px 20px;
+  }
+  .founder-porcelain-card {
+    background: var(--card-porcelain); border-radius: 20px; overflow: hidden; padding: 8px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .founder-porcelain-card img {
+    width: 100%; height: 180px; object-fit: cover; border-radius: 14px; display: block;
+  }
+  .founder-info { padding: 10px 4px 6px; }
+  .founder-info .name-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .founder-info .name-row b {
+    font-family: var(--serif-soft); font-size: 15px; letter-spacing: 2px;
+  }
+  .founder-info .name-row .role-pill {
+    font-size: 10px; padding: 2px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-caramel); font-weight: 500;
+  }
+  .founder-info .bio {
+    font-size: 11px; line-height: 1.6; color: var(--ink-subtle); margin-top: 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .contact-porcelain-card {
+    margin: 0 18px 24px; background: var(--card-porcelain); border-radius: 22px; padding: 18px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .contact-field-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 12px 0;
+  }
+  .contact-field-row:not(:last-child) { border-bottom: 1px solid var(--line-subtle); }
+  .contact-field-row .lbl { font-size: 12px; color: var(--ink-light); width: 64px; }
+  .contact-field-row .val { font-size: 13px; color: var(--ink-charcoal); flex: 1; letter-spacing: 0.5px; }
+  .contact-field-row .action-btn {
+    font-size: 11px; color: var(--accent-caramel); border-bottom: 1px solid var(--accent-caramel); padding-bottom: 1px;
+  }
+  .qr-code-duo {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;
+  }
+  .qr-box {
+    background: var(--bg-warm); border-radius: 16px; padding: 14px; text-align: center;
+  }
+  .qr-box img {
+    width: 100%; height: 110px; object-fit: contain; border-radius: 8px; background: #FFF;
+  }
+  .qr-box span {
+    display: block; font-size: 11px; letter-spacing: 2px; color: var(--ink-subtle); margin-top: 8px;
+  }
+
+  /* 07 我的（温情卡片、无冷漠字眼） */
+  .profile-welcome-card {
+    margin: 10px 18px 18px; background: var(--card-porcelain); border-radius: 24px; padding: 22px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .profile-avatar-box {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-caramel);
+    display: grid; place-items: center; font-family: var(--serif-soft); font-size: 20px; font-weight: 600;
+  }
+  .profile-welcome-card h3 {
+    font-family: var(--serif-soft); font-size: 18px; letter-spacing: 2px; font-weight: 600;
+  }
+  .profile-welcome-card p {
+    font-size: 11.5px; color: var(--ink-subtle); margin-top: 3px;
+  }
+  .reservation-card-warm {
+    margin: 0 18px 14px; background: var(--card-porcelain); border-radius: 20px; padding: 18px 18px 16px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .res-card-top {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+  }
+  .res-card-top .time-text {
+    font-family: var(--serif-soft); font-size: 16px; font-weight: 600; color: var(--ink-charcoal); letter-spacing: 0.5px;
+  }
+  .res-status-pill {
+    font-size: 10.5px; letter-spacing: 1.5px; padding: 3px 10px; border-radius: 12px; font-weight: 500;
+  }
+  .res-status-pill.confirmed { background: #EAF2E4; color: #4B7336; }
+  .res-status-pill.pending { background: #FAF0E4; color: #9A622A; }
+  .reservation-card-warm .pkg-name {
+    font-family: var(--serif-soft); font-size: 15px; letter-spacing: 1px; font-weight: 500;
+  }
+  .reservation-card-warm .location-hint {
+    font-size: 11.5px; color: var(--ink-subtle); margin-top: 4px; line-height: 1.6;
+  }
+  .res-action-row {
+    margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line-subtle);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .res-action-row .price-label {
+    font-family: var(--serif-soft); font-size: 16px; color: var(--accent-caramel); font-weight: 600;
+  }
+  .res-action-row .btn-small {
+    padding: 6px 16px; border-radius: 16px; background: var(--ink-charcoal); color: #FFF; font-size: 11px;
+    letter-spacing: 1.5px; border: 0; cursor: pointer;
+  }
+  .mine-menu-card {
+    margin: 16px 18px 24px; background: var(--card-porcelain); border-radius: 20px; padding: 4px 18px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .mine-menu-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 13px; color: var(--ink-charcoal);
+  }
+  .mine-menu-row:not(:last-child) { border-bottom: 1px solid var(--line-subtle); }
+  .mine-menu-row span { color: var(--ink-light); font-size: 14px; }
+
+  /* 08 预约咨询页（顺滑日历与时段选择） */
+  .booking-body-pad { padding: 0 18px 100px; }
+  .booking-section-card {
+    background: var(--card-porcelain); border-radius: 20px; padding: 18px 18px 20px;
+    box-shadow: var(--shadow-soft); border: 1px solid rgba(38,32,27,0.05); margin-bottom: 14px;
+  }
+  .booking-section-card .sec-h {
+    font-family: var(--serif-soft); font-size: 15px; letter-spacing: 1px; font-weight: 600; margin-bottom: 12px;
+  }
+  .booking-pkg-grid { display: flex; flex-direction: column; gap: 8px; }
+  .booking-pkg-option {
+    border: 1px solid var(--line-subtle); border-radius: 14px; padding: 10px 14px; background: #FFF;
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+  }
+  .booking-pkg-option.selected {
+    border-color: var(--accent-caramel); background: var(--accent-soft);
+  }
+  .booking-pkg-option b { font-size: 13px; letter-spacing: 0.5px; }
+  .booking-pkg-option span { font-family: var(--serif-soft); font-size: 14px; color: var(--accent-caramel); font-weight: 600; }
+  .booking-dates-rail {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; padding: 2px 4px;
+  }
+  .date-chip {
+    flex: none; width: 50px; padding: 10px 0; text-align: center; border-radius: 12px;
+    background: var(--bg-warm); border: 1px solid transparent;
+  }
+  .date-chip.active {
+    background: var(--ink-charcoal); color: #FFF; border-color: var(--ink-charcoal);
+  }
+  .date-chip .week { font-size: 10px; opacity: .75; display: block; }
+  .date-chip .day { font-family: var(--en-clean); font-size: 16px; font-weight: 600; display: block; margin-top: 2px; }
+  .slots-picker-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px;
+  }
+  .slot-btn {
+    padding: 10px 0; text-align: center; border-radius: 10px; background: var(--bg-warm);
+    font-family: var(--en-clean); font-size: 13px; font-weight: 500; border: 1px solid transparent;
+  }
+  .slot-btn.active {
+    background: var(--accent-caramel); color: #FFF;
+  }
+  .slot-btn.disabled {
+    opacity: .35; text-decoration: line-through; background: transparent; border: 1px dashed rgba(38,32,27,0.1);
+  }
+
+  /* 继承 1 的【悬浮灵动水滴胶囊底栏】（温润毛玻璃，无侵略性突出） */
+  .floating-capsule-dock {
+    position: absolute; bottom: 18px; left: 20px; right: 20px; z-index: 40;
+    height: 58px; border-radius: 29px;
+    background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-float), 0 0 0 1px rgba(255, 255, 255, 0.85);
+    display: flex; justify-content: space-around; align-items: center; padding: 0 10px;
+  }
+  .dock-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; letter-spacing: 1px;
+    color: var(--ink-subtle); cursor: pointer; padding: 4px 10px;
+  }
+  .dock-nav-item.active {
+    color: var(--ink-charcoal); font-weight: 600;
+  }
+  .dock-nav-item.active::after {
+    content: ""; width: 12px; height: 2.5px; border-radius: 2px; background: var(--accent-caramel); margin-top: 1px;
+  }
+
+  /* 作品详情页画册阅读结构 */
+  .detail-hero-cover {
+    height: 480px; position: relative;
+  }
+  .detail-hero-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-back-btn {
+    position: absolute; top: 48px; left: 18px; z-index: 50; width: 34px; height: 34px;
+    border-radius: 50%; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+    display: grid; place-items: center; font-size: 18px; color: var(--ink-charcoal);
+  }
+  .detail-sheet-card {
+    background: var(--card-porcelain); border-radius: 30px 30px 0 0; margin-top: -24px; position: relative; z-index: 10;
+    padding: 24px 22px 100px;
+  }
+  .detail-sheet-card h2 {
+    font-family: var(--serif-soft); font-size: 22px; letter-spacing: 3px; font-weight: 600;
+  }
+  .detail-sheet-card .tags-row {
+    display: flex; gap: 6px; margin: 8px 0 14px;
+  }
+  .detail-sheet-card .tags-row span {
+    font-size: 10px; padding: 3px 10px; border-radius: 10px; background: var(--bg-warm); color: var(--accent-caramel);
+  }
+  .detail-sheet-card .desc {
+    font-size: 13px; line-height: 1.9; color: var(--ink-subtle); letter-spacing: 0.5px;
+  }
+  .detail-album-flow {
+    margin-top: 24px; display: grid; gap: 14px;
+  }
+  .detail-album-flow img {
+    width: 100%; border-radius: 16px; object-fit: cover;
+  }
+
+  /* 详情页静默常驻底栏（自然咨询，无催促） */
+  .detail-dock-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 76px; background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(16px); border-top: 1px solid var(--line-subtle); padding: 10px 20px 24px;
+    display: flex; justify-content: space-between; align-items: center; z-index: 40;
+  }
+  .detail-dock-bar .info b { font-family: var(--serif-soft); font-size: 15px; display: block; }
+  .detail-dock-bar .info small { font-size: 11px; color: var(--ink-subtle); display: block; margin-top: 2px; }
+  .detail-dock-bar .btn-action {
+    background: var(--ink-charcoal); color: #FFF; padding: 10px 22px; border-radius: 22px; border: 0;
+    font-size: 13px; letter-spacing: 2px; cursor: pointer;
+  }
+
+  /* 专项对比：三种高度处理 CSS */
+  /* 解法 1: 真实瀑布流（自适应原图高，无多余空白） */
+  .layout-masonry-flow {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start;
+  }
+  .masonry-col { display: flex; flex-direction: column; gap: 12px; }
+  .masonry-item {
+    background: #FFF; border-radius: 18px; overflow: hidden; padding: 6px;
+    box-shadow: 0 4px 16px -6px rgba(50,35,20,0.06); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .masonry-item img {
+    width: 100%; border-radius: 14px; display: block;
+  }
+  .masonry-item .txt {
+    padding: 8px 6px 4px;
+  }
+  .masonry-item .txt .cat { font-size: 10px; color: var(--accent-caramel); letter-spacing: 1px; }
+  .masonry-item .txt .t { font-family: var(--serif-soft); font-size: 13px; font-weight: 500; margin-top: 2px; display: block; }
+  .masonry-item .txt .d { font-size: 11px; color: var(--ink-subtle); line-height: 1.45; margin-top: 3px; }
+
+  /* 解法 2: 绝对等高·画册全景浮层（文字在图上，零空白） */
+  .layout-overlay-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .overlay-item {
+    position: relative; height: 250px; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 6px 18px -6px rgba(50,35,20,0.08); background: #E5DDD1;
+  }
+  .overlay-item img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .overlay-item .cover-mask {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 45%, rgba(25,18,13,0.78) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 12px 10px; color: #FFF;
+  }
+  .overlay-item .cover-mask .cat { font-size: 9px; letter-spacing: 1.5px; opacity: .85; }
+  .overlay-item .cover-mask .t { font-family: var(--serif-soft); font-size: 14px; letter-spacing: 1px; font-weight: 500; margin-top: 2px; }
+  .overlay-item .cover-mask .cnt { font-size: 10px; opacity: .75; margin-top: 2px; }
+
+  /* 解法 3: 等高相框 + 严格双行信息（绝对等高，彻底消除大空白） */
+  .layout-uniform-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .uniform-item {
+    background: #FFF; border-radius: 18px; overflow: hidden; padding: 6px;
+    box-shadow: 0 4px 16px -6px rgba(50,35,20,0.06); border: 1px solid rgba(38,32,27,0.05);
+  }
+  .uniform-item .img-box {
+    width: 100%; height: 195px; border-radius: 14px; overflow: hidden;
+  }
+  .uniform-item .img-box img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .uniform-item .info-box {
+    padding: 8px 6px 6px; height: 52px; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .uniform-item .info-box .t {
+    font-family: var(--serif-soft); font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .uniform-item .info-box .meta {
+    font-size: 10px; color: var(--ink-subtle); display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .uniform-item .info-box .meta span { color: var(--accent-caramel); }
+</style>
+</head>
+<body>
+
+<!-- 顶部交互控制 -->
+<header class="header-console">
+  <div class="console-brand">
+    <h1>枝南影像 · 框架融合方案 <small>Framework v4</small></h1>
+    <p>融合 1（温润暖玉大圆角 + 悬浮灵动底栏）与 5（轻快分类切换 + 现代圆润字型），彻底剔除硬销售与在线催促，回归「纯净看作品」。</p>
+  </div>
+
+  <div class="nav-tabs-group">
+    <button class="nav-tab-btn active" data-tab="tab-fusion">融合主方案（推荐）</button>
+    <button class="nav-tab-btn" data-tab="tab-layout-compare">★ 专项：作品高度与空白的三种解法</button>
+    <button class="nav-tab-btn" data-tab="tab-alt-a">对比变体 A：纯粹白瓷画卷</button>
+    <button class="nav-tab-btn" data-tab="tab-alt-b">对比变体 B：暖阳微光生活馆</button>
+  </div>
+</header>
+
+<main class="design-stage">
+
+  <!-- ==================== 专项：作品高度与空白的三种解法 ==================== -->
+  <section class="stage-panel" id="tab-layout-compare">
+    <div class="design-brief" style="grid-template-columns: 360px 1fr;">
+      <div class="brief-main">
+        <h2>作品对齐与空白的 3 种解法</h2>
+        <div class="en">ALIGNMENT & WHITESPACE SOLUTIONS</div>
+        <p>你敏锐发现的「卡片下方一大片空白」，是画册排版中的核心痛点。当左右卡片强制等高、但文字长短或图片比例不一时，底部就会空出一块灰白。针对这个问题，业界有 3 种成熟且高级的解法，请在下方 3 台手机模型中直观对比。</p>
+      </div>
+      <div class="brief-features">
+        <div class="feat-item">
+          <b>解法 1：自适应瀑布流（纯错落）</b>
+          <p>• 图片按原构图自适应高低<br>• 文字贴紧图片，不留空<br>• 左右错落，生动自然，消灭空白</p>
+        </div>
+        <div class="feat-item">
+          <b>解法 2：等高全景画卡（图文融合）</b>
+          <p>• 统一 4:5 优雅比例<br>• 文字以柔光浮在照片底部<br>• 绝对对齐等高，完全没有下方空白</p>
+        </div>
+        <div class="feat-item">
+          <b>解法 3：等高相框 + 严格双行标</b>
+          <p>• 图片统一 4:5 比例<br>• 列表只留标题与标签（无长摘要）<br>• 左右严丝合缝等高，整洁有序</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockup-row">
+      <!-- 解法 1: 自适应原生瀑布流 -->
+      <div class="mockup-item">
+        <span class="mockup-label">解法 1 · 自适应瀑布流（无多余空白，高低错落）</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area" style="padding-top: 54px;">
+            <div style="padding: 0 18px 12px;">
+              <span style="font-size:11px; letter-spacing:1px; color:var(--accent-caramel);">SOLUTION 01</span>
+              <h3 style="font-family:var(--serif-soft); font-size:20px; letter-spacing:2px; margin-top:2px;">自适应瀑布流</h3>
+              <p style="font-size:11px; color:var(--ink-subtle); margin-top:3px;">图片按原尺寸伸缩，文字贴紧底边，左右自然错落。</p>
+            </div>
+
+            <div style="padding: 0 16px;">
+              <div class="layout-masonry-flow">
+                <!-- 左列 -->
+                <div class="masonry-col">
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" style="height:230px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">全家福 · 12张</span>
+                      <b class="t">全家福-03</b>
+                      <p class="d">在轻松自然的互动中，记录下一家人的拥抱与欢笑。</p>
+                    </div>
+                  </div>
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" style="height:170px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">写真</span>
+                      <b class="t">情侣写真-001</b>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 右列 -->
+                <div class="masonry-col">
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" style="height:150px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">儿童周岁</span>
+                      <b class="t">小孩-02</b>
+                      <p class="d">捕捉宝宝最纯真无邪的笑容。</p>
+                    </div>
+                  </div>
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" style="height:240px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">写真 · 柔光</span>
+                      <b class="t">女生写真-001</b>
+                      <p class="d">美不是改变，而是点亮本来的样子。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item active"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 解法 2: 绝对等高·画册全景浮层 -->
+      <div class="mockup-item">
+        <span class="mockup-label">解法 2 · 绝对等高全景画卡（图文融合，零空白）</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area" style="padding-top: 54px;">
+            <div style="padding: 0 18px 12px;">
+              <span style="font-size:11px; letter-spacing:1px; color:var(--accent-caramel);">SOLUTION 02</span>
+              <h3 style="font-family:var(--serif-soft); font-size:20px; letter-spacing:2px; margin-top:2px;">等高全景画卡</h3>
+              <p style="font-size:11px; color:var(--ink-subtle); margin-top:3px;">卡片严格等高，文字浮于底部微暗影上，视觉冲击最强。</p>
+            </div>
+
+            <div style="padding: 0 16px;">
+              <div class="layout-overlay-grid">
+                <div class="overlay-item">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+                  <div class="cover-mask">
+                    <span class="cat">全家福 · 孕照</span>
+                    <b class="t">全家福-03</b>
+                    <span class="cnt">12 张相片</span>
+                  </div>
+                </div>
+                <div class="overlay-item">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+                  <div class="cover-mask">
+                    <span class="cat">儿童周岁</span>
+                    <b class="t">小孩-02</b>
+                    <span class="cnt">纯真记录</span>
+                  </div>
+                </div>
+                <div class="overlay-item">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" alt="" />
+                  <div class="cover-mask">
+                    <span class="cat">写真记录</span>
+                    <b class="t">情侣写真-001</b>
+                    <span class="cnt">浪漫日常</span>
+                  </div>
+                </div>
+                <div class="overlay-item">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+                  <div class="cover-mask">
+                    <span class="cat">个人肖像</span>
+                    <b class="t">女生写真-001</b>
+                    <span class="cnt">柔光肖像</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item active"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 解法 3: 等高相框 + 严格双行精简标 -->
+      <div class="mockup-item">
+        <span class="mockup-label">解法 3 · 等高相框 + 严格双行信息（绝对等高，消除多余空白）</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area" style="padding-top: 54px;">
+            <div style="padding: 0 18px 12px;">
+              <span style="font-size:11px; letter-spacing:1px; color:var(--accent-caramel);">SOLUTION 03</span>
+              <h3 style="font-family:var(--serif-soft); font-size:20px; letter-spacing:2px; margin-top:2px;">等高相框 + 规整信息</h3>
+              <p style="font-size:11px; color:var(--ink-subtle); margin-top:3px;">列表只放标题与分类张数（不放长摘要），左右高度天然一致。</p>
+            </div>
+
+            <div style="padding: 0 16px;">
+              <div class="layout-uniform-grid">
+                <div class="uniform-item">
+                  <div class="img-box">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+                  </div>
+                  <div class="info-box">
+                    <b class="t">全家福-03</b>
+                    <div class="meta"><span>全家福 · 孕照</span><small>12 张</small></div>
+                  </div>
+                </div>
+
+                <div class="uniform-item">
+                  <div class="img-box">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+                  </div>
+                  <div class="info-box">
+                    <b class="t">小孩-02</b>
+                    <div class="meta"><span>儿童周岁</span><small>8 张</small></div>
+                  </div>
+                </div>
+
+                <div class="uniform-item">
+                  <div class="img-box">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" alt="" />
+                  </div>
+                  <div class="info-box">
+                    <b class="t">情侣写真-001</b>
+                    <div class="meta"><span>写真记录</span><small>16 张</small></div>
+                  </div>
+                </div>
+
+                <div class="uniform-item">
+                  <div class="img-box">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+                  </div>
+                  <div class="info-box">
+                    <b class="t">女生写真-001</b>
+                    <div class="meta"><span>个人肖像</span><small>10 张</small></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item active"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 融合主方案 ==================== -->
+  <section class="stage-panel active" id="tab-fusion">
+    <div class="design-brief">
+      <div class="brief-main">
+        <h2>温润奶玉 · 画册流</h2>
+        <div class="en">PORCELAIN ALBUM FLOW</div>
+        <p>为你量身融合 1 和 5 的精髓：以燕麦暖底 + 奶白温润圆角卡片为容器，去掉 5 顶部的在线催促胶囊，弱化商业压迫感；底栏继承 1 的毛玻璃水滴胶囊，整体呼吸感极佳，专注呈现每组照片的细腻与温情。</p>
+      </div>
+      <div class="brief-features">
+        <div class="feat-item">
+          <b>① 呼吸留白与圆润字型</b>
+          <p>标题使用温婉适度的人文宋体，正文使用圆润清晰的现代无衬线，字距适度展开，柔和亲切。</p>
+        </div>
+        <div class="feat-item">
+          <b>② 沉浸式瀑布作品集</b>
+          <p>继承 5 的轻快卡片比例与分类胶囊快速筛选，双列错落排开，每一张都是完整干净的客照呈现。</p>
+        </div>
+        <div class="feat-item">
+          <b>③ 悬浮水滴胶囊底栏</b>
+          <p>继承 1 的悬浮毛玻璃 Dock（首页/作品/服务/关于/我的），不贴死底部，不挡画面，安静克制。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockup-row">
+      <!-- 页面 1: 首页 -->
+      <div class="mockup-item">
+        <span class="mockup-label">01 首页 · 杂志大作流（大封面特写 + 齐平双联对画）</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area">
+            <!-- 品牌微标 -->
+            <div class="brand-header-bar">
+              <div>
+                <div class="logo-cn">枝南影像</div>
+                <div class="tagline">记录你生活里柔软的光 · ZHINAN</div>
+              </div>
+            </div>
+
+            <!-- 焦点大作轮播 -->
+            <div class="hero-focus-card">
+              <img src="https://api.seekway.xyz/api/v1/public/media/ff9ca391-223e-44ea-b2a1-d61c4ab1872c/preview/content" alt="" />
+              <div class="hero-focus-overlay">
+                <span class="sub-tag">SEASON STORIES</span>
+                <h3>定格真实与温暖</h3>
+                <p>在轻松自然的互动中，留下最像你们的时光。</p>
+              </div>
+            </div>
+
+            <!-- 分类胶囊快速筛选 -->
+            <div class="filter-pills-scroll">
+              <span class="pill-item active">全部</span>
+              <span class="pill-item">全家福</span>
+              <span class="pill-item">个人写真</span>
+              <span class="pill-item">儿童记录</span>
+              <span class="pill-item">孕照纪念</span>
+            </div>
+
+            <!-- 首页精选作品区域（不再支持切换，采用最具吸引力的杂志大片编排：头牌大作 + 齐平双联） -->
+            <div class="works-section">
+              <div class="section-title-row">
+                <h4>本期精选故事</h4>
+                <span style="font-size:11px; color:var(--accent-caramel);">全部作品 →</span>
+              </div>
+
+              <!-- 首页最具吸引力的大片流（无外框分层、无多余空白、节奏感极强，与作品页完全不同） -->
+              <div class="home-layout-lead">
+                <!-- 1. 头牌封面故事大卡（全宽大片气场） -->
+                <div class="home-lead-primary">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+                  <div class="mask">
+                    <span class="cat">FEATURED STORY · 封面特写</span>
+                    <b class="t">全家福-03 · 岁月故事</b>
+                    <span class="s">在轻松自然的互动中，记录下家人的拥抱与欢笑。</span>
+                  </div>
+                </div>
+
+                <!-- 2. 齐平双联对视（左右尺寸严格一致，文字自然浮于图底，零多余空白） -->
+                <div class="home-lead-duo">
+                  <div class="sub-card">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+                    <div class="mask">
+                      <b class="t">小孩-02</b>
+                      <span class="cat">儿童周岁 · 纯真笑容</span>
+                    </div>
+                  </div>
+                  <div class="sub-card">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+                    <div class="mask">
+                      <b class="t">女生写真-001</b>
+                      <span class="cat">个人肖像 · 柔光发光</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 工作室温情故事 -->
+            <div class="studio-story-card">
+              <div class="quote">“两位 95 后女生，开了一家风格和审美在线的照相馆。遇见皆是同频和缘分，我们想给你的，是最珍贵的照片。”</div>
+              <div class="studio-profile">
+                <div class="studio-avatars">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="" />
+                  <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="" />
+                </div>
+                <div class="studio-meta">
+                  <b>安娜（摄影师）& 方女士（化妆师）</b>
+                  <small>东莞市凤岗镇逸菲酒店三楼 · 9:00 - 21:00</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 悬浮水滴胶囊底栏（纯粹看图，克制无打扰） -->
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item active"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 页面 2: 作品画廊 -->
+      <div class="mockup-item">
+        <span class="mockup-label">02 作品画廊 · 默认自适应瀑布流（可切等高画册）</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area" style="padding-top: 54px;">
+            <div style="padding: 0 20px 14px; display: flex; justify-content: space-between; align-items: flex-end;">
+              <div>
+                <span style="font-size:11px; letter-spacing:2px; color:var(--accent-caramel);">PORTFOLIO</span>
+                <h2 style="font-family:var(--serif-soft); font-size:24px; letter-spacing:3px; margin-top:2px;">全部作品集</h2>
+              </div>
+              <button id="btn-gallery-toggle" style="border: 1px solid rgba(38,32,27,0.15); background: #FFF; border-radius: 16px; padding: 4px 12px; font-size: 11px; color: var(--ink-charcoal); display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <span id="gallery-mode-icon">▦</span>
+                <span id="gallery-mode-label">切等高画册</span>
+              </button>
+            </div>
+
+            <div class="filter-pills-scroll" style="padding-top:0;">
+              <span class="pill-item active">全部 · 5组</span>
+              <span class="pill-item">全家福</span>
+              <span class="pill-item">个人写真</span>
+              <span class="pill-item">儿童</span>
+              <span class="pill-item">孕照</span>
+            </div>
+
+            <div style="padding: 0 16px;">
+              <!-- 视图容器：默认自适应瀑布流（解法1），可切等高画册（解法2） -->
+              <div id="gallery-dynamic-container" class="layout-masonry-flow">
+                <div class="masonry-col">
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" style="height:230px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">全家福 · 12张</span>
+                      <b class="t">全家福-03</b>
+                      <p class="d">在轻松自然的互动中，记录下一家人的拥抱与欢笑。</p>
+                    </div>
+                  </div>
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" style="height:170px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">写真</span>
+                      <b class="t">情侣写真-001</b>
+                    </div>
+                  </div>
+                </div>
+                <div class="masonry-col">
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" style="height:150px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">儿童周岁</span>
+                      <b class="t">小孩-02</b>
+                      <p class="d">捕捉宝宝最纯真无邪的笑容。</p>
+                    </div>
+                  </div>
+                  <div class="masonry-item">
+                    <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" style="height:240px; object-fit:cover;" alt="" />
+                    <div class="txt">
+                      <span class="cat">写真 · 柔光</span>
+                      <b class="t">女生写真-001</b>
+                      <p class="d">美不是改变，而是点亮本来的样子。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item active"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 页面 3: 拍摄服务 -->
+      <div class="mockup-item">
+        <span class="mockup-label">03 拍摄服务 · 章节画册与透明价目</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area has-dock" style="padding-top: 54px;">
+            <div style="padding: 0 20px 16px;">
+              <span style="font-size:11px; letter-spacing:2px; color:var(--accent-caramel);">SERVICES</span>
+              <h2 style="font-family:var(--serif-soft); font-size:24px; letter-spacing:3px; margin-top:2px;">精选拍摄服务</h2>
+            </div>
+
+            <!-- 章节 01 全家福 -->
+            <div class="svc-chapter-card">
+              <div class="svc-chapter-head">
+                <div><span class="ch-idx">01</span><span class="ch-name">全家福记录</span></div>
+                <span class="ch-en">FAMILY STORIES</span>
+              </div>
+              <img class="svc-chapter-cover" src="https://api.seekway.xyz/api/v1/public/media/2fe250bc-2d24-4f45-8872-f83883a12d8e/preview/content" alt="" />
+              <div class="svc-package-item">
+                <div class="copy">
+                  <b>亲子全家福方案</b>
+                  <p>在轻松自然的家庭互动中，捕捉真实的拥抱与欢笑，记录琐碎又珍贵的日常。</p>
+                </div>
+                <div class="price-col">
+                  <div class="val">¥999<small>起</small></div>
+                  <span class="btn-view">查看方案 ›</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 章节 02 写真肖像 -->
+            <div class="svc-chapter-card">
+              <div class="svc-chapter-head">
+                <div><span class="ch-idx">02</span><span class="ch-name">个人写真</span></div>
+                <span class="ch-en">PORTRAIT</span>
+              </div>
+              <img class="svc-chapter-cover" src="https://api.seekway.xyz/api/v1/public/media/3a455924-4425-4794-add7-5e92250c3aac/preview/content" alt="" />
+              <div class="svc-package-item">
+                <div class="copy">
+                  <b>个人写真方案</b>
+                  <p>美不是改变，而是轻轻点亮你本来的样子，留下此刻独一无二的自己。</p>
+                </div>
+                <div class="price-col">
+                  <div class="val">¥328</div>
+                  <span class="btn-view">查看方案 ›</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 章节 03 儿童成长 -->
+            <div class="svc-chapter-card">
+              <div class="svc-chapter-head">
+                <div><span class="ch-idx">03</span><span class="ch-name">儿童记录</span></div>
+                <span class="ch-en">FIRST BIRTHDAY</span>
+              </div>
+              <img class="svc-chapter-cover" src="https://api.seekway.xyz/api/v1/public/media/c0619be3-cc04-43a2-ae3a-55dd2af1f6ac/preview/content" alt="" />
+              <div class="svc-package-item">
+                <div class="copy">
+                  <b>儿童周岁照</b>
+                  <p>不刻意摆拍，在玩耍与互动中定格宝宝第一个重要里程碑。</p>
+                </div>
+                <div class="price-col">
+                  <div class="val">¥328<small>起</small></div>
+                  <span class="btn-view">查看方案 ›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item active"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 页面 4: 服务详情 -->
+      <div class="mockup-item">
+        <span class="mockup-label">04 服务详情 · 方案与温馨须知</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area">
+            <div class="detail-hero-cover" style="height:360px;">
+              <span class="detail-back-btn">‹</span>
+              <img src="https://api.seekway.xyz/api/v1/public/media/2fe250bc-2d24-4f45-8872-f83883a12d8e/preview/content" alt="" />
+            </div>
+
+            <div class="detail-sheet-card" style="padding-bottom:100px;">
+              <div class="pkg-head-block">
+                <span class="cat-tag">FAMILY · 全家福系列</span>
+                <h2>亲子全家福</h2>
+                <p class="summary-text">时光会走远，影像能长存。我们在轻松的家庭互动中，捕捉你们真实的拥抱、对视与欢笑，把这份琐碎又珍贵的家庭日常，拍成值得珍藏的故事。</p>
+              </div>
+
+              <!-- 三栏规整数据 -->
+              <div class="pkg-metrics-grid">
+                <div class="pkg-metric-cell">
+                  <b>120</b><span>参考时长 (分钟)</span>
+                </div>
+                <div class="pkg-metric-cell">
+                  <b>30</b><span>精修底片 (张)</span>
+                </div>
+                <div class="pkg-metric-cell">
+                  <b>2</b><span>专属妆造 (套)</span>
+                </div>
+              </div>
+
+              <!-- 套餐包含 -->
+              <div class="pkg-section-title">服务包含内容</div>
+              <div class="pkg-check-list">
+                <div class="pkg-check-row"><span class="num">01</span><span>专业摄影师全程陪伴引导跟拍，捕捉自然抓拍</span></div>
+                <div class="pkg-check-row"><span class="num">02</span><span>资深化妆师一对一专属定制妆造，含妆发与配饰</span></div>
+                <div class="pkg-check-row"><span class="num">03</span><span>全套精修 30 张，所有拍摄原始底片全部赠送</span></div>
+                <div class="pkg-check-row"><span class="num">04</span><span>定制 12 寸实木典藏画框一幅</span></div>
+              </div>
+
+              <!-- 温馨须知 -->
+              <div class="pkg-tips-card">
+                <b>拍摄温馨须知</b>
+                <p>• 建议提前 3~7 天预约档期，以便我们提前沟通妆造与服装建议。<br>• 家庭成员建议穿着米白、浅蓝或大地色系同色调服装，效果更自然素雅。<br>• 提交预约后，安娜会微信与您确认最终到店时间。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 静默底部咨询 -->
+          <div class="detail-dock-bar">
+            <div class="info">
+              <small>参考价格</small>
+              <b style="font-family:var(--serif-soft); font-size:20px; color:var(--accent-caramel);">¥999 <span style="font-size:12px;font-weight:400;color:var(--ink-light)">起</span></b>
+            </div>
+            <button class="btn-action">预约咨询</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 页面 5: 作品详情（沉浸翻画册） -->
+      <div class="mockup-item">
+        <span class="mockup-label">05 作品详情 · 温润整页沉浸</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area">
+            <div class="detail-hero-cover">
+              <span class="detail-back-btn">‹</span>
+              <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+            </div>
+
+            <div class="detail-sheet-card">
+              <h2>全家福-03</h2>
+              <div class="tags-row">
+                <span>全家福</span>
+                <span>孕照</span>
+                <span>共 12 张相片</span>
+              </div>
+              <p class="desc">时光会走远，但爱意会留存在影像里。在轻松的互动中，记录下家人的拥抱与欢笑，把一家人整整齐齐的温暖，变成值得反复翻看的岁月故事。</p>
+
+              <!-- 画册流动大图 -->
+              <div class="detail-album-flow">
+                <img src="https://api.seekway.xyz/api/v1/public/media/0d5a3b1d-b205-4ff7-9495-55b16b293332/preview/content" style="height:380px;" alt="" />
+                <img src="https://api.seekway.xyz/api/v1/public/media/2fe250bc-2d24-4f45-8872-f83883a12d8e/preview/content" style="height:320px;" alt="" />
+                <img src="https://api.seekway.xyz/api/v1/public/media/606037a7-b264-4151-9897-ff2d58c29191/preview/content" style="height:360px;" alt="" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 常驻咨询按键：静默自然，不催促 -->
+          <div class="detail-dock-bar">
+            <div class="info">
+              <b>喜欢这组拍摄风格？</b>
+              <small>安娜全程引导 · 含专属定制妆造</small>
+            </div>
+            <button class="btn-action">预约同款</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 页面 6: 关于相馆 -->
+      <div class="mockup-item">
+        <span class="mockup-label">06 关于我们 · 主理人与相馆故事</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area has-dock">
+            <div style="height:250px; position:relative; overflow:hidden;">
+              <img src="https://api.seekway.xyz/api/v1/public/media/606037a7-b264-4151-9897-ff2d58c29191/preview/content" style="width:100%;height:100%;object-fit:cover;" alt="" />
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(38,32,27,0.78) 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:20px 22px; color:#FFF;">
+                <span style="font-size:10px; letter-spacing:3px; opacity:.85;">ABOUT US</span>
+                <h2 style="font-family:var(--serif-soft); font-size:24px; letter-spacing:4px; font-weight:500; margin-top:2px;">枝南影像相馆</h2>
+              </div>
+            </div>
+
+            <!-- 主理人走心寄语 -->
+            <div class="about-manifesto-card">
+              <div class="mark">“</div>
+              <p>两位 95 后女生，开了一家风格和审美在线的照相馆。<br>遇见皆是同频和缘分，我们想给你的，是最珍贵的照片。</p>
+            </div>
+
+            <!-- 主理人双肖像 -->
+            <div style="padding:0 22px 10px;">
+              <span style="font-family:var(--serif-soft); font-size:16px; letter-spacing:2px; font-weight:600; display:block; margin-bottom:12px;">一起记录的人</span>
+            </div>
+            <div class="about-team-grid">
+              <div class="founder-porcelain-card">
+                <img src="https://api.seekway.xyz/api/v1/public/media/e69fe4dc-21f8-4ed8-a09e-5973df6b9434/preview/content" alt="" />
+                <div class="founder-info">
+                  <div class="name-row">
+                    <b>安娜</b>
+                    <span class="role-pill">摄影师</span>
+                  </div>
+                  <p class="bio">用镜头安静陪伴，捕捉你不经意的笑意。</p>
+                </div>
+              </div>
+
+              <div class="founder-porcelain-card">
+                <img src="https://api.seekway.xyz/api/v1/public/media/9a36db9c-acde-4ea2-aece-7e6454a7e493/preview/content" alt="" />
+                <div class="founder-info">
+                  <div class="name-row">
+                    <b>方女士</b>
+                    <span class="role-pill">化妆师</span>
+                  </div>
+                  <p class="bio">美不是改变，而是轻轻点亮你本来的样子。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 官方联系方式与二维码 -->
+            <div class="contact-porcelain-card">
+              <div class="contact-field-row">
+                <span class="lbl">电话</span>
+                <span class="val">183 6551 9973</span>
+                <span class="action-btn">拨打</span>
+              </div>
+              <div class="contact-field-row">
+                <span class="lbl">地址</span>
+                <span class="val" style="font-size:12px;line-height:1.5;">东莞市凤岗镇逸菲酒店三楼 3008 室</span>
+                <span class="action-btn">复制</span>
+              </div>
+              <div class="contact-field-row">
+                <span class="lbl">营业时间</span>
+                <span class="val">每日 9:00 — 21:00</span>
+              </div>
+
+              <div class="qr-code-duo">
+                <div class="qr-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/23649c0e-b9d7-470c-a42b-7bd29e2dad50/preview/content" alt="" />
+                  <span>微信 · 轻触添加</span>
+                </div>
+                <div class="qr-box">
+                  <img src="https://api.seekway.xyz/api/v1/public/media/a56dd357-c780-4a8b-adc9-44e7d0a37c49/preview/content" alt="" />
+                  <span>小红书 · 关注日常</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item active"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+
+      <!-- 页面 7: 预约咨询 -->
+      <div class="mockup-item">
+        <span class="mockup-label">07 预约咨询 · 轻松选档期</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area booking-body-pad" style="padding-top:54px;">
+            <div style="padding: 0 4px 16px;">
+              <span style="font-size:11px; letter-spacing:2px; color:var(--accent-caramel);">RESERVATION</span>
+              <h2 style="font-family:var(--serif-soft); font-size:24px; letter-spacing:3px; margin-top:2px;">预约拍摄咨询</h2>
+            </div>
+
+            <!-- 选择套餐 -->
+            <div class="booking-section-card">
+              <div class="sec-h">1. 选择心仪服务</div>
+              <div class="booking-pkg-grid">
+                <div class="booking-pkg-option selected">
+                  <b>亲子全家福方案</b>
+                  <span>¥999 起</span>
+                </div>
+                <div class="booking-pkg-option">
+                  <b>个人写真方案</b>
+                  <span>¥328</span>
+                </div>
+                <div class="booking-pkg-option">
+                  <b>儿童周岁照</b>
+                  <span>¥328 起</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 选择日期 -->
+            <div class="booking-section-card">
+              <div class="sec-h">2. 选择期望日期（2026年11月）</div>
+              <div class="booking-dates-rail">
+                <div class="date-chip"><span class="week">周一</span><span class="day">02</span></div>
+                <div class="date-chip active"><span class="week">周二</span><span class="day">03</span></div>
+                <div class="date-chip"><span class="week">周三</span><span class="day">04</span></div>
+                <div class="date-chip"><span class="week">周四</span><span class="day">05</span></div>
+                <div class="date-chip"><span class="week">周五</span><span class="day">06</span></div>
+                <div class="date-chip"><span class="week">周六</span><span class="day">07</span></div>
+              </div>
+            </div>
+
+            <!-- 选择时段 -->
+            <div class="booking-section-card">
+              <div class="sec-h">3. 选择预约时段</div>
+              <div class="slots-picker-grid">
+                <div class="slot-btn disabled">09:30</div>
+                <div class="slot-btn active">11:00</div>
+                <div class="slot-btn">14:00</div>
+                <div class="slot-btn">15:30</div>
+                <div class="slot-btn disabled">17:00</div>
+                <div class="slot-btn">19:00</div>
+              </div>
+            </div>
+
+            <p style="font-size:11.5px; color:var(--ink-subtle); line-height:1.7; padding:4px 6px;">
+              • 提交预约申请后，工作室将在 2 小时内通过微信/电话与您确认具体档期。<br>
+              • 预约生效前不产生任何强制扣费。
+            </p>
+          </div>
+
+          <div class="detail-dock-bar">
+            <div class="info">
+              <small>已选 11月03日 · 11:00</small>
+              <b style="font-family:var(--serif-soft); font-size:15px;">亲子全家福方案</b>
+            </div>
+            <button class="btn-action">提交预约申请</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 页面 8: 我的 -->
+      <div class="mockup-item">
+        <span class="mockup-label">08 我的 · 预约与个人档案</span>
+        <div class="phone-shell"><div class="phone-screen">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+
+          <div class="screen-scroll-area has-dock" style="padding-top:54px;">
+            <!-- 用户温情卡 -->
+            <div class="profile-welcome-card">
+              <div class="profile-avatar-box">枝</div>
+              <div>
+                <h3>你好，欢迎来到枝南</h3>
+                <p>微信账号已自动关联绑定</p>
+              </div>
+            </div>
+
+            <!-- 进行中预约 -->
+            <div style="padding:0 22px 10px;">
+              <span style="font-family:var(--serif-soft); font-size:16px; letter-spacing:2px; font-weight:600;">我的预约记录</span>
+            </div>
+
+            <div class="reservation-card-warm">
+              <div class="res-card-top">
+                <span class="time-text">2026年11月03日 · 11:00</span>
+                <span class="res-status-pill confirmed">● 预约已确认</span>
+              </div>
+              <div class="pkg-name">亲子全家福方案</div>
+              <div class="location-hint">广东省东莞市凤岗镇逸菲酒店三楼 3008 室<br>请提前 15 分钟到店，安娜与方女士期待与你们见面</div>
+              <div class="res-action-row">
+                <span class="price-label">定金 ¥999</span>
+                <button class="btn-small">联系工作室</button>
+              </div>
+            </div>
+
+            <!-- 快捷导航列表 -->
+            <div class="mine-menu-card">
+              <div class="mine-menu-row">
+                <span>拍摄需知与前期准备建议</span>
+                <span>›</span>
+              </div>
+              <div class="mine-menu-row">
+                <span>在线客服与微信咨询</span>
+                <span>›</span>
+              </div>
+              <div class="mine-menu-row">
+                <span>官方工作室地址与导航</span>
+                <span>›</span>
+              </div>
+              <div class="mine-menu-row">
+                <span>关于枝南摄影理念</span>
+                <span>›</span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item active"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 对比变体 A ==================== -->
+  <section class="stage-panel" id="tab-alt-a">
+    <div class="design-brief">
+      <div class="brief-main">
+        <h2>纯粹白瓷画卷</h2>
+        <div class="en">THE PURE PORCELAIN CANVAS</div>
+        <p>变体 A 进一步加大画幅比例，卡片边框更加柔和贴合，几乎让界面退居为一张干净的大画台。没有任何干扰元素，纯粹依靠大图的视觉力量带动用户情绪。</p>
+      </div>
+      <div class="brief-features">
+        <div class="feat-item"><b>大底留白</b><p>更接近艺术馆纯粹布展，适合极其看重片子画质与留白呼吸的视觉党。</p></div>
+        <div class="feat-item"><b>轻卡片排布</b><p>卡片投影极轻（微焦漫射），视觉负担降到零。</p></div>
+        <div class="feat-item"><b>极简信息层</b><p>只保留最核心的标题与分类，文字不抢图片半点风头。</p></div>
+      </div>
+    </div>
+    <div class="mockup-row">
+      <div class="mockup-item">
+        <span class="mockup-label">大图画卷首屏</span>
+        <div class="phone-shell"><div class="phone-screen" style="background:#FAF8F5;">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+          <div class="screen-scroll-area">
+            <div style="padding: 60px 24px 16px;">
+              <h2 style="font-family:var(--serif-soft);font-size:26px;letter-spacing:4px">枝南影像</h2>
+              <p style="font-size:12px;color:#887C70;margin-top:4px">温和记录每一位真实发光的你</p>
+            </div>
+            <div style="padding: 0 16px;">
+              <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" style="width:100%;height:440px;object-fit:cover;border-radius:24px;box-shadow:0 10px 30px -10px rgba(0,0,0,0.08);" alt="" />
+            </div>
+            <div style="padding: 24px; text-align: center;">
+              <div style="font-family:var(--serif-soft);font-size:16px;letter-spacing:3px">全家福-03</div>
+              <p style="font-size:12px;color:#887C70;margin-top:6px">岁月走远，影像长存</p>
+            </div>
+          </div>
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item active"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 对比变体 B ==================== -->
+  <section class="stage-panel" id="tab-alt-b">
+    <div class="design-brief">
+      <div class="brief-main">
+        <h2>暖阳微光生活馆</h2>
+        <div class="en">SUNLIT STUDIO LIFE</div>
+        <p>变体 B 带有更强烈的「暖日生活小馆」味道，微调色相偏向浅金焦糖与暖米黄，搭配柔和双拼照片，更具市井烟火里的高级与温情。</p>
+      </div>
+      <div class="brief-features">
+        <div class="feat-item"><b>暖阳色相</b><p>奶黄暖砂底（#F8F3EA），给人如暖阳洒在木地板上的温度。</p></div>
+        <div class="feat-item"><b>生动组合照</b><p>双拼卡片错落布局，更显两位女孩开馆的亲切日常与活力。</p></div>
+        <div class="feat-item"><b>柔润焦糖标</b><p>强调温暖触感的胶囊和标签，没有丝毫高冷距离。</p></div>
+      </div>
+    </div>
+    <div class="mockup-row">
+      <div class="mockup-item">
+        <span class="mockup-label">微光生活馆首屏</span>
+        <div class="phone-shell"><div class="phone-screen" style="background:#F7F1E6;">
+          <div class="mp-status"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="mp-capsule-btn">··· ｜ ◎</div>
+          <div class="mp-homebar"></div>
+          <div class="screen-scroll-area">
+            <div style="padding: 58px 20px 14px; display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <span style="font-size:11px; color:#A25E38; letter-spacing:1px">ZHINAN STUDIO</span>
+                <h2 style="font-family:var(--serif-soft);font-size:24px;letter-spacing:3px;margin-top:2px">枝南照相馆</h2>
+              </div>
+            </div>
+            <div style="margin: 0 16px; background:#fff; border-radius:24px; padding:12px; box-shadow:0 10px 24px -10px rgba(50,30,10,0.08);">
+              <img src="https://api.seekway.xyz/api/v1/public/media/ff9ca391-223e-44ea-b2a1-d61c4ab1872c/preview/content" style="width:100%;height:320px;object-fit:cover;border-radius:18px;" alt="" />
+              <div style="padding:14px 8px 6px;">
+                <b style="font-family:var(--serif-soft);font-size:16px;letter-spacing:2px">定格真实与温暖</b>
+                <p style="font-size:12px;color:#7A6D5E;margin-top:4px">两位 95 后女生的摄影日常</p>
+              </div>
+            </div>
+          </div>
+          <nav class="floating-capsule-dock">
+            <div class="dock-nav-item active"><span>首页</span></div>
+            <div class="dock-nav-item"><span>作品</span></div>
+            <div class="dock-nav-item"><span>服务</span></div>
+            <div class="dock-nav-item"><span>关于</span></div>
+            <div class="dock-nav-item"><span>我的</span></div>
+          </nav>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const tabBtns = document.querySelectorAll('.nav-tab-btn');
+  const panels = document.querySelectorAll('.stage-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const tabId = btn.dataset.tab;
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+
+  // 作品页排版模式切换：默认自适应瀑布流 (解法 1) <-> 点击切等高画册 (解法 2)
+  const toggleBtn = document.getElementById('btn-gallery-toggle');
+  const galleryBox = document.getElementById('gallery-dynamic-container');
+  const modeIcon = document.getElementById('gallery-mode-icon');
+  const modeLabel = document.getElementById('gallery-mode-label');
+
+  let currentMode = 'masonry'; // 默认自适应瀑布流
+
+  const overlayHTML = `
+    <div class="overlay-item">
+      <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+      <div class="cover-mask">
+        <span class="cat">全家福 · 孕照</span>
+        <b class="t">全家福-03</b>
+        <span class="cnt">12 张相片</span>
+      </div>
+    </div>
+    <div class="overlay-item">
+      <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+      <div class="cover-mask">
+        <span class="cat">儿童周岁</span>
+        <b class="t">小孩-02</b>
+        <span class="cnt">纯真记录</span>
+      </div>
+    </div>
+    <div class="overlay-item">
+      <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" alt="" />
+      <div class="cover-mask">
+        <span class="cat">写真记录</span>
+        <b class="t">情侣写真-001</b>
+        <span class="cnt">浪漫日常</span>
+      </div>
+    </div>
+    <div class="overlay-item">
+      <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+      <div class="cover-mask">
+        <span class="cat">个人肖像</span>
+        <b class="t">女生写真-001</b>
+        <span class="cnt">柔光肖像</span>
+      </div>
+    </div>
+  `;
+
+  const masonryHTML = `
+    <div class="masonry-col">
+      <div class="masonry-item">
+        <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" style="height:230px; object-fit:cover;" alt="" />
+        <div class="txt">
+          <span class="cat">全家福 · 12张</span>
+          <b class="t">全家福-03</b>
+          <p class="d">在轻松自然的互动中，记录下一家人的拥抱与欢笑。</p>
+        </div>
+      </div>
+      <div class="masonry-item">
+        <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" style="height:170px; object-fit:cover;" alt="" />
+        <div class="txt">
+          <span class="cat">写真</span>
+          <b class="t">情侣写真-001</b>
+        </div>
+      </div>
+    </div>
+    <div class="masonry-col">
+      <div class="masonry-item">
+        <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" style="height:150px; object-fit:cover;" alt="" />
+        <div class="txt">
+          <span class="cat">儿童周岁</span>
+          <b class="t">小孩-02</b>
+          <p class="d">捕捉宝宝最纯真无邪的笑容。</p>
+        </div>
+      </div>
+      <div class="masonry-item">
+        <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" style="height:240px; object-fit:cover;" alt="" />
+        <div class="txt">
+          <span class="cat">写真 · 柔光</span>
+          <b class="t">女生写真-001</b>
+          <p class="d">美不是改变，而是点亮本来的样子。</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      if (currentMode === 'masonry') {
+        currentMode = 'overlay';
+        galleryBox.className = 'layout-overlay-grid';
+        galleryBox.innerHTML = overlayHTML;
+        modeIcon.textContent = '☷';
+        modeLabel.textContent = '切自适应瀑布';
+      } else {
+        currentMode = 'masonry';
+        galleryBox.className = 'layout-masonry-flow';
+        galleryBox.innerHTML = masonryHTML;
+        modeIcon.textContent = '▦';
+        modeLabel.textContent = '切等高画册';
+      }
+    });
+  }
+
+  // 首页无分层对齐排版方案切换
+  const homeBox = document.getElementById('home-works-dynamic-container');
+  const btnHomeA = document.getElementById('btn-home-mode-a');
+  const btnHomeB = document.getElementById('btn-home-mode-b');
+  const btnHomeC = document.getElementById('btn-home-mode-c');
+
+  const homeHTML_A = `
+    <div class="home-overlay-card">
+      <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+      <div class="mask">
+        <span class="cat">全家福 · 孕照</span>
+        <b class="t">全家福-03</b>
+        <span class="s">记录家人的拥抱与欢笑</span>
+      </div>
+    </div>
+    <div class="home-overlay-card">
+      <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+      <div class="mask">
+        <span class="cat">儿童周岁</span>
+        <b class="t">小孩-02</b>
+        <span class="s">捕捉纯真无邪的笑容</span>
+      </div>
+    </div>
+    <div class="home-overlay-card">
+      <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" alt="" />
+      <div class="mask">
+        <span class="cat">写真记录</span>
+        <b class="t">情侣写真-001</b>
+        <span class="s">留下独一无二的彼此</span>
+      </div>
+    </div>
+    <div class="home-overlay-card">
+      <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+      <div class="mask">
+        <span class="cat">个人肖像</span>
+        <b class="t">女生写真-001</b>
+        <span class="s">轻轻点亮本来的样子</span>
+      </div>
+    </div>
+  `;
+
+  const homeHTML_B = `
+    <div class="home-gallery-item">
+      <div class="pic-wrap">
+        <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+      </div>
+      <div class="label-wrap">
+        <b class="t">全家福-03</b>
+        <span class="d">全家福 · 孕照 · 12张</span>
+      </div>
+    </div>
+    <div class="home-gallery-item">
+      <div class="pic-wrap">
+        <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+      </div>
+      <div class="label-wrap">
+        <b class="t">小孩-02</b>
+        <span class="d">儿童周岁 · 纯真笑容</span>
+      </div>
+    </div>
+    <div class="home-gallery-item">
+      <div class="pic-wrap">
+        <img src="https://api.seekway.xyz/api/v1/public/media/41d257d8-81ae-4cca-bbb6-5df2cf9ff86e/preview/content" alt="" />
+      </div>
+      <div class="label-wrap">
+        <b class="t">情侣写真-001</b>
+        <span class="d">双人日常 · 浪漫记录</span>
+      </div>
+    </div>
+    <div class="home-gallery-item">
+      <div class="pic-wrap">
+        <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+      </div>
+      <div class="label-wrap">
+        <b class="t">女生写真-001</b>
+        <span class="d">个人肖像 · 柔光发光</span>
+      </div>
+    </div>
+  `;
+
+  const homeHTML_C = `
+    <div class="home-lead-primary">
+      <img src="https://api.seekway.xyz/api/v1/public/media/82b7ede1-116c-4852-8409-55040300bacf/preview/content" alt="" />
+      <div class="mask">
+        <span class="cat">FEATURED STORY · 01</span>
+        <b class="t">全家福-03 · 岁月故事</b>
+        <span class="s">在轻松自然的互动中，记录下家人的拥抱与欢笑。</span>
+      </div>
+    </div>
+    <div class="home-lead-duo">
+      <div class="sub-card">
+        <img src="https://api.seekway.xyz/api/v1/public/media/ac239eaa-65f7-47f7-80cc-fbacffce91e6/preview/content" alt="" />
+        <div class="mask">
+          <b class="t">小孩-02</b>
+          <span class="cat">儿童周岁</span>
+        </div>
+      </div>
+      <div class="sub-card">
+        <img src="https://api.seekway.xyz/api/v1/public/media/99cbd02d-9a6e-42c7-94ab-b2c046fe299e/preview/content" alt="" />
+        <div class="mask">
+          <b class="t">女生写真</b>
+          <span class="cat">个人肖像</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  function setHomeMode(activeBtn, className, html) {
+    [btnHomeA, btnHomeB, btnHomeC].forEach(b => {
+      b.style.background = '#FFF';
+      b.style.color = '#554A3E';
+    });
+    activeBtn.style.background = '#26201B';
+    activeBtn.style.color = '#FFF';
+    homeBox.className = className;
+    homeBox.innerHTML = html;
+  }
+
+  if (btnHomeA && btnHomeB && btnHomeC) {
+    btnHomeA.addEventListener('click', () => setHomeMode(btnHomeA, 'home-layout-overlay', homeHTML_A));
+    btnHomeB.addEventListener('click', () => setHomeMode(btnHomeB, 'home-layout-gallery', homeHTML_B));
+    btnHomeC.addEventListener('click', () => setHomeMode(btnHomeC, 'home-layout-lead', homeHTML_C));
+  }
+</script>
+</body>
+</html>

@@ -19,6 +19,11 @@ function present(data) {
     cards,
     identityLabel:
       profile && profile.displayName ? profile.displayName : "微信用户",
+    identityInitial:
+      profile && profile.displayName
+        ? String(profile.displayName).slice(0, 1)
+        : "",
+    showIdentity: ["success", "empty"].includes(data.status),
     identityExpires: views.timeLabel(profile && profile.expiresAt),
     settlementLabel: settlement.settlementLabel(),
     orderCount: cards.filter((card) => card.hasOrder).length,
@@ -57,6 +62,9 @@ Page({
     this._generation++;
   },
   onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 4 });
+    }
     if (this._hidden) {
       this._hidden = false;
       this.load();
@@ -110,6 +118,12 @@ Page({
   },
   handleNewBookingTap() {
     wx.navigateTo({ url: "/pages/booking/booking" });
+  },
+  handleServicesTap() {
+    wx.switchTab({ url: "/pages/package/package" });
+  },
+  handleAboutTap() {
+    wx.switchTab({ url: "/pages/about/about" });
   },
   handleCardTap(event) {
     const reservationId = event.currentTarget.dataset.id;

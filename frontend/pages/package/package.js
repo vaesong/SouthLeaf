@@ -53,6 +53,9 @@ Page({
     this.loadPackages();
   },
   onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 2 });
+    }
     if (this._hidden) {
       this._hidden = false;
       this.loadPackages();
@@ -70,6 +73,7 @@ Page({
     return {
       title: "拍摄服务",
       path: "/pages/package/package",
+      imageUrl: this.data.serviceGroups?.[0]?.coverMedia?.src || "",
     };
   },
   async loadPackages(reset = true) {

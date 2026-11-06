@@ -13,14 +13,15 @@
   "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "navigationBarBackgroundColor": "#F4EFEA",
+    "backgroundColor": "#F4EFEA"
   },
   "tabBar": {
-    "color": "#748077",
-    "selectedColor": "#315849",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "custom": true,
+    "color": "#75685B",
+    "selectedColor": "#8E5636",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",

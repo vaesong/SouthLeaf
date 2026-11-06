@@ -1,6 +1,17 @@
 const booking = require("../../api/booking.js");
+const { getBrand } = require("../../api/public.js");
 const { commit } = require("../../presentation/page-state.js");
 const { slotLabel } = require("../../presentation/booking-views.js");
+
+const CARE_CODES = [
+  "PUBLIC_SERVICE_UNAVAILABLE",
+  "BOOKING_SERVICE_UNAVAILABLE",
+  "BOOKING_RULES_UNCONFIGURED",
+  "BOOKING_IDENTITY_PROVIDER_UNCONFIGURED",
+  "BOOKING_PACKAGE_CATALOG_UNCONFIGURED",
+];
+const careStatus = (error) =>
+  CARE_CODES.indexOf(error && error.code) >= 0 ? "unavailable" : "error";
 
 const two = (value) => (value < 10 ? "0" + value : "" + value);
 const dayOffset = (days) => {
@@ -48,6 +59,8 @@ Page({
     selectedSlotId: "",
     submitting: false,
     dataMode: "",
+    studioPhone: "",
+    studioWechat: "",
   }),
   update(patch) {
     commit(this, present, patch);
@@ -104,9 +117,28 @@ Page({
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
-        status: "error",
-        errorMessage: error.message || "预约暂时无法加载",
+        status: careStatus(error),
+        errorMessage: "",
       });
+      this.loadStudioContact();
+    }
+  },
+  async loadStudioContact() {
+    const version = this._generation;
+    try {
+      const brand = await getBrand();
+      if (version !== this._generation || this._unloaded) return;
+      const channels =
+        brand.contact && Array.isArray(brand.contact.channels)
+          ? brand.contact.channels
+          : [];
+      const wechat = channels.find((item) => item.platform === "wechat");
+      this.update({
+        studioPhone: brand.phone || "",
+        studioWechat: wechat && wechat.account ? wechat.account : "",
+      });
+    } catch (_error) {
+      /* 联系方式暂时读不到时，关怀卡仍保留拨打和返回作品。 */
     }
   },
   async reloadSlots() {
@@ -123,9 +155,10 @@ Page({
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
-        status: "error",
-        errorMessage: error.message || "时段暂时无法加载",
+        status: careStatus(error),
+        errorMessage: "",
       });
+      this.loadStudioContact();
     }
   },
   async submit() {
@@ -167,6 +200,11 @@ Page({
   handlePackageChange(event) {
     this.update({ packageIndex: Number(event.detail.value) || 0 });
   },
+  handlePackagePillTap(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    if (!Number.isInteger(index) || index < 0) return;
+    this.update({ packageIndex: index });
+  },
   handleFromChange(event) {
     this.update({ from: event.detail.value, selectedSlotId: "" });
     this.reloadSlots();
@@ -194,5 +232,31 @@ Page({
     wx.navigateBack({
       fail: () => wx.switchTab({ url: "/pages/package/package" }),
     });
+  },
+  handleCallPhoneTap() {
+    const phone = this.data.studioPhone;
+    if (!phone) {
+      wx.showToast({
+        title: "电话暂未公开，可以先复制微信",
+        icon: "none",
+      });
+      return;
+    }
+    wx.makePhoneCall({ phoneNumber: phone });
+  },
+  handleCopyWechatTap() {
+    const account = this.data.studioWechat;
+    if (!account) {
+      wx.showToast({ title: "微信号暂未公开，可以直接来电", icon: "none" });
+      return;
+    }
+    wx.setClipboardData({
+      data: account,
+      fail: () =>
+        wx.showToast({ title: "复制失败，请手动记录微信号", icon: "none" }),
+    });
+  },
+  handleGoWorksTap() {
+    wx.switchTab({ url: "/pages/works/works" });
   },
 });

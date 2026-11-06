@@ -1,1 +1,4 @@
-{ "appId": "", "apiOrigin": "" }
+{
+  "apiOrigin": "https://api.seekway.xyz",
+  "appId": "wx5459d8735f3f137f"
+}

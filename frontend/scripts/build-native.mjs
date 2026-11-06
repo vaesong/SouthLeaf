@@ -64,6 +64,7 @@ try {
     ...["js", "json", "wxml", "wxss"].map(
       (e) => "components/demo-notice/index." + e,
     ),
+    ...["js", "json", "wxml", "wxss"].map((e) => "custom-tab-bar/index." + e),
     ...[
       "api/api.js",
       "api/public.js",

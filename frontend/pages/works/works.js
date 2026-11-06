@@ -8,15 +8,17 @@ const {
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
 function present(data) {
+  const works = data.works.map(workView);
   return {
     ...data,
     sortLabel: data.sort === "oldest" ? "最早" : "最新",
     layoutLabel: {
-      editorial: "画册",
-      grid: "双列",
-      list: "列表",
+      editorial: "等高",
+      grid: "瀑布",
     }[data.layout],
-    works: data.works.map(workView),
+    works,
+    leftCol: works.filter((_, index) => index % 2 === 0),
+    rightCol: works.filter((_, index) => index % 2 === 1),
     dataMode: ["success", "empty"].includes(data.status) ? data.dataMode : "",
   };
 }
@@ -69,7 +71,7 @@ Page({
     this.update({
       layout: readLayout(
         "southleaf.works.layout",
-        ["editorial", "grid", "list"],
+        ["editorial", "grid"],
         "grid",
       ),
     });
@@ -79,6 +81,9 @@ Page({
     this.loadWorks();
   },
   onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 1 });
+    }
     const resume = this._hidden;
     this._hidden = false;
     const id = getApp().globalData.selectedBusinessId;
@@ -92,6 +97,7 @@ Page({
     return {
       title: "公开作品",
       path: "/pages/works/works",
+      imageUrl: this.data.works?.[0]?.coverMedia?.src || "",
     };
   },
   async loadWorks(reset = true) {
@@ -205,12 +211,10 @@ Page({
     this.update({
       showSortMenu: false,
     });
-    this.selectLayout(
-      nextLayout(this.data.layout, ["grid", "editorial", "list"]),
-    );
+    this.selectLayout(nextLayout(this.data.layout, ["grid", "editorial"]));
   },
   selectLayout(layout) {
-    if (!["grid", "editorial", "list"].includes(layout)) return;
+    if (!["grid", "editorial"].includes(layout)) return;
     this.update({
       layout: layout,
     });

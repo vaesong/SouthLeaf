@@ -276,6 +276,34 @@ test("list payload and metadata must carry the same cursor", async () => {
     (error) => error.code === "PUBLIC_RESPONSE_INVALID",
   );
 });
+test("confirmed prices gain a yuan mark without rewriting inquiry copy", () => {
+  assert.equal(
+    display.priceLabel({ priceType: "FROM", displayPrice: "999" }),
+    "¥999",
+  );
+  assert.equal(
+    display.priceLabel({ priceType: "FROM", displayPrice: "999 起" }),
+    "¥999 起",
+  );
+  assert.equal(
+    display.priceLabel({ priceType: "FIXED", displayPrice: "¥1280" }),
+    "¥1280",
+  );
+  assert.equal(
+    display.priceLabel({ priceType: "FIXED", displayPrice: "￥860" }),
+    "￥860",
+  );
+  assert.equal(
+    display.priceLabel({ priceType: "FIXED", displayPrice: "价格待确认" }),
+    "价格待确认",
+  );
+  assert.equal(display.priceLabel({ priceType: "INQUIRY" }), "价格请询");
+  assert.equal(
+    display.priceLabel({ priceType: "FROM", displayPrice: "" }),
+    "起价以确认资料为准",
+  );
+  assert.equal(display.priceLabel({}), "价格待公布");
+});
 test("gallery uses validated detail media without substituting summary covers", () => {
   const a = { id: "a", src: "a.png" };
   assert.deepEqual(display.galleryMedia({ media: [a] }), [a]);

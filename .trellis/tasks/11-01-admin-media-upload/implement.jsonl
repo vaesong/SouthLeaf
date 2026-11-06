@@ -2,3 +2,5 @@
 {"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "媒体读取必须有界，公开快照不带原图"}
 {"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "上传限制从页面、请求体、领域和数据库一起改"}
 {"file": "docs/设计笔记集/02_通用后端/05_文件与对象存储设计.md", "reason": "公开媒体只有 thumbnail 和 preview"}
+{"file": "docs/设计笔记集/06_客户端/小程序/04_温润轻奢前端UI设计与视觉规范.md", "reason": "小程序全页面温润轻奢UI母版与视觉设计规范"}
+{"file": "docs/设计笔记集/小程序框架终审稿-v4-温润轻奢.html", "reason": "终审通过的完整全页面交互HTML设计稿"}

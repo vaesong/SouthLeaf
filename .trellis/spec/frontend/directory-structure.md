@@ -2,8 +2,9 @@
 
 ```text
 frontend/
-  app.js / app.json / app.wxss   Native application and four-tab routing
-  pages/                        Four tabs plus two detail pages; JS/JSON/WXML/WXSS
+  app.js / app.json / app.wxss   Native application and five-tab routing
+  custom-tab-bar/               Floating text-only capsule bottom tab bar
+  pages/                        Five tabs plus detail and booking pages; JS/JSON/WXML/WXSS
   components/demo-notice/       Server-derived demo indicator
   api/api.js                    wx.request, strict envelope/error/HTTP checks
   api/public.js                 Runtime DTO and controlled media URL validation
@@ -13,7 +14,7 @@ frontend/
   scripts/                      Explicit native demo/release build and live API check
   tests/                        Node unit, lifecycle, source and clean-build checks
   design/                       SVG source; not automatically copied to app
-  static/icons/                 Eight declared tab PNGs only
+  static/icons/                 Approved declared tab PNGs
   dist/                         Generated, ignored; import dist/build/mp-weixin in DevTools
 ```
 

@@ -47,6 +47,7 @@ Page({
     return {
       title: this.data.brand.shareTitle || "摄影工作室",
       path: "/pages/index/index",
+      imageUrl: this.data.team?.[0]?.portraitMedia?.src || "",
     };
   },
   onLoad() {
@@ -111,10 +112,18 @@ Page({
     });
   },
   previewQr(channel) {
+    if (this.data.status !== "success" || !channel || !channel.qrCodeMedia)
+      return;
+    if (channel.qrCodeStatus === "PLACEHOLDER") {
+      wx.showToast({
+        title: "当前为演示占位码，正式营业后开放扫码",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
     if (
-      this.data.status !== "success" ||
       channel.qrCodeStatus !== "CONFIRMED" ||
-      !channel.qrCodeMedia ||
       this.data.failedMedia[`qr-${channel.id}`]
     )
       return;
@@ -136,6 +145,9 @@ Page({
     });
   },
   onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 3 });
+    }
     if (this._hidden) {
       this._hidden = false;
       this.loadBrand();

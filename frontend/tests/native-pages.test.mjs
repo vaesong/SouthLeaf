@@ -235,8 +235,12 @@ test("home hero follows the configured target and ignores an unknown one", () =>
 });
 test("placeholder QR is never presented as a confirmed scannable account", () => {
   let previews = 0;
+  const toasts = [];
   wx.previewImage = () => {
     previews++;
+  };
+  wx.showToast = (options) => {
+    toasts.push(options);
   };
   const p = page("about/about");
   p.update({ status: "success" });
@@ -246,4 +250,7 @@ test("placeholder QR is never presented as a confirmed scannable account", () =>
     qrCodeMedia: { src: "demo" },
   });
   assert.equal(previews, 0);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0].icon, "none");
+  assert.match(toasts[0].title, /演示占位码/);
 });

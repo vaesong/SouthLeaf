@@ -58,6 +58,7 @@ Page({
     return {
       title: this.data.home.brand.shareTitle || "摄影工作室",
       path: "/pages/index/index",
+      imageUrl: this.data.home?.heroItems?.[0]?.media?.src || "",
     };
   },
   onLoad() {
@@ -154,6 +155,9 @@ Page({
     });
   },
   onShow() {
+    if (typeof this.getTabBar === "function" && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 0 });
+    }
     if (this._hidden) {
       this._hidden = false;
       this.loadHome();
@@ -200,5 +204,8 @@ Page({
   },
   handleGoAboutTap(_event) {
     this.goAbout();
+  },
+  handleOpenPackageTap(event) {
+    this.openPackage(event.currentTarget.dataset.arg0);
   },
 });

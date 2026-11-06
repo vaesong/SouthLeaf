@@ -56,6 +56,7 @@ Page({
     return {
       title: this.data.pkg.name || "公开套餐",
       path: `/pages/package/pkgdetail?packageId=${encodeURIComponent(this.data.id)}`,
+      imageUrl: this.data.pkg?.coverMedia?.src || "",
     };
   },
   onLoad(options) {

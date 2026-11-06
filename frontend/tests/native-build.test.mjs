@@ -15,6 +15,7 @@ const sources = [
   "api",
   "pages",
   "components",
+  "custom-tab-bar",
   "presentation",
   "static",
   "config",

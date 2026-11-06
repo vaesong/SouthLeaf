@@ -1,162 +1,228 @@
-<view class="index-page"
-  ><demo-notice mode="{{dataMode}}"></demo-notice
-  ><view wx:if="{{status === 'loading'}}" class="loading-bar"
+<view class="index-page">
+  <demo-notice mode="{{dataMode}}"></demo-notice>
+  <view wx:if="{{status === 'loading'}}" class="loading-bar"
     >正在加载公开内容...</view
-  ><view wx:if="{{status === 'unavailable'}}" class="notice-bar"
-    ><text>公开内容暂时不可用</text
-    ><button bindtap="handleLoadHomeTap" class="notice-action">
-      重试
-    </button></view
-  ><view wx:if="{{status === 'error'}}" class="notice-bar"
-    ><text>公开内容暂时无法加载</text
-    ><button bindtap="handleLoadHomeTap2" class="notice-action">
-      重试
-    </button></view
-  ><block
-    ><view wx:if="{{home.brand.name || home.brand.tagline}}" class="brand-strip"
-      ><view
-        ><text class="brand-en">{{home.brand.englishName}}</text
-        ><text wx:if="{{home.brand.name}}" class="brand-name"
-          >{{home.brand.name}}</text
-        ><text wx:if="{{home.brand.tagline}}" class="brand-tagline"
-          >{{home.brand.tagline}}</text
-        ></view
-      ><image
-        wx:if="{{home.brand.logoMedia}}"
-        src="{{home.brand.logoMedia.src}}"
-        mode="aspectFit"
-        class="brand-logo"
-      ></image></view
-    ><view wx:if="{{home.heroItems.length}}" class="hero-wrap"
-      ><swiper
-        circular="{{true}}"
-        autoplay="{{true}}"
-        interval="{{4500}}"
-        indicator-dots="{{true}}"
-        indicator-color="rgba(255,255,255,.55)"
-        indicator-active-color="#ffffff"
-        bindchange="handleOnHeroChangeChange"
-        class="hero-swiper"
-        ><swiper-item
-          wx:for="{{home.heroItems}}"
-          wx:for-item="item"
-          wx:for-index="index"
-          wx:key="id"
-          ><view
-            data-arg0="{{item}}"
-            bindtap="handleOpenHeroTap"
-            class="hero-item"
-            ><image
-              wx:if="{{!failedMedia['hero-' + item.id]}}"
-              src="{{item.media.src}}"
-              alt="{{item.media.alt}}"
-              mode="aspectFill"
-              data-arg0="{{'hero-' + item.id}}"
-              binderror="handleMarkMediaFailedError"
-            ></image
-            ><view wx:else class="image-placeholder">图片暂不可用</view
-            ><view class="hero-overlay"
-              ><text wx:if="{{item.subtitle}}" class="eyebrow"
-                >{{item.subtitle}}</text
-              ><text wx:if="{{item.title}}" class="hero-title"
-                >{{item.title}}</text
-              ><text wx:if="{{item.action}}" class="hero-action"
-                >{{item.action}} →</text
-              ></view
-            ></view
-          ></swiper-item
-        ></swiper
-      ></view
-    ><view wx:else class="empty-panel">暂时没有可展示的首页内容</view
-    ><view class="content-section"
-      ><view class="section-heading"
-        ><view
-          ><text class="eyebrow">SELECTED SERVICES</text
-          ><text class="section-title">精选服务</text></view
-        ><text bindtap="handleGoServicesTap" class="section-link"
-          >全部服务 →</text
-        ></view
-      ><view wx:if="{{home.businesses.length}}" class="selected-services"
-        ><view
-          wx:for="{{home.businesses}}"
-          wx:for-item="business"
-          wx:for-index="index"
-          data-arg0="{{business.id}}"
-          bindtap="handleGoServicesTap2"
-          wx:key="id"
-          class="business-item"
-          ><image
-            wx:if="{{business.coverMedia && !failedMedia['business-' + business.id]}}"
-            src="{{business.coverMedia.src}}"
+  >
+  <view wx:if="{{status === 'unavailable'}}" class="notice-bar">
+    <text>公开内容暂时不可用</text>
+    <button bindtap="handleLoadHomeTap" class="notice-action">重试</button>
+  </view>
+  <view wx:if="{{status === 'error'}}" class="notice-bar">
+    <text>公开内容暂时无法加载</text>
+    <button bindtap="handleLoadHomeTap2" class="notice-action">重试</button>
+  </view>
+  <view wx:if="{{home.brand.name || home.brand.tagline}}" class="brand-strip">
+    <view>
+      <text wx:if="{{home.brand.englishName}}" class="brand-en"
+        >{{home.brand.englishName}}</text
+      >
+      <text wx:if="{{home.brand.name}}" class="brand-name"
+        >{{home.brand.name}}</text
+      >
+      <text wx:if="{{home.brand.tagline}}" class="brand-tagline"
+        >{{home.brand.tagline}}</text
+      >
+    </view>
+    <image
+      wx:if="{{home.brand.logoMedia}}"
+      src="{{home.brand.logoMedia.src}}"
+      mode="aspectFit"
+      class="brand-logo"
+    ></image>
+  </view>
+  <view
+    wx:if="{{status === 'success' && home.heroItems.length}}"
+    class="hero-wrap"
+  >
+    <swiper
+      circular="{{true}}"
+      autoplay="{{true}}"
+      interval="{{4500}}"
+      indicator-dots="{{true}}"
+      indicator-color="rgba(255,255,255,.55)"
+      indicator-active-color="#ffffff"
+      bindchange="handleOnHeroChangeChange"
+      class="hero-swiper"
+    >
+      <swiper-item
+        wx:for="{{home.heroItems}}"
+        wx:for-item="item"
+        wx:for-index="index"
+        wx:key="id"
+      >
+        <view
+          data-arg0="{{item}}"
+          bindtap="handleOpenHeroTap"
+          class="hero-item"
+        >
+          <image
+            wx:if="{{!failedMedia['hero-' + item.id]}}"
+            src="{{item.media.src}}"
+            alt="{{item.media.alt}}"
             mode="aspectFill"
-            data-arg0="{{'business-' + business.id}}"
-            binderror="handleMarkMediaFailedError2"
-          ></image
-          ><view wx:else class="image-placeholder">图片暂不可用</view
-          ><text>{{business.name}}</text></view
-        ></view
-      ><view wx:else class="inline-empty">暂无已发布业务</view></view
-    ><view class="content-section"
-      ><view class="section-heading"
-        ><view
-          ><text class="eyebrow">RECENT STORIES</text
-          ><text class="section-title">近期作品</text></view
-        ><text bindtap="handleGoWorksTap" class="section-link"
-          >全部作品 →</text
-        ></view
-      ><block wx:if="{{home.featuredWorks.length}}"
-        ><view
-          data-arg0="{{home.featuredWorks[0].id}}"
+            data-arg0="{{'hero-' + item.id}}"
+            binderror="handleMarkMediaFailedError"
+          ></image>
+          <view wx:else class="image-placeholder">图片暂不可用</view>
+          <view class="hero-overlay">
+            <text wx:if="{{item.subtitle}}" class="eyebrow"
+              >{{item.subtitle}}</text
+            >
+            <text wx:if="{{item.title}}" class="hero-title"
+              >{{item.title}}</text
+            >
+            <text wx:if="{{item.action}}" class="hero-action"
+              >{{item.action}} →</text
+            >
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+  <view
+    wx:elif="{{status === 'success' && !home.packages.length && !home.featuredWorks.length}}"
+    class="empty-panel"
+    >暂时没有可展示的首页内容</view
+  >
+  <view
+    wx:if="{{status === 'success' && home.businesses.length}}"
+    class="content-section"
+  >
+    <view class="section-heading">
+      <text class="section-title">拍摄主题</text>
+    </view>
+    <scroll-view
+      scroll-x="{{true}}"
+      class="pill-scroll"
+      show-scrollbar="{{false}}"
+    >
+      <view
+        wx:for="{{home.businesses}}"
+        wx:for-item="business"
+        wx:for-index="index"
+        data-arg0="{{business.id}}"
+        bindtap="handleGoServicesTap2"
+        wx:key="id"
+        class="pill-item"
+      >
+        <image
+          wx:if="{{business.coverMedia && !failedMedia['business-' + business.id]}}"
+          src="{{business.coverMedia.src}}"
+          mode="aspectFill"
+          data-arg0="{{'business-' + business.id}}"
+          binderror="handleMarkMediaFailedError"
+          class="pill-thumb"
+        ></image>
+        <text>{{business.name}}</text>
+      </view>
+    </scroll-view>
+  </view>
+  <view
+    wx:if="{{status === 'success' && home.featuredWorks.length}}"
+    class="content-section"
+  >
+    <view class="section-heading">
+      <text class="section-title">近期摄影故事</text>
+      <text bindtap="handleGoWorksTap" class="section-link">全部作品 →</text>
+    </view>
+    <block>
+      <view
+        data-arg0="{{home.featuredWorks[0].id}}"
+        bindtap="handleOpenWorkTap"
+        class="feature-work"
+      >
+        <image
+          wx:if="{{home.featuredWorks[0].coverMedia && !failedMedia['work-' + home.featuredWorks[0].id]}}"
+          src="{{home.featuredWorks[0].coverMedia.src}}"
+          mode="aspectFill"
+          data-arg0="{{'work-' + home.featuredWorks[0].id}}"
+          binderror="handleMarkMediaFailedError"
+        ></image>
+        <view wx:else class="image-placeholder">图片暂不可用</view>
+        <view class="feature-copy">
+          <text
+            wx:if="{{home.featuredWorks[0].businessLabels.length}}"
+            class="work-category"
+            >{{home.featuredWorks[0].businessLabel}}</text
+          >
+          <text class="feature-title"
+            >{{home.featuredWorks[0].title || '未命名作品'}}</text
+          >
+          <text wx:if="{{home.featuredWorks[0].summary}}" class="work-summary"
+            >{{home.featuredWorks[0].summary}}</text
+          >
+        </view>
+      </view>
+      <view wx:if="{{home.featuredWorks.length > 1}}" class="work-pair">
+        <view
+          wx:for="{{home.secondaryWorks}}"
+          wx:for-item="work"
+          wx:for-index="index"
+          data-arg0="{{work.id}}"
           bindtap="handleOpenWorkTap"
-          class="feature-work"
-          ><image
-            wx:if="{{home.featuredWorks[0].coverMedia && !failedMedia['work-' + home.featuredWorks[0].id]}}"
-            src="{{home.featuredWorks[0].coverMedia.src}}"
+          wx:key="id"
+          class="mini-work"
+        >
+          <image
+            wx:if="{{work.coverMedia && !failedMedia['work-' + work.id]}}"
+            src="{{work.coverMedia.src}}"
             mode="aspectFill"
-            data-arg0="{{'work-' + home.featuredWorks[0].id}}"
-            binderror="handleMarkMediaFailedError3"
-          ></image
-          ><view wx:else class="image-placeholder">图片暂不可用</view
-          ><view class="feature-copy"
-            ><text
-              wx:if="{{home.featuredWorks[0].businessLabels.length}}"
-              class="work-category"
-              >{{home.featuredWorks[0].businessLabel}}</text
-            ><text class="feature-title"
-              >{{home.featuredWorks[0].title || '未命名作品'}}</text
-            ><text
-              wx:if="{{home.featuredWorks[0].summary}}"
-              class="work-summary"
-              >{{home.featuredWorks[0].summary}}</text
-            ></view
-          ></view
-        ><view wx:if="{{home.featuredWorks.length > 1}}" class="work-pair"
-          ><view
-            wx:for="{{home.secondaryWorks}}"
-            wx:for-item="work"
-            wx:for-index="index"
-            data-arg0="{{work.id}}"
-            bindtap="handleOpenWorkTap2"
-            wx:key="id"
-            class="mini-work"
-            ><image
-              wx:if="{{work.coverMedia && !failedMedia['work-' + work.id]}}"
-              src="{{work.coverMedia.src}}"
-              mode="aspectFill"
-              data-arg0="{{'work-' + work.id}}"
-              binderror="handleMarkMediaFailedError4"
-            ></image
-            ><view wx:else class="image-placeholder">图片暂不可用</view
-            ><text>{{work.title || '未命名作品'}}</text></view
-          ></view
-        ></block
-      ><view wx:else class="inline-empty">暂时没有可展示的作品</view></view
-    ><view bindtap="handleGoAboutTap" class="content-section studio-entry"
-      ><view
-        ><text class="eyebrow">{{home.brand.discoveryHeading}}</text
-        ><text class="section-title">认识工作室</text
-        ><text class="contact-copy">品牌故事与官方联系渠道</text></view
-      ><text class="section-link">关于我们 →</text></view
-    ></block
-  ></view
->
+            data-arg0="{{'work-' + work.id}}"
+            binderror="handleMarkMediaFailedError"
+          ></image>
+          <view wx:else class="image-placeholder">图片暂不可用</view>
+          <view class="mini-mask">
+            <text class="mini-title">{{work.title || '未命名作品'}}</text>
+            <text wx:if="{{work.businessLabels.length}}" class="mini-cat"
+              >{{work.businessLabel}}</text
+            >
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view
+    wx:if="{{status === 'success' && home.packages.length}}"
+    class="content-section"
+  >
+    <view class="section-heading">
+      <text class="section-title">精选拍摄方案</text>
+      <text bindtap="handleGoServicesTap" class="section-link">全部服务 →</text>
+    </view>
+    <scroll-view
+      scroll-x="{{true}}"
+      show-scrollbar="{{false}}"
+      class="package-rail"
+    >
+      <view
+        wx:for="{{home.packages}}"
+        wx:for-item="pkg"
+        wx:key="id"
+        data-arg0="{{pkg.id}}"
+        bindtap="handleOpenPackageTap"
+        class="package-card"
+      >
+        <image
+          wx:if="{{pkg.coverMedia && !failedMedia['pkg-' + pkg.id]}}"
+          src="{{pkg.coverMedia.src}}"
+          mode="aspectFill"
+          data-arg0="{{'pkg-' + pkg.id}}"
+          binderror="handleMarkMediaFailedError"
+          class="package-cover"
+        ></image>
+        <view wx:else class="package-cover image-placeholder"
+          >图片暂不可用</view
+        >
+        <text class="package-name">{{pkg.name || '未命名方案'}}</text>
+        <text class="package-price">{{pkg.priceLabel}}</text>
+      </view>
+    </scroll-view>
+  </view>
+  <view bindtap="handleGoAboutTap" class="studio-story-card">
+    <text class="quote"
+      >用镜头收藏你生活里柔软的光，把每一份平凡的温暖，都拍成值得长久珍藏的故事。</text
+    >
+    <text class="studio-sign">—— 安娜 & 方女士</text>
+    <text class="studio-more">认识工作室理念与主理人 →</text>
+  </view>
+</view>

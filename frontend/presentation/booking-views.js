@@ -9,7 +9,7 @@ const STATUS = Object.freeze({
   },
   CONFIRMED: {
     label: "已确认",
-    hint: "档期已确认，到店前请留意工作室的联系。",
+    hint: "请提前 15 分钟到店，安娜与方女士期待与你们见面。",
   },
   REJECTED: {
     label: "未接受",

@@ -1,6 +1,9 @@
 page {
-  background: #fbfaf6;
-  color: #23231f;
+  background: #f4efea;
+  color: #26201b;
+  font-family:
+    -apple-system, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    sans-serif;
 }
 view,
 text,
@@ -8,4 +11,77 @@ image,
 button,
 scroll-view {
   box-sizing: border-box;
+}
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-align: inherit;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+button::after {
+  border: none;
+}
+.page-intro {
+  display: flex;
+  flex-direction: column;
+  padding: 36rpx 0 8rpx;
+}
+.eyebrow {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  color: #8e5636;
+}
+.page-title {
+  display: block;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 44rpx;
+  letter-spacing: 4rpx;
+  font-weight: 600;
+  color: #26201b;
+  margin: 6rpx 0 10rpx;
+}
+.page-summary {
+  display: block;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #75685b;
+}
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+.title-row .page-title {
+  flex: 1;
+  min-width: 0;
+}
+.index-page,
+.works-page,
+.package-page,
+.about-page,
+.mine-page {
+  padding-bottom: 160rpx;
+}
+.sort-toggle,
+.layout-toggle,
+.filter-chip,
+.notice-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 56rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  line-height: 1;
+  text-align: center;
 }

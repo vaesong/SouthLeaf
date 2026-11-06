@@ -1,46 +1,51 @@
 .mine-page {
-  padding: 24rpx 28rpx 60rpx;
-  color: #23513f;
-  background: #f8f8f8;
   min-height: 100vh;
+  padding: 0 32rpx 160rpx;
+  color: #26201b;
+  background: #f4efea;
   box-sizing: border-box;
 }
-.mine-header {
+.profile-welcome-card {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-bottom: 18rpx;
-}
-.mine-title {
-  font-size: 34rpx;
-  font-weight: 600;
-}
-.mine-subtitle {
-  font-size: 22rpx;
-  color: #7b8a80;
-}
-.identity-card {
+  align-items: center;
+  gap: 24rpx;
   margin-top: 12rpx;
-  padding: 24rpx;
+  padding: 36rpx 32rpx;
   background: #ffffff;
-  border-radius: 18rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx -8rpx rgba(50, 35, 20, 0.06);
 }
-.identity-name {
+.profile-avatar-box {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: #f5eae1;
+  color: #8e5636;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 40rpx;
+}
+.welcome-title {
   display: block;
-  font-size: 30rpx;
-  font-weight: 600;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 36rpx;
+  letter-spacing: 2rpx;
 }
-.identity-meta {
+.welcome-name {
   display: block;
-  margin-top: 8rpx;
-  font-size: 22rpx;
-  color: #7b8a80;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #75685b;
 }
-.section {
-  margin-top: 28rpx;
-  padding: 24rpx;
+.section,
+.mine-menu-card {
+  margin-top: 24rpx;
+  padding: 28rpx 28rpx 12rpx;
   background: #ffffff;
-  border-radius: 18rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx -8rpx rgba(50, 35, 20, 0.06);
 }
 .section-head {
   display: flex;
@@ -49,106 +54,157 @@
 }
 .section-title {
   display: block;
-  font-size: 28rpx;
-  font-weight: 600;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 32rpx;
+  letter-spacing: 2rpx;
   margin-bottom: 16rpx;
 }
 .section-action {
   font-size: 24rpx;
-  color: #315849;
+  color: #8e5636;
   padding-bottom: 16rpx;
 }
 .request-card {
-  padding: 22rpx;
-  margin-bottom: 16rpx;
-  border: 1rpx solid #dfe6e1;
-  border-radius: 14rpx;
+  padding: 24rpx 8rpx 22rpx;
+  margin-bottom: 8rpx;
+  border-top: 1rpx solid rgba(38, 32, 27, 0.07);
 }
 .request-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16rpx;
 }
 .request-slot {
-  font-size: 27rpx;
-  font-weight: 600;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 30rpx;
 }
 .status-pill {
-  font-size: 22rpx;
-  padding: 4rpx 14rpx;
+  flex: none;
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+  padding: 6rpx 16rpx;
   border-radius: 999rpx;
-  background: #eef1ef;
-  color: #55655b;
+  background: #f5eae1;
+  color: #8e5636;
 }
 .status-CONFIRMED {
-  background: #e6f1ea;
-  color: #315849;
+  background: #eaf2e4;
+  color: #4b7336;
 }
 .status-PENDING_CONFIRMATION {
-  background: #fdf3e3;
-  color: #8a6a2f;
+  background: #faf0e4;
+  color: #9a622a;
 }
 .status-REJECTED,
 .status-EXPIRED,
 .status-CANCELLED {
-  background: #f4efee;
-  color: #8a6a63;
+  background: #f4efea;
+  color: #a39688;
 }
-.request-hint {
+.request-hint,
+.hint {
   display: block;
   margin-top: 10rpx;
-  font-size: 22rpx;
-  color: #7b8a80;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #75685b;
 }
 .order-block {
   margin-top: 16rpx;
-  padding-top: 16rpx;
-  border-top: 1rpx solid #eef1ef;
 }
 .order-name {
   display: block;
-  font-size: 25rpx;
+  font-size: 26rpx;
 }
 .order-amount {
   display: block;
   margin-top: 6rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #315849;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 32rpx;
+  color: #8e5636;
 }
 .order-settlement {
   display: block;
   margin-top: 6rpx;
   font-size: 22rpx;
-  color: #7b8a80;
+  color: #75685b;
 }
 .pay-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
   margin-top: 16rpx;
-  background: #315849;
+  background: #26201b;
   color: #ffffff;
-  border-radius: 12rpx;
+  border-radius: 999rpx;
   font-size: 26rpx;
+  line-height: 1;
 }
 .pay-button-blocked {
   background: #ffffff;
-  color: #7b8a80;
-  border: 1rpx solid #dfe6e1;
+  color: #a39688;
+  border: 1rpx solid rgba(38, 32, 27, 0.08);
 }
-.hint {
+.mine-menu-card {
+  padding: 8rpx 32rpx;
+}
+.mine-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 0;
+  font-size: 28rpx;
+}
+.mine-menu-row + .mine-menu-row {
+  border-top: 1rpx solid rgba(38, 32, 27, 0.07);
+}
+.chevron {
+  color: #a39688;
+  font-size: 32rpx;
+}
+.note-section {
+  padding-bottom: 24rpx;
+}
+.closed-card {
+  margin-top: 24rpx;
+  padding: 36rpx 32rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx -8rpx rgba(50, 35, 20, 0.06);
+}
+.closed-title {
+  display: block;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 32rpx;
+  letter-spacing: 2rpx;
+  color: #26201b;
+}
+.closed-copy {
+  display: block;
+  margin-top: 12rpx;
   font-size: 24rpx;
-  color: #7b8a80;
-  padding: 12rpx 4rpx;
+  line-height: 1.7;
+  color: #75685b;
 }
 .state-panel {
-  margin-top: 120rpx;
+  margin-top: 80rpx;
   text-align: center;
   font-size: 26rpx;
-  color: #7b8a80;
+  color: #75685b;
 }
 .state-panel button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 56rpx;
   margin-top: 28rpx;
-  background: #315849;
+  padding: 0 28rpx;
+  background: #26201b;
   color: #ffffff;
-  border-radius: 14rpx;
+  border-radius: 999rpx;
   font-size: 28rpx;
+  line-height: 1;
 }
