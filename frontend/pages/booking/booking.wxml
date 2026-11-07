@@ -3,51 +3,74 @@
   <view class="page-intro">
     <text bindtap="handleBackTap" class="round-btn">‹</text>
     <text class="eyebrow">RESERVATION</text>
-    <text class="page-title">预约拍摄</text>
-    <text class="page-summary">选一个舒服的日子，我们再和你确认档期。</text>
+    <text wx:if="{{copy.booking.title}}" class="page-title"
+      >{{copy.booking.title}}</text
+    >
+    <text wx:if="{{copy.booking.summary}}" class="page-summary"
+      >{{copy.booking.summary}}</text
+    >
   </view>
-  <view wx:if="{{status === 'loading'}}" class="state-panel"
-    >正在加载可预约时段...</view
-  >
   <view
-    wx:elif="{{status === 'unavailable' || status === 'error'}}"
+    wx:if="{{(status === 'unavailable' || status === 'error') && (copy.booking.closedTitle || copy.booking.closedBody || studioPhone || studioWechat)}}"
     class="care-card"
   >
-    <text class="care-title">预约通道正在轻轻升级</text>
-    <text class="care-copy"
-      >这段时间可以直接打电话，或复制微信，让主理人帮你锁定档期。确认之前，不会自动占用。</text
+    <text wx:if="{{copy.booking.closedTitle}}" class="care-title"
+      >{{copy.booking.closedTitle}}</text
+    >
+    <text wx:if="{{copy.booking.closedBody}}" class="care-copy"
+      >{{copy.booking.closedBody}}</text
     >
     <view wx:if="{{studioWechat}}" class="care-line">
       <view class="care-copy-block">
-        <text class="care-label">微信</text>
+        <text wx:if="{{copy.booking.wechatLabel}}" class="care-label"
+          >{{copy.booking.wechatLabel}}</text
+        >
         <text class="care-value">{{studioWechat}}</text>
       </view>
-      <button bindtap="handleCopyWechatTap" class="care-text-action">
-        复制微信
+      <button
+        wx:if="{{copy.booking.copyWechat}}"
+        bindtap="handleCopyWechatTap"
+        class="care-text-action"
+      >
+        {{copy.booking.copyWechat}}
       </button>
     </view>
     <view wx:if="{{studioPhone}}" class="care-line">
       <view class="care-copy-block">
-        <text class="care-label">电话</text>
+        <text wx:if="{{copy.booking.phoneLabel}}" class="care-label"
+          >{{copy.booking.phoneLabel}}</text
+        >
         <text class="care-value">{{studioPhone}}</text>
       </view>
     </view>
     <view class="care-actions">
-      <button bindtap="handleCallPhoneTap" class="care-primary">
-        拨打电话
+      <button
+        wx:if="{{copy.booking.call}}"
+        bindtap="handleCallPhoneTap"
+        class="care-primary"
+      >
+        {{copy.booking.call}}
       </button>
-      <button bindtap="handleGoWorksTap" class="care-secondary">
-        返回作品
+      <button
+        wx:if="{{copy.booking.backToWork}}"
+        bindtap="handleGoWorksTap"
+        class="care-secondary"
+      >
+        {{copy.booking.backToWork}}
       </button>
     </view>
   </view>
-  <view wx:elif="{{status === 'empty'}}" class="state-panel">
-    <text>暂无可预约套餐</text>
-    <button bindtap="handleRetryTap">刷新</button>
+  <view
+    wx:elif="{{status === 'empty' && copy.booking.closedBody}}"
+    class="state-panel"
+  >
+    <text>{{copy.booking.closedBody}}</text>
   </view>
-  <block wx:else>
+  <block wx:elif="{{status === 'success'}}">
     <view class="section">
-      <text class="section-title">选择套餐</text>
+      <text wx:if="{{copy.booking.packagesTitle}}" class="section-title"
+        >{{copy.booking.packagesTitle}}</text
+      >
       <view class="booking-pkg-grid">
         <view
           wx:for="{{packages}}"
@@ -61,27 +84,33 @@
       </view>
     </view>
     <view class="section">
-      <text class="section-title">选择日期</text>
+      <text wx:if="{{copy.booking.dateTitle}}" class="section-title"
+        >{{copy.booking.dateTitle}}</text
+      >
       <view class="date-row">
         <picker mode="date" value="{{from}}" bindchange="handleFromChange">
           <view class="date-chip">
-            <text class="chip-label">开始</text>
+            <text wx:if="{{copy.booking.rangeStart}}" class="chip-label"
+              >{{copy.booking.rangeStart}}</text
+            >
             <text class="chip-value">{{from}}</text>
           </view>
         </picker>
         <picker mode="date" value="{{to}}" bindchange="handleToChange">
           <view class="date-chip">
-            <text class="chip-label">结束</text>
+            <text wx:if="{{copy.booking.rangeEnd}}" class="chip-label"
+              >{{copy.booking.rangeEnd}}</text
+            >
             <text class="chip-value">{{to}}</text>
           </view>
         </picker>
       </view>
     </view>
     <view class="section">
-      <text class="section-title">选择时段</text>
-      <view wx:if="{{slotRows.length === 0}}" class="hint"
-        >所选日期内没有空余时段</view
+      <text wx:if="{{copy.booking.slotsTitle}}" class="section-title"
+        >{{copy.booking.slotsTitle}}</text
       >
+      <view wx:if="{{slotRows.length === 0}}" class="hint"></view>
       <view wx:else class="slots-picker-grid">
         <view
           wx:for="{{slotRows}}"
@@ -97,15 +126,21 @@
     <view wx:if="{{error}}" class="error-row">{{error}}</view>
     <view wx:if="{{message}}" class="hint">{{message}}</view>
     <button
+      wx:if="{{copy.booking.submit}}"
       class="submit-button"
       disabled="{{!selectedSlotId || submitting}}"
       bindtap="handleSubmitTap"
     >
-      {{submitting ? '正在提交...' : '提交预约申请'}}
+      {{copy.booking.submit}}
     </button>
-    <view class="safety-note"
-      >提交后，工作室会和你确认档期。确认之前，不会自动占用。</view
+    <view wx:if="{{copy.booking.submitHint}}" class="safety-note"
+      >{{copy.booking.submitHint}}</view
     >
-    <view class="mine-entry" bindtap="handleMineTap">查看我的预约 ›</view>
+    <view
+      wx:if="{{copy.booking.mineEntry}}"
+      class="mine-entry"
+      bindtap="handleMineTap"
+      >{{copy.booking.mineEntry}}</view
+    >
   </block>
 </view>

@@ -19,11 +19,24 @@ public final class WeChatSubjectExchange implements SubjectExchange {
   private final HttpClient client;
   private final String appId;
   private final String appSecret;
+  private final URI endpoint;
 
   public WeChatSubjectExchange(String appId, String appSecret) {
-    this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    this(
+        appId,
+        appSecret,
+        URI.create(ENDPOINT),
+        HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+  }
+
+  /**
+   * The endpoint is injected so a test can stand in for the platform without embedding a secret.
+   */
+  WeChatSubjectExchange(String appId, String appSecret, URI endpoint, HttpClient client) {
+    this.client = client;
     this.appId = appId;
     this.appSecret = appSecret;
+    this.endpoint = endpoint;
   }
 
   @Override
@@ -42,7 +55,7 @@ public final class WeChatSubjectExchange implements SubjectExchange {
             + encode(loginCode)
             + "&grant_type=authorization_code";
     HttpRequest request =
-        HttpRequest.newBuilder(URI.create(ENDPOINT + "?" + query))
+        HttpRequest.newBuilder(URI.create(endpoint + "?" + query))
             .timeout(Duration.ofSeconds(6))
             .GET()
             .build();

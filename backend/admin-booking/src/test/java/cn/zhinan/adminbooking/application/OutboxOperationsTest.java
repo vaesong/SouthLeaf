@@ -54,7 +54,15 @@ class OutboxOperationsTest {
     public void markDead(String messageId, String owner, String reasonCode, Instant now) {}
 
     @Override
+    public void markStaffFollowUp(String messageId, String owner, Instant now) {}
+
+    @Override
     public List<OutboxMessage> deadLetters(int limit) {
+      return List.of();
+    }
+
+    @Override
+    public List<OutboxMessage> staffFollowUps(int limit) {
       return List.of();
     }
 

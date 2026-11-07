@@ -300,17 +300,29 @@ public final class BookingPorts {
    * @param retryable whether another attempt may succeed
    * @param reasonCode a stable, non-sensitive reason
    */
-  public record DeliveryOutcome(boolean delivered, boolean retryable, String reasonCode) {
+  public record DeliveryOutcome(
+      boolean delivered, boolean retryable, String reasonCode, boolean staffFollowUp) {
+    public DeliveryOutcome {
+      if (staffFollowUp && (delivered || retryable))
+        throw new IllegalArgumentException("STAFF_FOLLOW_UP");
+      if (delivered && retryable) throw new IllegalArgumentException("DELIVERY_OUTCOME");
+    }
+
     public static DeliveryOutcome success() {
-      return new DeliveryOutcome(true, false, "DELIVERED");
+      return new DeliveryOutcome(true, false, "DELIVERED", false);
     }
 
     public static DeliveryOutcome retryable(String reasonCode) {
-      return new DeliveryOutcome(false, true, reasonCode);
+      return new DeliveryOutcome(false, true, reasonCode, false);
     }
 
     public static DeliveryOutcome permanent(String reasonCode) {
-      return new DeliveryOutcome(false, false, reasonCode);
+      return new DeliveryOutcome(false, false, reasonCode, false);
+    }
+
+    /** The staff will contact the customer. This is not a delivery and not a failure. */
+    public static DeliveryOutcome staffHold() {
+      return new DeliveryOutcome(false, false, "STAFF_CONTACT", true);
     }
   }
 
@@ -350,8 +362,14 @@ public final class BookingPorts {
     /** Moves a message to the dead letter state without attempting delivery again. */
     void markDead(String messageId, String owner, String reasonCode, Instant now);
 
+    /** Records that staff will follow up. The row is not {@code SENT} and is not a dead letter. */
+    void markStaffFollowUp(String messageId, String owner, Instant now);
+
     /** The messages that will never be delivered again without an operator decision. */
     List<OutboxMessage> deadLetters(int limit);
+
+    /** Messages waiting for a person to contact the customer. Not a delivery receipt. */
+    List<OutboxMessage> staffFollowUps(int limit);
 
     /**
      * Requeues one failed message after an explicit operator decision. The attempt count is kept,

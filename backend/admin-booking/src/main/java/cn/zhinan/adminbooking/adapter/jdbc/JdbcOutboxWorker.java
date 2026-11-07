@@ -129,6 +129,20 @@ public final class JdbcOutboxWorker implements OutboxWorker {
   }
 
   @Override
+  public void markStaffFollowUp(String messageId, String owner, Instant now) {
+    int updated =
+        JdbcSupport.update(
+            connections,
+            "UPDATE booking_notification_outbox"
+                + " SET status = 'STAFF', lease_until = NULL, lease_owner = NULL,"
+                + " last_error = 'STAFF_CONTACT', updated_at = ? WHERE id = ? AND lease_owner = ?",
+            now,
+            messageId,
+            OutboxRules.workerOwner(owner));
+    requireLease(updated);
+  }
+
+  @Override
   public void markDead(String messageId, String owner, String reasonCode, Instant now) {
     int updated =
         JdbcSupport.update(
@@ -154,6 +168,17 @@ public final class JdbcOutboxWorker implements OutboxWorker {
         connections,
         "SELECT id, intent, recipient_ref, object_ref, due_at, status, attempts, lease_until,"
             + " last_error FROM booking_notification_outbox WHERE status = 'FAILED'"
+            + " ORDER BY updated_at, id LIMIT ?",
+        JdbcOutboxWorker::mapMessage,
+        OutboxRules.leaseBatch(limit));
+  }
+
+  @Override
+  public List<OutboxMessage> staffFollowUps(int limit) {
+    return JdbcSupport.queryList(
+        connections,
+        "SELECT id, intent, recipient_ref, object_ref, due_at, status, attempts, lease_until,"
+            + " last_error FROM booking_notification_outbox WHERE status = 'STAFF'"
             + " ORDER BY updated_at, id LIMIT ?",
         JdbcOutboxWorker::mapMessage,
         OutboxRules.leaseBatch(limit));

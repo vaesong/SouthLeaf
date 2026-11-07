@@ -5,6 +5,7 @@ const {
   rememberLayout,
   nextLayout,
 } = require("../../api/public-display.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
 function present(data) {
@@ -12,6 +13,7 @@ function present(data) {
     ...data,
     availableMedia: galleryMedia(data.work),
     work: workView(data.work),
+    copy: ready(data.copy),
     showStatusBar: ["loading", "unavailable", "error"].includes(data.status),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.work.meta?.dataMode ?? "")
@@ -28,6 +30,7 @@ Page({
     },
     failedMedia: {},
     layout: "album",
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -36,13 +39,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      work: {
-        businessLabels: [],
-        media: [],
-      },
-      status: "loading",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -57,7 +53,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: this.data.work.title || "公开作品",
+      title: this.data.work.title || "",
       path: `/pages/works/workdetail?workId=${encodeURIComponent(this.data.id)}`,
       imageUrl:
         this.data.work?.coverMedia?.src ||
@@ -90,30 +86,21 @@ Page({
       return;
     }
     const version = ++this._generation;
-    this.update({
-      work: {
-        businessLabels: [],
-        media: [],
-      },
-    });
-    this.update({
-      status: "loading",
-    });
-    this.update({
-      failedMedia: {},
-    });
+    if (!showing(this.data.status)) this.update({ status: "loading" });
     try {
       const work = await getWork(this.data.id);
       if (version !== this._generation) return;
       this.update({
-        work: work,
-      });
-      this.update({
+        work,
+        copy: work.copy || {},
         status: "success",
+        failedMedia: {},
       });
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
+        work: { businessLabels: [], media: [] },
+        copy: {},
         status:
           error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
             ? "unavailable"

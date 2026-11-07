@@ -1,5 +1,6 @@
 package cn.zhinan.adminruntime;
 
+import cn.zhinan.admincontent.adapter.cos.CosMediaObjectWriter;
 import cn.zhinan.admincontent.adapter.filesystem.FileMediaObjectWriter;
 import cn.zhinan.admincontent.adapter.image.ImageIoProcessor;
 import cn.zhinan.admincontent.adapter.jdbc.JdbcCatalogDraftRepository;
@@ -9,6 +10,7 @@ import cn.zhinan.admincontent.adapter.jdbc.JdbcPublicationRepository;
 import cn.zhinan.admincontent.adapter.jdbc.JdbcWorkRepository;
 import cn.zhinan.admincontent.application.CatalogApplication;
 import cn.zhinan.admincontent.application.ContentApplication;
+import cn.zhinan.admincontent.port.ContentPorts.MediaObjectWriter;
 import java.time.Clock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -41,9 +43,19 @@ class AdminContentConfiguration {
   ContentApplication contentApplication(
       VerifiedContentDataSources sources, AdminRuntimeProperties properties, Clock clock) {
     var content = properties.content();
-    final FileMediaObjectWriter objects;
+    final MediaObjectWriter objects;
     try {
-      objects = new FileMediaObjectWriter(content.mediaRoot());
+      objects =
+          switch (content.mediaStore()) {
+            case "file" -> new FileMediaObjectWriter(content.mediaRoot());
+            case "cos" ->
+                new CosMediaObjectWriter(
+                    content.cosSecretId(),
+                    content.cosSecretKey(),
+                    content.cosBucket(),
+                    content.cosRegion());
+            default -> throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
+          };
     } catch (IllegalArgumentException rejected) {
       throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
     }

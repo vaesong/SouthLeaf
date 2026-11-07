@@ -45,6 +45,7 @@ describe("OutboxView", () => {
                 dueAt: "2026-10-25T00:00:00Z",
               },
             ],
+            staffFollowUps: [],
           },
         }),
       )
@@ -76,6 +77,7 @@ describe("OutboxView", () => {
             externalDeliveryEnabled: false,
             pendingCount: 1,
             failures: [],
+            staffFollowUps: [],
           },
         }),
       );
@@ -123,6 +125,7 @@ describe("OutboxView", () => {
               dueAt: "2026-10-25T00:00:00Z",
             },
           ],
+          staffFollowUps: [],
         },
       }),
     );

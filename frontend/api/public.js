@@ -1,4 +1,5 @@
 const http = require("./api.js");
+const { nest } = require("../presentation/copy.js");
 const { createError, getBaseURL } = http;
 
 const invalid = () => {
@@ -19,6 +20,14 @@ const unique = (values) =>
 const nullableMedia = (value) => (value === null ? null : mapMedia(value));
 const positive = (value) =>
   Number.isInteger(value) && value > 0 ? value : invalid();
+const copyOf = (meta) => {
+  const value = meta && meta.presentation;
+  if (value == null) return nest(null);
+  if (typeof value !== "object" || Array.isArray(value)) invalid();
+  for (const line of Object.values(value))
+    if (typeof line !== "string") invalid();
+  return nest(value);
+};
 
 const mapMedia = (input) => {
   const value = object(input);
@@ -26,8 +35,26 @@ const mapMedia = (input) => {
   const base = getBaseURL().replace(/\/$/, "");
   const resolve = (url, variant) => {
     const path = `/api/v1/public/media/${mediaId}/${variant}/content`;
-    if (url !== path && url !== `${base}${path}`) invalid();
-    return `${base}${path}`;
+    if (url === path || url === `${base}${path}`) return `${base}${path}`;
+    const origin =
+      typeof getApp().runtime.mediaOrigin === "string"
+        ? getApp().runtime.mediaOrigin.replace(/\/$/, "")
+        : "";
+    if (!origin || typeof url !== "string" || !url.startsWith(origin + "/"))
+      invalid();
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch {
+      invalid();
+    }
+    if (
+      parsed.origin !== origin ||
+      !/^\/[0-9a-f]{64}\.(jpg|png)$/.test(parsed.pathname) ||
+      !parsed.search.includes("q-sign-algorithm=sha1")
+    )
+      invalid();
+    return url;
   };
   if (!Number.isInteger(value.sortOrder) || value.sortOrder < 0) invalid();
   return {
@@ -211,6 +238,7 @@ const detail = async (path, mapper) => {
   return {
     ...mapper(object(response.data)),
     meta: response.meta,
+    copy: copyOf(response.meta),
     requestId: response.requestId,
   };
 };
@@ -227,6 +255,7 @@ const page = async (path, params, mapper) => {
     nextCursor: payload.nextCursor,
     contentVersion: text(response.meta.contentVersion),
     dataMode: response.meta.dataMode,
+    copy: copyOf(response.meta),
     requestId: text(response.requestId),
   };
 };

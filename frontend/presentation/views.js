@@ -13,23 +13,23 @@ const brandView = (brand) => ({
 });
 const teamView = (team) =>
   team.map((member) => ({ ...member, initial: member.name.slice(0, 1) }));
-const homeView = (home) => ({
+const homeView = (home, priceLines) => ({
   ...home,
   brand: brandView(home.brand),
   featuredWorks: home.featuredWorks.map(workView),
   secondaryWorks: home.featuredWorks.slice(1, 3).map(workView),
   packages: (home.packages || []).map((pkg) => ({
     ...pkg,
-    priceLabel: priceLabel(pkg),
+    priceLabel: priceLabel(pkg, priceLines),
   })),
 });
-const serviceViews = (groups) =>
+const serviceViews = (groups, priceLines) =>
   groups.map((group, index) => ({
     ...group,
     number: String(index + 1).padStart(2, "0"),
     packages: group.packages.map((pkg) => ({
       ...pkg,
-      priceLabel: priceLabel(pkg),
+      priceLabel: priceLabel(pkg, priceLines),
     })),
   }));
 const rows = (values) =>

@@ -1,16 +1,5 @@
 <view class="index-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view wx:if="{{status === 'loading'}}" class="loading-bar"
-    >正在加载公开内容...</view
-  >
-  <view wx:if="{{status === 'unavailable'}}" class="notice-bar">
-    <text>公开内容暂时不可用</text>
-    <button bindtap="handleLoadHomeTap" class="notice-action">重试</button>
-  </view>
-  <view wx:if="{{status === 'error'}}" class="notice-bar">
-    <text>公开内容暂时无法加载</text>
-    <button bindtap="handleLoadHomeTap2" class="notice-action">重试</button>
-  </view>
   <view wx:if="{{home.brand.name || home.brand.tagline}}" class="brand-strip">
     <view>
       <text wx:if="{{home.brand.englishName}}" class="brand-en"
@@ -63,7 +52,7 @@
             data-arg0="{{'hero-' + item.id}}"
             binderror="handleMarkMediaFailedError"
           ></image>
-          <view wx:else class="image-placeholder">图片暂不可用</view>
+          <view wx:else class="image-placeholder"></view>
           <view class="hero-overlay">
             <text wx:if="{{item.subtitle}}" class="eyebrow"
               >{{item.subtitle}}</text
@@ -80,16 +69,11 @@
     </swiper>
   </view>
   <view
-    wx:elif="{{status === 'success' && !home.packages.length && !home.featuredWorks.length}}"
-    class="empty-panel"
-    >暂时没有可展示的首页内容</view
-  >
-  <view
     wx:if="{{status === 'success' && home.businesses.length}}"
     class="content-section"
   >
-    <view class="section-heading">
-      <text class="section-title">拍摄主题</text>
+    <view wx:if="{{copy.home.themesTitle}}" class="section-heading">
+      <text class="section-title">{{copy.home.themesTitle}}</text>
     </view>
     <scroll-view
       scroll-x="{{true}}"
@@ -121,9 +105,19 @@
     wx:if="{{status === 'success' && home.featuredWorks.length}}"
     class="content-section"
   >
-    <view class="section-heading">
-      <text class="section-title">近期摄影故事</text>
-      <text bindtap="handleGoWorksTap" class="section-link">全部作品 →</text>
+    <view
+      wx:if="{{copy.home.storiesTitle || copy.home.allWorks}}"
+      class="section-heading"
+    >
+      <text wx:if="{{copy.home.storiesTitle}}" class="section-title"
+        >{{copy.home.storiesTitle}}</text
+      >
+      <text
+        wx:if="{{copy.home.allWorks}}"
+        bindtap="handleGoWorksTap"
+        class="section-link"
+        >{{copy.home.allWorks}}</text
+      >
     </view>
     <block>
       <view
@@ -138,15 +132,15 @@
           data-arg0="{{'work-' + home.featuredWorks[0].id}}"
           binderror="handleMarkMediaFailedError"
         ></image>
-        <view wx:else class="image-placeholder">图片暂不可用</view>
+        <view wx:else class="image-placeholder"></view>
         <view class="feature-copy">
           <text
             wx:if="{{home.featuredWorks[0].businessLabels.length}}"
             class="work-category"
             >{{home.featuredWorks[0].businessLabel}}</text
           >
-          <text class="feature-title"
-            >{{home.featuredWorks[0].title || '未命名作品'}}</text
+          <text wx:if="{{home.featuredWorks[0].title}}" class="feature-title"
+            >{{home.featuredWorks[0].title}}</text
           >
           <text wx:if="{{home.featuredWorks[0].summary}}" class="work-summary"
             >{{home.featuredWorks[0].summary}}</text
@@ -170,9 +164,11 @@
             data-arg0="{{'work-' + work.id}}"
             binderror="handleMarkMediaFailedError"
           ></image>
-          <view wx:else class="image-placeholder">图片暂不可用</view>
+          <view wx:else class="image-placeholder"></view>
           <view class="mini-mask">
-            <text class="mini-title">{{work.title || '未命名作品'}}</text>
+            <text wx:if="{{work.title}}" class="mini-title"
+              >{{work.title}}</text
+            >
             <text wx:if="{{work.businessLabels.length}}" class="mini-cat"
               >{{work.businessLabel}}</text
             >
@@ -185,9 +181,19 @@
     wx:if="{{status === 'success' && home.packages.length}}"
     class="content-section"
   >
-    <view class="section-heading">
-      <text class="section-title">精选拍摄方案</text>
-      <text bindtap="handleGoServicesTap" class="section-link">全部服务 →</text>
+    <view
+      wx:if="{{copy.home.packagesTitle || copy.home.allServices}}"
+      class="section-heading"
+    >
+      <text wx:if="{{copy.home.packagesTitle}}" class="section-title"
+        >{{copy.home.packagesTitle}}</text
+      >
+      <text
+        wx:if="{{copy.home.allServices}}"
+        bindtap="handleGoServicesTap"
+        class="section-link"
+        >{{copy.home.allServices}}</text
+      >
     </view>
     <scroll-view
       scroll-x="{{true}}"
@@ -210,19 +216,23 @@
           binderror="handleMarkMediaFailedError"
           class="package-cover"
         ></image>
-        <view wx:else class="package-cover image-placeholder"
-          >图片暂不可用</view
-        >
-        <text class="package-name">{{pkg.name || '未命名方案'}}</text>
+        <view wx:else class="package-cover image-placeholder"></view>
+        <text wx:if="{{pkg.name}}" class="package-name">{{pkg.name}}</text>
         <text class="package-price">{{pkg.priceLabel}}</text>
       </view>
     </scroll-view>
   </view>
-  <view bindtap="handleGoAboutTap" class="studio-story-card">
-    <text class="quote"
-      >用镜头收藏你生活里柔软的光，把每一份平凡的温暖，都拍成值得长久珍藏的故事。</text
+  <view
+    wx:if="{{copy.home.story || copy.home.signOff || copy.home.aboutLink}}"
+    bindtap="handleGoAboutTap"
+    class="studio-story-card"
+  >
+    <text wx:if="{{copy.home.story}}" class="quote">{{copy.home.story}}</text>
+    <text wx:if="{{copy.home.signOff}}" class="studio-sign"
+      >{{copy.home.signOff}}</text
     >
-    <text class="studio-sign">—— 安娜 & 方女士</text>
-    <text class="studio-more">认识工作室理念与主理人 →</text>
+    <text wx:if="{{copy.home.aboutLink}}" class="studio-more"
+      >{{copy.home.aboutLink}}</text
+    >
   </view>
 </view>

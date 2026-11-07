@@ -39,4 +39,17 @@ class HeroSlideJsonTest {
     assertThat(parsed.getFirst().targetId()).isEqualTo("about");
     assertThat(parsed.getFirst().enabled()).isTrue();
   }
+
+  @Test
+  void missingPresentationIsEmptyAndBlankLinesAreDropped() {
+    assertThat(JdbcPublishedCatalogRepository.presentation(null)).isEmpty();
+    assertThatThrownBy(() -> JdbcPublishedCatalogRepository.presentation(List.of()))
+        .isInstanceOf(CatalogStorageException.class);
+    assertThat(
+            JdbcPublishedCatalogRepository.presentation(
+                Map.of("tabs.home", "首页", "home.signOff", "", "later.key", "保留")))
+        .containsEntry("tabs.home", "首页")
+        .containsEntry("later.key", "保留")
+        .doesNotContainKey("home.signOff");
+  }
 }

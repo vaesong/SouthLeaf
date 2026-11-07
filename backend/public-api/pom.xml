@@ -10,6 +10,11 @@
     <artifactId>uniapp-api</artifactId>
     <dependencies>
         <dependency>
+            <groupId>cn.zhinan</groupId>
+            <artifactId>object-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>

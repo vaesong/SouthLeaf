@@ -285,6 +285,7 @@ def start_public_api(helpers, state, tools, passwords) -> None:
             "SOUTHLEAF_DB_URL": helpers.jdbc_url(int(meta["mysqlPort"]), str(meta["publicSchema"])),
             "SOUTHLEAF_DB_USERNAME": "mmp_reader",
             "SOUTHLEAF_DB_PASSWORD": passwords["reader"],
+            "SOUTHLEAF_MEDIA_DELIVERY": "file",
             "SOUTHLEAF_MEDIA_ROOT": str(Path(str(meta["root"])) / "media"),
             "SOUTHLEAF_BIND_ADDRESS": "127.0.0.1",
             "PORT": str(meta["webPort"]),

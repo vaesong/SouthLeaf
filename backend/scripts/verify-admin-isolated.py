@@ -496,6 +496,7 @@ def run_owned_public_smoke(meta, public_environment):
         "SOUTHLEAF_DB_URL": public_environment["SOUTHLEAF_PUBLIC_IT_RUNTIME_URL"],
         "SOUTHLEAF_DB_USERNAME": public_environment["SOUTHLEAF_PUBLIC_IT_RUNTIME_USERNAME"],
         "SOUTHLEAF_DB_PASSWORD": public_environment["SOUTHLEAF_PUBLIC_IT_RUNTIME_PASSWORD"],
+        "SOUTHLEAF_MEDIA_DELIVERY": "file",
         "SOUTHLEAF_MEDIA_ROOT": public_environment["SOUTHLEAF_PUBLIC_IT_MEDIA_ROOT"],
         "SOUTHLEAF_BIND_ADDRESS": "127.0.0.1", "PORT": str(port),
         "JAVA_TOOL_OPTIONS": public_environment["JAVA_TOOL_OPTIONS"],

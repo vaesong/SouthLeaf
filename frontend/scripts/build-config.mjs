@@ -11,6 +11,27 @@ export const routes = [
   "pages/mine/mine",
 ];
 // Syntax checks are not ownership, filing, DNS, certificate or deployment approval.
+function plainOrigin(value, httpsOnly) {
+  let target;
+  try {
+    target = new URL(value);
+  } catch {
+    throw new Error("Explicit origin is required");
+  }
+  if (
+    typeof value !== "string" ||
+    value.trim() !== value ||
+    !["http:", "https:"].includes(target.protocol) ||
+    (httpsOnly && target.protocol !== "https:") ||
+    target.username ||
+    target.password ||
+    target.search ||
+    target.hash ||
+    target.pathname !== "/"
+  )
+    throw new Error("Configuration must be a plain HTTP(S) origin");
+  return target.origin;
+}
 export function resolveBuildConfig({ mode, apiOrigin, deployment = {} }) {
   if (!["demo", "release"].includes(mode))
     throw new Error("Explicit demo or release mode is required");
@@ -34,6 +55,7 @@ export function resolveBuildConfig({ mode, apiOrigin, deployment = {} }) {
   )
     throw new Error("API configuration must be a plain HTTP(S) origin");
   let appId = "touristappid";
+  let mediaOrigin = "";
   if (release) {
     const host = target.hostname.replace(/^\[|\]$/g, "");
     if (
@@ -50,12 +72,28 @@ export function resolveBuildConfig({ mode, apiOrigin, deployment = {} }) {
       throw new Error("Release requires an explicitly configured WeChat AppID");
     if (
       Object.keys(deployment).some(
-        (key) => !["apiOrigin", "appId"].includes(key),
+        (key) => !["apiOrigin", "appId", "mediaOrigin"].includes(key),
       )
     )
       throw new Error("Unknown release configuration key");
+    if (deployment.mediaOrigin !== undefined) {
+      mediaOrigin = plainOrigin(deployment.mediaOrigin, true);
+      const mediaHost = new URL(mediaOrigin).hostname;
+      if (
+        mediaOrigin === target.origin ||
+        isIP(mediaHost) ||
+        !mediaHost.includes(".") ||
+        /(?:^|\.)(?:localhost|local|internal|invalid|test|example|onion)$/.test(
+          mediaHost,
+        )
+      )
+        throw new Error("Media origin must be a separate public HTTPS origin");
+    }
   }
-  return { runtime: { apiOrigin: target.origin, release }, appId };
+  return {
+    runtime: { apiOrigin: target.origin, mediaOrigin, release },
+    appId,
+  };
 }
 export function approvedTabAssets(config) {
   if (JSON.stringify(config.pages) !== JSON.stringify(routes))

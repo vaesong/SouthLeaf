@@ -1,43 +1,68 @@
 <view class="mine-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view class="page-intro">
+  <view wx:if="{{copy.mine.title || copy.mine.summary}}" class="page-intro">
     <text class="eyebrow">MY PROFILE</text>
-    <text class="page-title">我的预约</text>
-    <text class="page-summary">把约好的日子，安安静静收在这里。</text>
+    <text wx:if="{{copy.mine.title}}" class="page-title"
+      >{{copy.mine.title}}</text
+    >
+    <text wx:if="{{copy.mine.summary}}" class="page-summary"
+      >{{copy.mine.summary}}</text
+    >
   </view>
-  <view class="profile-welcome-card">
-    <view class="profile-avatar-box">{{identityInitial || '你'}}</view>
+  <view
+    wx:if="{{copy.mine.welcome || identityLabel}}"
+    class="profile-welcome-card"
+  >
+    <view class="profile-avatar-box">{{identityInitial}}</view>
     <view>
-      <text class="welcome-title">你好，欢迎来到枝南</text>
-      <text wx:if="{{showIdentity}}" class="welcome-name"
+      <text wx:if="{{copy.mine.welcome}}" class="welcome-title"
+        >{{copy.mine.welcome}}</text
+      >
+      <text wx:if="{{showIdentity && identityLabel}}" class="welcome-name"
         >{{identityLabel}}</text
       >
     </view>
   </view>
-  <view wx:if="{{status === 'loading'}}" class="state-panel"
-    >正在加载你的预约...</view
+  <view
+    wx:if="{{status === 'unauthenticated' && (copy.mine.signedOutTitle || copy.mine.signedOutHint)}}"
+    class="state-panel"
   >
-  <view wx:elif="{{status === 'unauthenticated'}}" class="state-panel">
-    <text>还没有进入你的档案</text>
-    <text class="hint">去预约时，会用你的微信称呼和你见面</text>
-    <button bindtap="handleNewBookingTap">去预约</button>
+    <text wx:if="{{copy.mine.signedOutTitle}}"
+      >{{copy.mine.signedOutTitle}}</text
+    >
+    <text wx:if="{{copy.mine.signedOutHint}}" class="hint"
+      >{{copy.mine.signedOutHint}}</text
+    >
+    <button wx:if="{{copy.mine.book}}" bindtap="handleNewBookingTap">
+      {{copy.mine.book}}
+    </button>
   </view>
-  <view wx:elif="{{status === 'error'}}" class="closed-card">
-    <text class="closed-title">预约服务暂未开放</text>
-    <text class="closed-copy"
-      >先看看作品和拍摄方案吧。开放之后，约好的日子会安静地出现在这里。</text
+  <view
+    wx:if="{{status === 'error' && (copy.mine.closedTitle || copy.mine.closedBody)}}"
+    class="closed-card"
+  >
+    <text wx:if="{{copy.mine.closedTitle}}" class="closed-title"
+      >{{copy.mine.closedTitle}}</text
+    >
+    <text wx:if="{{copy.mine.closedBody}}" class="closed-copy"
+      >{{copy.mine.closedBody}}</text
     >
   </view>
-  <block wx:else>
+  <block wx:if="{{status === 'success' || status === 'empty'}}">
     <view class="section">
       <view class="section-head">
-        <text class="section-title">近期安排</text>
-        <text class="section-action" bindtap="handleNewBookingTap"
-          >＋ 新预约</text
+        <text wx:if="{{copy.mine.upcomingTitle}}" class="section-title"
+          >{{copy.mine.upcomingTitle}}</text
+        >
+        <text
+          wx:if="{{copy.mine.newBooking}}"
+          class="section-action"
+          bindtap="handleNewBookingTap"
+          >{{copy.mine.newBooking}}</text
         >
       </view>
-      <view wx:if="{{status === 'empty'}}" class="hint"
-        >还没有提交过预约申请</view
+      <view wx:if="{{status === 'empty' && copy.mine.empty}}" class="hint"
+        >{{copy.mine.empty}}</view
       >
       <view
         wx:for="{{cards}}"
@@ -58,36 +83,37 @@
         <view wx:if="{{item.hasOrder}}" class="order-block">
           <text class="order-name">{{item.order.packageDisplayName}}</text>
           <text class="order-amount">{{item.order.amountLabel}}</text>
-          <text class="order-settlement">{{settlementLabel}}</text>
-          <button
-            class="pay-button {{item.payAction.enabled ? '' : 'pay-button-blocked'}}"
-            data-id="{{item.reservationId}}"
-            catchtap="handleSettleTap"
+          <text wx:if="{{copy.settlement.notice}}" class="order-settlement"
+            >{{copy.settlement.notice}}</text
           >
-            {{item.payAction.label}}
-          </button>
         </view>
-        <text wx:elif="{{item.expiresLabel}}" class="request-hint"
-          >申请保留到 {{item.expiresLabel}}</text
+        <text
+          wx:elif="{{item.expiresLabel && copy.mine.holdPrefix}}"
+          class="request-hint"
+          >{{copy.mine.holdPrefix}} {{item.expiresLabel}}</text
         >
       </view>
     </view>
     <view class="mine-menu-card">
       <view class="mine-menu-row" bindtap="handleNewBookingTap">
-        <text>预约咨询</text>
+        <text wx:if="{{copy.mine.menuBooking}}">{{copy.mine.menuBooking}}</text>
         <text class="chevron">›</text>
       </view>
       <view class="mine-menu-row" bindtap="handleServicesTap">
-        <text>拍摄服务</text>
+        <text wx:if="{{copy.mine.menuServices}}"
+          >{{copy.mine.menuServices}}</text
+        >
         <text class="chevron">›</text>
       </view>
       <view class="mine-menu-row" bindtap="handleAboutTap">
-        <text>关于我们</text>
+        <text wx:if="{{copy.mine.menuAbout}}">{{copy.mine.menuAbout}}</text>
         <text class="chevron">›</text>
       </view>
     </view>
     <view class="section note-section">
-      <text class="hint">这里只显示你在这支小程序里提交的预约。</text>
+      <text wx:if="{{copy.mine.scopeHint}}" class="hint"
+        >{{copy.mine.scopeHint}}</text
+      >
     </view>
   </block>
 </view>

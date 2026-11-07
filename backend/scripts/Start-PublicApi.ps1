@@ -6,6 +6,7 @@ $credential=Get-SouthLeafLocalCredential 'Reader'
 $env:SOUTHLEAF_DB_URL=Get-SouthLeafLocalUrl 'southleaf_public'
 $env:SOUTHLEAF_DB_USERNAME=$credential.Username
 $env:SOUTHLEAF_DB_PASSWORD=$credential.GetNetworkCredential().Password
+$env:SOUTHLEAF_MEDIA_DELIVERY='file'
 $env:SOUTHLEAF_MEDIA_ROOT=(Get-SouthLeafLocalMediaRoot)
 Push-Location "$PSScriptRoot/.."
 try {

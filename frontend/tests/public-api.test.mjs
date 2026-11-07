@@ -144,6 +144,43 @@ test("only qualified same-host media references are accepted", () => {
     }),
   );
 });
+test("a signed CDN url is accepted only for the configured media origin", () => {
+  const key = "ab".repeat(32) + ".jpg";
+  const signed = `https://media.example.com/${key}?q-sign-algorithm=sha1&q-ak=AKID`;
+  const item = {
+    ...media(),
+    previewUrl: signed,
+    thumbnailUrl: signed,
+  };
+  assert.throws(
+    () => mapped.mapMedia(item),
+    (error) => error.code === "PUBLIC_RESPONSE_INVALID",
+  );
+  app.runtime.mediaOrigin = "https://media.example.com";
+  try {
+    assert.equal(mapped.mapMedia(item).src, signed);
+    assert.throws(() =>
+      mapped.mapMedia({
+        ...item,
+        previewUrl: `https://other.example.com/${key}?q-sign-algorithm=sha1`,
+      }),
+    );
+    assert.throws(() =>
+      mapped.mapMedia({
+        ...item,
+        previewUrl: `https://media.example.com/${key}`,
+      }),
+    );
+    assert.throws(() =>
+      mapped.mapMedia({
+        ...item,
+        previewUrl: `https://media.example.com/not-a-key.jpg?q-sign-algorithm=sha1`,
+      }),
+    );
+  } finally {
+    app.runtime.mediaOrigin = "";
+  }
+});
 test("old price enums and malformed records are rejected, not translated", () => {
   assert.equal(mapped.mapPackageSummary(pkg()).priceType, "INQUIRY");
   for (const priceType of ["CONSULT", "FROM_PRICE", "unknown"])
@@ -297,12 +334,13 @@ test("confirmed prices gain a yuan mark without rewriting inquiry copy", () => {
     display.priceLabel({ priceType: "FIXED", displayPrice: "价格待确认" }),
     "价格待确认",
   );
-  assert.equal(display.priceLabel({ priceType: "INQUIRY" }), "价格请询");
+  assert.equal(display.priceLabel({ priceType: "INQUIRY" }), "");
   assert.equal(
-    display.priceLabel({ priceType: "FROM", displayPrice: "" }),
-    "起价以确认资料为准",
+    display.priceLabel({ priceType: "INQUIRY" }, { priceInquiry: "价格请询" }),
+    "价格请询",
   );
-  assert.equal(display.priceLabel({}), "价格待公布");
+  assert.equal(display.priceLabel({ priceType: "FROM", displayPrice: "" }), "");
+  assert.equal(display.priceLabel({}), "");
 });
 test("gallery uses validated detail media without substituting summary covers", () => {
   const a = { id: "a", src: "a.png" };

@@ -72,6 +72,18 @@ class AdminOutboxPropertiesTest {
   }
 
   @Test
+  void productionCanRecordManualContactWithoutClaimingDelivery() {
+    Map<String, String> manual = valid();
+    manual.put("SOUTHLEAF_ADMIN_OUTBOX_DELIVERY_MODE", "MANUAL_CONTACT");
+    var properties =
+        AdminOutboxProperties.load(
+            manual, "production", "southleaf_admin", "southleaf_admin_runtime", true);
+    assertThat(properties.deliveryMode()).isEqualTo("MANUAL_CONTACT");
+    assertThat(new ManualContactNotificationDelivery().deliver(null).staffFollowUp()).isTrue();
+    assertThat(new ManualContactNotificationDelivery().deliver(null).delivered()).isFalse();
+  }
+
+  @Test
   void invalidRetryPolicyAndWorkerNameAreRejected() {
     Map<String, String> invalidPolicy = valid();
     invalidPolicy.put("SOUTHLEAF_ADMIN_OUTBOX_MAX_ATTEMPTS", "0");

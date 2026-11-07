@@ -277,7 +277,26 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
         strings(root.get("featuredPackageIds")),
         strings(root.get("featuredWorkIds")),
         base.overlayReleases(),
-        heroSlides(root.get("heroSlides")));
+        heroSlides(root.get("heroSlides")),
+        presentation(root.get("presentation")));
+  }
+
+  /**
+   * Missing presentation is an older release. Unknown keys stay so a newer publisher does not brick
+   * this reader; empty and over-long lines are dropped.
+   */
+  static Map<String, String> presentation(Object value) {
+    if (value == null) return Map.of();
+    if (!(value instanceof Map<?, ?> raw))
+      throw new CatalogStorageException("Catalog presentation is invalid", null);
+    var kept = new LinkedHashMap<String, String>();
+    for (var entry : raw.entrySet()) {
+      if (!(entry.getKey() instanceof String key) || key.isEmpty() || key.length() > 64) continue;
+      if (!(entry.getValue() instanceof String text) || text.isEmpty() || text.length() > 400)
+        continue;
+      kept.put(key, text);
+    }
+    return Map.copyOf(kept);
   }
 
   /** Missing heroSlides is an older release, not a broken one. A present but unreadable list is. */
@@ -450,7 +469,8 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
         v1.featuredPackages(),
         v1.featuredWorks(),
         overlayReleases,
-        v1.heroSlides());
+        v1.heroSlides(),
+        v1.presentation());
   }
 
   private List<Map<String, Object>> rows(String table, String release, String order) {

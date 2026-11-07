@@ -6,16 +6,12 @@ import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot.Variant;
 import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 /** Only preprocessed content-addressed image derivatives are stored here, never arbitrary URLs. */
-@Component
 public class FileMediaObjectStore implements MediaObjectStore {
   private final Path root;
 
-  public FileMediaObjectStore(@Value("${southleaf.media.root}") String root)
-      throws java.io.IOException {
+  public FileMediaObjectStore(String root) throws java.io.IOException {
     this.root = Path.of(root).toRealPath();
     if (!Files.isDirectory(this.root))
       throw new IllegalArgumentException("Private media root must exist");

@@ -15,7 +15,11 @@ const valid = {
 test("release uses only explicit structured native configuration", () => {
   assert.deepEqual(resolveBuildConfig(valid), {
     appId: valid.deployment.appId,
-    runtime: { apiOrigin: valid.deployment.apiOrigin, release: true },
+    runtime: {
+      apiOrigin: valid.deployment.apiOrigin,
+      mediaOrigin: "",
+      release: true,
+    },
   });
 });
 for (const apiOrigin of [
@@ -47,6 +51,34 @@ for (const appId of ["", 123, "touristappid", "wx-bad"])
       }),
     );
   });
+test("release keeps a separate public media origin and rejects the API host", () => {
+  const withMedia = resolveBuildConfig({
+    ...valid,
+    deployment: {
+      ...valid.deployment,
+      mediaOrigin: "https://media.public.example.com",
+    },
+  });
+  assert.equal(
+    withMedia.runtime.mediaOrigin,
+    "https://media.public.example.com",
+  );
+  assert.throws(() =>
+    resolveBuildConfig({
+      ...valid,
+      deployment: {
+        ...valid.deployment,
+        mediaOrigin: valid.deployment.apiOrigin,
+      },
+    }),
+  );
+  assert.throws(() =>
+    resolveBuildConfig({
+      ...valid,
+      deployment: { ...valid.deployment, mediaOrigin: "https://cdn.example" },
+    }),
+  );
+});
 test("no implicit build mode or implicit API endpoint", () => {
   assert.throws(() => resolveBuildConfig({}));
   assert.throws(() => resolveBuildConfig({ mode: "demo" }));

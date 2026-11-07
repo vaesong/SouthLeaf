@@ -11,6 +11,11 @@
     <!-- S2-B single-work content slice: pure domain/application plus explicit JDBC/image/file adapters. -->
     <dependencies>
         <dependency>
+            <groupId>cn.zhinan</groupId>
+            <artifactId>object-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>

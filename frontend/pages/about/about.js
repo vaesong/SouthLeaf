@@ -1,5 +1,11 @@
 const { getBrand } = require("../../api/public.js");
 const { showToast } = require("../../api/api.js");
+const {
+  applyTabs,
+  clearTabs,
+  ready,
+  showing,
+} = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { brandView, teamView } = require("../../presentation/views.js");
 function present(data) {
@@ -8,6 +14,7 @@ function present(data) {
     channels: data.brand.contact?.channels || [],
     team: teamView(data.brand.team || []),
     brand: brandView(data.brand),
+    copy: ready(data.copy),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.brand.meta?.dataMode ?? "")
       : "",
@@ -19,6 +26,7 @@ Page({
     brand: {},
     brandLogoFailed: false,
     failedMedia: {},
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -27,10 +35,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      brand: {},
-      status: "loading",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -45,7 +49,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: this.data.brand.shareTitle || "摄影工作室",
+      title: this.data.brand.shareTitle || "",
       path: "/pages/index/index",
       imageUrl: this.data.team?.[0]?.portraitMedia?.src || "",
     };
@@ -58,35 +62,29 @@ Page({
   },
   async loadBrand() {
     const version = ++this._generation;
-    this.update({
-      status: "loading",
-    });
-    this.update({
-      brand: {},
-    });
-    this.update({
-      brandLogoFailed: false,
-    });
-    this.update({
-      failedMedia: {},
-    });
+    if (!showing(this.data.status)) this.update({ status: "loading" });
     try {
       const brand = await getBrand();
       if (version !== this._generation) return;
       this.update({
-        brand: brand,
-      });
-      this.update({
+        brand,
+        copy: brand.copy || {},
         status: "success",
+        brandLogoFailed: false,
+        failedMedia: {},
       });
+      applyTabs(this, brand.copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
+        brand: {},
+        copy: {},
         status:
           error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
             ? "unavailable"
             : "error",
       });
+      clearTabs(this);
     }
   },
   callPhone() {
@@ -94,13 +92,16 @@ Page({
       wx.makePhoneCall({
         phoneNumber: this.data.brand.phone,
       });
-    else showToast("联系电话暂未公开");
+    else return;
   },
   copyChannel(channel) {
     if (channel.account)
       wx.setClipboardData({
         data: channel.account,
-        fail: () => showToast("复制失败，请手动记录账号"),
+        fail: () => {
+          const title = this.data.copy.about.copyAccountFailed;
+          if (title) showToast(title);
+        },
       });
   },
   markMediaFailed(id) {
@@ -115,8 +116,10 @@ Page({
     if (this.data.status !== "success" || !channel || !channel.qrCodeMedia)
       return;
     if (channel.qrCodeStatus === "PLACEHOLDER") {
+      const title = this.data.copy.about && this.data.copy.about.placeholderQr;
+      if (!title) return;
       wx.showToast({
-        title: "当前为演示占位码，正式营业后开放扫码",
+        title,
         icon: "none",
         duration: 2000,
       });
@@ -136,7 +139,10 @@ Page({
     if (this.data.brand.address)
       wx.setClipboardData({
         data: this.data.brand.address,
-        fail: () => showToast("复制失败，请手动记录地址"),
+        fail: () => {
+          const title = this.data.copy.about.copyAddressFailed;
+          if (title) showToast(title);
+        },
       });
   },
   goHome() {
@@ -148,6 +154,7 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 3 });
     }
+    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadBrand();

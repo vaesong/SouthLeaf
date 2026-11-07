@@ -1,37 +1,37 @@
 <view class="about-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view class="page-intro">
+  <view wx:if="{{copy.about.title || copy.about.summary}}" class="page-intro">
     <text class="eyebrow">ABOUT US</text>
-    <text class="page-title">关于枝南</text>
-    <text class="page-summary">两位主理人，把日子拍成可以长久翻看的故事。</text>
-  </view>
-  <view wx:if="{{status === 'loading'}}" class="state-panel"
-    >正在加载工作室资料...</view
-  >
-  <view wx:if="{{status === 'unavailable'}}" class="state-panel">
-    <text>工作室资料暂时不可用</text>
-    <button bindtap="handleGoHomeTap">返回首页</button>
-  </view>
-  <view wx:if="{{status === 'error'}}" class="state-panel">
-    <text>工作室资料暂时无法加载</text>
-    <button bindtap="handleLoadBrandTap">重试</button>
+    <text wx:if="{{copy.about.title}}" class="page-title"
+      >{{copy.about.title}}</text
+    >
+    <text wx:if="{{copy.about.summary}}" class="page-summary"
+      >{{copy.about.summary}}</text
+    >
   </view>
   <block wx:if="{{status === 'success'}}">
-    <view class="manifesto-card">
-      <text class="manifesto-kicker">STUDIO PHILOSOPHY · 相馆初心</text>
+    <view
+      wx:if="{{brand.description || copy.about.signOff}}"
+      class="manifesto-card"
+    >
       <text wx:if="{{brand.description}}" class="manifesto-text"
         >{{brand.description}}</text
       >
-      <text wx:else class="manifesto-text"
-        >两位 95
-        后女生，开了一家风格和审美在线的照相馆。遇见皆是同频和缘分，我们想给你的，是最珍贵的照片。</text
+      <text wx:if="{{copy.about.signOff}}" class="manifesto-sign"
+        >{{copy.about.signOff}}</text
       >
-      <text class="manifesto-sign">—— 枝南影像 · 记录你生活里柔软的光</text>
     </view>
     <view wx:if="{{team.length}}" class="team-section">
-      <view class="section-heading">
-        <text class="section-title">主理人档案</text>
-        <text class="section-sub">安娜 & 方女士</text>
+      <view
+        wx:if="{{copy.about.teamTitle || copy.about.teamSubtitle}}"
+        class="section-heading"
+      >
+        <text wx:if="{{copy.about.teamTitle}}" class="section-title"
+          >{{copy.about.teamTitle}}</text
+        >
+        <text wx:if="{{copy.about.teamSubtitle}}" class="section-sub"
+          >{{copy.about.teamSubtitle}}</text
+        >
       </view>
       <view class="team-list">
         <view
@@ -76,7 +76,9 @@
       </view>
     </view>
     <view class="channel-card">
-      <text class="section-title">官方通道</text>
+      <text wx:if="{{copy.about.channelsTitle}}" class="section-title"
+        >{{copy.about.channelsTitle}}</text
+      >
       <view
         wx:for="{{channels}}"
         wx:for-item="channel"
@@ -85,66 +87,86 @@
         class="channel-line"
       >
         <view class="channel-copy">
-          <text class="channel-label"
-            >{{channel.platform === 'wechat' ? '微信沟通' : channel.platform ===
-            'xiaohongshu' ? '小红书' : channel.label}}</text
-          >
+          <text class="channel-label">{{channel.label}}</text>
           <text selectable="{{true}}" class="channel-account"
             >{{channel.account}}</text
           >
           <text
-            wx:if="{{channel.qrCodeStatus === 'PLACEHOLDER'}}"
+            wx:if="{{channel.qrCodeStatus === 'PLACEHOLDER' && copy.about.placeholderQr}}"
             class="row-note"
-            >演示占位，不可扫码</text
+            >{{copy.about.placeholderQr}}</text
           >
         </view>
         <view class="channel-actions">
           <button
-            aria-label="{{'复制' + channel.label + '账号'}}"
+            wx:if="{{copy.about.copy}}"
+            aria-label="{{copy.about.copy}}"
             data-arg0="{{channel}}"
             bindtap="handleCopyChannelTap"
             class="row-action"
           >
-            复制
+            {{copy.about.copy}}
           </button>
           <button
-            wx:if="{{channel.qrCodeMedia}}"
+            wx:if="{{channel.qrCodeMedia && copy.about.qrHint}}"
             data-arg0="{{channel}}"
             bindtap="handlePreviewQrTap"
             class="row-action"
           >
-            轻触查看二维码
+            {{copy.about.qrHint}}
           </button>
         </view>
       </view>
       <view wx:if="{{brand.phone}}" class="channel-line">
         <view class="channel-copy">
-          <text class="channel-label">电话</text>
+          <text wx:if="{{copy.about.phoneLabel}}" class="channel-label"
+            >{{copy.about.phoneLabel}}</text
+          >
           <text class="channel-account">{{brand.phone}}</text>
         </view>
-        <button bindtap="handleCallPhoneTap" class="row-action">拨打</button>
+        <button
+          wx:if="{{copy.about.call}}"
+          bindtap="handleCallPhoneTap"
+          class="row-action"
+        >
+          {{copy.about.call}}
+        </button>
       </view>
       <view wx:if="{{brand.address}}" class="channel-line">
         <view class="channel-copy">
-          <text class="channel-label">地址</text>
+          <text wx:if="{{copy.about.addressLabel}}" class="channel-label"
+            >{{copy.about.addressLabel}}</text
+          >
           <text selectable="{{true}}" class="channel-account"
             >{{brand.address}}</text
           >
         </view>
-        <button bindtap="handleCopyAddressTap" class="row-action">复制</button>
+        <button
+          wx:if="{{copy.about.copy}}"
+          bindtap="handleCopyAddressTap"
+          class="row-action"
+        >
+          {{copy.about.copy}}
+        </button>
       </view>
       <view wx:if="{{brand.workingHours}}" class="channel-line">
         <view class="channel-copy">
-          <text class="channel-label">营业时间</text>
+          <text wx:if="{{copy.about.hoursLabel}}" class="channel-label"
+            >{{copy.about.hoursLabel}}</text
+          >
           <text class="channel-account">{{brand.workingHours}}</text>
         </view>
       </view>
       <view
-        wx:if="{{!channels.length && !brand.phone && !brand.address && !brand.workingHours}}"
+        wx:if="{{copy.about.channelsEmpty && !channels.length && !brand.phone && !brand.address && !brand.workingHours}}"
         class="empty-panel"
-        >公开联系方式暂未配置</view
+        >{{copy.about.channelsEmpty}}</view
       >
     </view>
   </block>
-  <text class="boundary-note">联系动作不会自动创建预约、订单或支付事实。</text>
+  <text
+    wx:if="{{status === 'success' && copy.about.boundary}}"
+    class="boundary-note"
+    >{{copy.about.boundary}}</text
+  >
 </view>

@@ -1,44 +1,44 @@
 <view class="request-page"
   ><demo-notice mode="{{dataMode}}"></demo-notice
   ><view class="request-topbar"
-    ><text bindtap="handleBackTap">‹</text><text>我的预约</text
+    ><text bindtap="handleBackTap">‹</text
+    ><text wx:if="{{copy.requestDetail.title}}"
+      >{{copy.requestDetail.title}}</text
     ><text class="topbar-hint">{{statusLabel}}</text></view
-  ><view wx:if="{{status === 'loading'}}" class="state-panel"
-    >正在加载预约记录...</view
-  ><view wx:elif="{{status === 'unavailable'}}" class="state-panel"
-    ><text>预约记录不存在</text
-    ><button bindtap="handleRetryTap">重试</button></view
-  ><view wx:elif="{{status === 'error'}}" class="state-panel"
-    ><text>{{errorMessage}}</text
-    ><button bindtap="handleRetryTap">重试</button></view
-  ><block wx:else
+  ><block wx:if="{{status === 'success'}}"
     ><view class="section"
       ><text class="status-title">{{statusLabel}}</text
-      ><text class="status-hint">{{statusHint}}</text
-      ><text wx:if="{{expiresAt}}" class="status-hint"
-        >申请保留到 {{expiresAt}}</text
+      ><text wx:if="{{statusHint}}" class="status-hint">{{statusHint}}</text
+      ><text
+        wx:if="{{expiresAt && copy.requestDetail.holdPrefix}}"
+        class="status-hint"
+        >{{copy.requestDetail.holdPrefix}} {{expiresAt}}</text
       ></view
     ><view class="section"
-      ><text class="section-title">申请时段</text
+      ><text wx:if="{{copy.requestDetail.requestedTitle}}" class="section-title"
+        >{{copy.requestDetail.requestedTitle}}</text
       ><text class="value-row">{{slotLabel}}</text></view
     ><view wx:if="{{hasOrder}}" class="section"
-      ><text class="section-title">确认约定</text
+      ><text wx:if="{{copy.requestDetail.confirmedTitle}}" class="section-title"
+        >{{copy.requestDetail.confirmedTitle}}</text
       ><text class="value-row">{{order.packageDisplayName}}</text
-      ><text class="value-row">时段 {{order.slotLabel}}</text
-      ><text class="value-row">参考金额 {{order.amountLabel}}</text
-      ><text class="hint">{{settlementLabel}}</text
-      ><text class="hint">{{order.settlementNotice}}</text
-      ><button
-        class="pay-button {{payAction.enabled ? '' : 'pay-button-blocked'}}"
-        catchtap="handleSettleTap"
-      >
-        {{payAction.label}}
-      </button></view
+      ><text wx:if="{{copy.requestDetail.slotPrefix}}" class="value-row"
+        >{{copy.requestDetail.slotPrefix}} {{order.slotLabel}}</text
+      ><text wx:if="{{copy.requestDetail.amountPrefix}}" class="value-row"
+        >{{copy.requestDetail.amountPrefix}} {{order.amountLabel}}</text
+      ><text wx:if="{{copy.settlement.notice}}" class="hint"
+        >{{copy.settlement.notice}}</text
+      ></view
     ><view wx:else class="section"
-      ><text class="section-title">确认约定</text
-      ><text class="hint">工作室确认后，这里会显示套餐与时段约定。</text></view
-    ><button class="secondary-button" bindtap="handleBookAgainTap">
-      再看一个时段
+      ><text wx:if="{{copy.requestDetail.confirmedTitle}}" class="section-title"
+        >{{copy.requestDetail.confirmedTitle}}</text
+      ></view
+    ><button
+      wx:if="{{copy.requestDetail.anotherSlot}}"
+      class="secondary-button"
+      bindtap="handleBookAgainTap"
+    >
+      {{copy.requestDetail.anotherSlot}}
     </button></block
   ></view
 >

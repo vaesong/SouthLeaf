@@ -1,4 +1,11 @@
 const booking = require("../../api/booking.js");
+const { getBrand } = require("../../api/public.js");
+const {
+  applyTabs,
+  clearTabs,
+  ready,
+  showing,
+} = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const views = require("../../presentation/booking-views.js");
 const settlement = require("../../presentation/settlement.js");
@@ -12,13 +19,15 @@ const isSessionError = (error) =>
   Boolean(error && SESSION_ERRORS.indexOf(error.code) >= 0);
 
 function present(data) {
-  const cards = (data.requests || []).map(views.requestCard);
+  const cards = (data.requests || []).map((request) =>
+    views.requestCard(request, data.copy),
+  );
   const profile = data.profile || null;
   return {
     ...data,
     cards,
-    identityLabel:
-      profile && profile.displayName ? profile.displayName : "微信用户",
+    copy: ready(data.copy),
+    identityLabel: profile && profile.displayName ? profile.displayName : "",
     identityInitial:
       profile && profile.displayName
         ? String(profile.displayName).slice(0, 1)
@@ -35,6 +44,7 @@ Page({
     status: "loading",
     profile: null,
     requests: [],
+    copy: {},
     cards: [],
     identityLabel: "",
     identityExpires: "",
@@ -55,7 +65,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({ status: "loading", dataMode: "" });
   },
   onUnload() {
     this._unloaded = true;
@@ -65,6 +74,7 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 4 });
     }
+    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.load();
@@ -77,9 +87,21 @@ Page({
       wx.stopPullDownRefresh();
     }
   },
+  async publishedCopy() {
+    try {
+      const brand = await getBrand();
+      return brand.copy || {};
+    } catch (error) {
+      clearTabs(this);
+      return {};
+    }
+  },
   async load() {
     const version = ++this._generation;
-    this.update({ status: "loading", errorMessage: "" });
+    if (!showing(this.data.status))
+      this.update({ status: "loading", errorMessage: "" });
+    const copy = await this.publishedCopy();
+    if (version !== this._generation) return;
     let profile;
     try {
       profile = await booking.currentSession();
@@ -88,29 +110,35 @@ Page({
       this.update({
         profile: null,
         requests: [],
+        copy,
         status: isSessionError(error) ? "unauthenticated" : "error",
-        errorMessage: (error && error.message) || "暂时无法确认身份",
+        errorMessage: "",
       });
+      if (copy.tabs) applyTabs(this, copy);
       return;
     }
     if (version !== this._generation) return;
-    this.update({ profile });
+    this.update({ profile, copy });
     try {
       const response = await booking.getRequests();
       if (version !== this._generation) return;
       const items = response.data.items || [];
       this.update({
         requests: items,
+        copy,
         dataMode: response.meta.dataMode,
         status: items.length ? "success" : "empty",
       });
+      applyTabs(this, copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
         requests: [],
+        copy,
         status: isSessionError(error) ? "unauthenticated" : "error",
-        errorMessage: (error && error.message) || "预约列表暂时无法加载",
+        errorMessage: "",
       });
+      applyTabs(this, copy);
     }
   },
   handleRetryTap() {
@@ -132,20 +160,6 @@ Page({
       url:
         "/pages/booking/requestdetail?reservationId=" +
         encodeURIComponent(reservationId),
-    });
-  },
-  // 阶段二不收款：这里只解释，不发请求、不改状态、不留痕迹。
-  handleSettleTap(event) {
-    const reservationId = event.currentTarget.dataset.id;
-    const card = (this.data.cards || []).find(
-      (item) => item.reservationId === reservationId,
-    );
-    if (!card || !card.payAction.visible) return;
-    wx.showModal({
-      title: settlement.LABELS.action,
-      content: settlement.blockedNotice(),
-      showCancel: false,
-      confirmText: "知道了",
     });
   },
 });

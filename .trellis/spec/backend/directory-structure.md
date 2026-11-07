@@ -85,3 +85,14 @@ Account reads during issuance use FOR SHARE, not FOR UPDATE: actual MySQL 8.4 re
 `admin-credential-crypto` is the seventh reactor module, a plain jar implementing core PasswordVerifier/PasswordHasher ports with maintained Argon2id. It has no JDBC/Web/runtime dependency. `admin-security-core` adds AdminLoginService and immutable credential/event facts but remains JDK-only. Runtime does not yet depend on crypto or instantiate login: durable CredentialLookup/AuthenticationEventSink and versioned grants must be delivered in C2 before wiring. Public artifacts must never contain crypto/provider/admin classes. Benchmark and test doubles remain test-source only.
 
 Executable contracts, limits and error cases: [credential guidelines](credential-guidelines.md).
+
+## Current media delivery
+
+`object-store` (`cn.zhinan.objectstore`) is the JDK-only COS V5 signer and HTTP gateway. `public-api` and `admin-content` depend on it. They do not depend on each other for bytes. `admin-runtime` reaches the gateway only through `admin-content`.
+
+`SOUTHLEAF_MEDIA_DELIVERY` is `file` or `cdn`. A missing, partial, or mixed set refuses startup. There is no disk fallback and no API byte proxy behind the CDN mode.
+
+- `file` streams derivative bytes from `SOUTHLEAF_MEDIA_ROOT`. The public content endpoint rechecks catalog eligibility before the read and again after buffering. `Cache-Control` stays `no-store`.
+- `cdn` puts a short-lived query signature on `https://{SOUTHLEAF_MEDIA_CDN_ORIGIN}/{sha256}.jpg|png`. The signature is the authorization. The CDN host is the host that is signed. The public content endpoint does not read the object store in this mode; making it proxy bytes is a defect. TTL is 60–900 seconds. A newer catalog that drops the image stops new signatures. Bytes already sent are not recalled. Do not cache the eligibility decision at the CDN.
+- Admin preview reads through `MediaObjectWriter` on the admin origin. Originals are not written to the public object key and are not given a public URL.
+- Scripts that boot the public API set `SOUTHLEAF_MEDIA_DELIVERY=file` next to `SOUTHLEAF_MEDIA_ROOT`. Do not invent a third mode inside either adapter.

@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "SouthLeaf Admin API",
-    "version": "1.3.0-s2b-content",
-    "description": "Admin accounting and content authoring API. Booking operations carry no payment, refund or delivery state. Content authoring operations were added in 1.3.0-s2b-content after a contract check found them implemented but undocumented."
+    "version": "1.4.0-stage-two-extensions",
+    "description": "Admin accounting and content authoring API. Booking operations carry no payment, refund or delivery state. Content authoring operations were added in 1.3.0-s2b-content after a contract check found them implemented but undocumented. 1.4.0 documents the folder, slot board, operating-rule and work-authorization routes the controllers already served, and the notification board field staffFollowUps."
   },
   "servers": [
     {
@@ -425,6 +425,96 @@
           },
           "503": {
             "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "openBookingSlot",
+        "summary": "Open one slot on a local date",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "date",
+                  "startTime"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "startTime": {
+                    "type": "string",
+                    "pattern": "^\\d{2}:\\d{2}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The opened slot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/SlotOpen"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -1803,6 +1893,74 @@
             "$ref": "#/components/responses/NotFound"
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteContentMedia",
+        "summary": "Delete one media asset that is not bound to a kept work",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The asset was deleted.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/DeletedFlag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/media/{mediaId}/{variant}/content": {
@@ -2132,6 +2290,83 @@
             "$ref": "#/components/responses/PreconditionRequired"
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteContentWork",
+        "summary": "Delete one unpublished work",
+        "parameters": [
+          {
+            "name": "workId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "$ref": "#/components/parameters/WorkIfMatch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The work was deleted.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/DeletedFlag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          }
+        }
       }
     },
     "/works/{workId}/preview": {
@@ -2416,6 +2651,900 @@
           }
         }
       }
+    },
+    "/bookings/slots/board": {
+      "get": {
+        "operationId": "listBookingSlotBoard",
+        "summary": "List open, occupied and pending slots in a UTC range",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "At most 100 board rows. Closed slots are omitted.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "type": "array",
+                          "maxItems": 100,
+                          "items": {
+                            "$ref": "#/components/schemas/BoardSlot"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/slots/weeks": {
+      "post": {
+        "operationId": "openBookingSlotWeek",
+        "summary": "Open a set of dates and start times as one command",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dates",
+                  "startTimes"
+                ],
+                "properties": {
+                  "dates": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 7,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    }
+                  },
+                  "startTimes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^\\d{2}:\\d{2}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "One result per date and start time. A failed item does not claim the slot was opened.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/WeekSlotItem"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/slots/{slotId}/close": {
+      "post": {
+        "operationId": "closeBookingSlot",
+        "summary": "Close one unoccupied slot",
+        "parameters": [
+          {
+            "name": "slotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The closed slot. Occupied or pending slots stay unchanged.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"r[0-9]{1,9}\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/SlotOpen"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          }
+        }
+      }
+    },
+    "/bookings/operating-rules/current": {
+      "get": {
+        "operationId": "getOperatingRules",
+        "summary": "Read the current operating rules",
+        "responses": {
+          "200": {
+            "description": "Version 0 and configured false means no rules are stored. The API does not invent defaults.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"o(0|[1-9][0-9]{0,8})\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/OperatingRuleCurrent"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/operating-rules/versions": {
+      "get": {
+        "operationId": "listOperatingRuleVersions",
+        "summary": "List stored operating-rule versions",
+        "responses": {
+          "200": {
+            "description": "History of saved rules.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OperatingRuleVersion"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          }
+        }
+      }
+    },
+    "/bookings/operating-rules": {
+      "put": {
+        "operationId": "saveOperatingRules",
+        "summary": "Save a new operating-rule version",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RuleIfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperatingRules"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved version. Replaying the same key returns the stored result.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\"o(0|[1-9][0-9]{0,8})\"$"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/OperatingRuleSave"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "503": {
+            "$ref": "#/components/responses/BookingUnavailable"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          }
+        }
+      }
+    },
+    "/media/folders": {
+      "get": {
+        "operationId": "listMediaFolders",
+        "summary": "List media folders",
+        "responses": {
+          "200": {
+            "description": "Folders available to the content library.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/MediaFolder"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMediaFolder",
+        "summary": "Create a media folder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "parentId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 64
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created folder. Depth beyond three is refused.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MediaFolder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/media/folders/{folderId}": {
+      "delete": {
+        "operationId": "deleteMediaFolder",
+        "summary": "Delete an empty media folder",
+        "parameters": [
+          {
+            "name": "folderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The folder was deleted.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/DeletedFlag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/media/{mediaId}/folder": {
+      "put": {
+        "operationId": "moveContentMedia",
+        "summary": "Move one media asset into a folder",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "folderId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 64
+                  },
+                  "parentId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 64
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The asset now uses the given folder. folderId and parentId name the same value.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MovedFlag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/works/{workId}/authorization": {
+      "post": {
+        "operationId": "recordWorkAuthorization",
+        "summary": "Record that the current work version has authorization",
+        "parameters": [
+          {
+            "name": "workId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "$ref": "#/components/parameters/WorkIfMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorization was recorded for this version. The request body is empty.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EnvelopeBase"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "code": {
+                          "const": "OK"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/RecordedFlag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2471,6 +3600,26 @@
           "pattern": "^[A-Z][A-Z0-9_]{0,39}$"
         },
         "description": "Operator-supplied reason code written into the audit record."
+      },
+      "WorkIfMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\"v([1-9][0-9]{0,8})\"$"
+        },
+        "description": "The work version last read, for example \"v2\"."
+      },
+      "RuleIfMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\"o(0|[1-9][0-9]{0,8})\"$"
+        },
+        "description": "The operating-rule version last read, for example \"o3\". Zero means none is stored yet."
       }
     },
     "headers": {
@@ -3078,12 +4227,17 @@
           "deliveryMode",
           "externalDeliveryEnabled",
           "pendingCount",
-          "failures"
+          "failures",
+          "staffFollowUps"
         ],
         "properties": {
           "deliveryMode": {
             "type": "string",
-            "maxLength": 32
+            "enum": [
+              "TEST_SINK",
+              "MANUAL_CONTACT"
+            ],
+            "description": "TEST_SINK 只在非生产管理配置下接受事实，不表示顾客收到。MANUAL_CONTACT 把记录留成工作人员跟进，staffFollowUps 里的行不是已发送。"
           },
           "externalDeliveryEnabled": {
             "type": "boolean"
@@ -3095,6 +4249,14 @@
           "failures": {
             "type": "array",
             "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Failure"
+            }
+          },
+          "staffFollowUps": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "人工联系登记。status 为 STAFF，lastError 为 STAFF_CONTACT。这些行不能再试一次，也不能写成顾客已收到。",
             "items": {
               "$ref": "#/components/schemas/Failure"
             }
@@ -3502,6 +4664,287 @@
           },
           "replayed": {
             "type": "boolean"
+          }
+        }
+      },
+      "BoardSlot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "startAt",
+          "endAt",
+          "availability",
+          "revision"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "OCCUPIED",
+              "PENDING"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "SlotOpen": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "startAt",
+          "endAt",
+          "revision",
+          "replayed"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WeekSlotItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "date",
+          "startTime",
+          "ok",
+          "reason",
+          "slot"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slot": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SlotOpen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "OperatingRules": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "minAdvanceHours",
+          "maxAdvanceDays",
+          "pendingExpiryHours",
+          "slotDurationMinutes"
+        ],
+        "properties": {
+          "minAdvanceHours": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 168
+          },
+          "maxAdvanceDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 180
+          },
+          "pendingExpiryHours": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 168
+          },
+          "slotDurationMinutes": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 480
+          }
+        }
+      },
+      "OperatingRuleCurrent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "configured",
+          "rules"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "rules": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OperatingRules"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "OperatingRuleVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "rules",
+          "updatedAt"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rules": {
+            "$ref": "#/components/schemas/OperatingRules"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "OperatingRuleSave": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "configured",
+          "rules",
+          "replayed"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "configured": {
+            "type": "boolean",
+            "const": true
+          },
+          "rules": {
+            "$ref": "#/components/schemas/OperatingRules"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MediaFolder": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "folderId",
+          "parentId",
+          "name"
+        ],
+        "properties": {
+          "folderId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        }
+      },
+      "DeletedFlag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deleted"
+        ],
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      },
+      "MovedFlag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "moved"
+        ],
+        "properties": {
+          "moved": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      },
+      "RecordedFlag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recorded"
+        ],
+        "properties": {
+          "recorded": {
+            "type": "boolean",
+            "const": true
           }
         }
       }

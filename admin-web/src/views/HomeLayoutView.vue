@@ -21,6 +21,7 @@ import {
   FEATURED_LIMIT,
   FEATURED_WORK_LIMIT,
   HERO_LIMIT,
+  presentationGroups,
   moveItem,
   syncMediaAltTexts,
   toggleLimitedIds,
@@ -35,6 +36,7 @@ import {
 } from "../content/uploadFiles";
 import { useCatalogAccess, useCatalogLeaveGuard } from "../content/useCatalog";
 
+const copyGroups = presentationGroups();
 const api = requireContentApi();
 const { store, canEdit } = useCatalogAccess();
 const leave = useCatalogLeaveGuard(store);
@@ -486,6 +488,27 @@ onMounted(async () => {
               data-testid="catalog-brand-share-title"
               :disabled="!canEdit"
             />
+          </div>
+        </div>
+      </div>
+      <div v-if="draft.presentation" class="card">
+        <div class="card-head">
+          <h2>小程序文案</h2>
+          <p>留空则顾客看不到这句。保存并发布之后才会出现。</p>
+        </div>
+        <div v-for="group in copyGroups" :key="group.name" class="card-pad">
+          <p class="hint">{{ group.name }}</p>
+          <div class="grid-2">
+            <div v-for="field in group.fields" :key="field.key" class="field">
+              <label>{{ field.label }}</label>
+              <input
+                v-model="draft.presentation[field.key]"
+                class="input"
+                maxlength="400"
+                :disabled="!canEdit"
+                :data-testid="'catalog-presentation-' + field.key"
+              />
+            </div>
           </div>
         </div>
       </div>

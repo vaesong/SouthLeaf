@@ -3,6 +3,7 @@ package cn.zhinan.uniapp.media.application;
 import static org.assertj.core.api.Assertions.*;
 
 import cn.zhinan.uniapp.authorization.port.*;
+import cn.zhinan.uniapp.media.port.MediaDelivery;
 import cn.zhinan.uniapp.publicquery.application.CatalogReadService;
 import cn.zhinan.uniapp.support.CatalogFixture;
 import cn.zhinan.uniapp.works.application.PublicVisibilityPolicy;
@@ -47,6 +48,31 @@ class PublicMediaServiceTest {
             v -> {
               revoked.set(true);
               return new byte[] {1};
+            });
+    assertThatThrownBy(() -> service.read("m1", "preview")).hasMessageContaining("unavailable");
+  }
+
+  @Test
+  void cdnDeliveryDoesNotReadBytesForAPublishedImage() {
+    var service =
+        new PublicMediaService(
+            new CatalogReadService(CatalogFixture::snapshot, "demo"),
+            new PublicVisibilityPolicy(CatalogFixture::permittedBatch, CatalogFixture.CLOCK),
+            variant -> {
+              throw new AssertionError("store must not run");
+            },
+            new MediaDelivery() {
+              public boolean servesBytes() {
+                return false;
+              }
+
+              public String thumbnailUrl(String mediaId, String objectKey) {
+                return "https://media.example.com/" + objectKey;
+              }
+
+              public String previewUrl(String mediaId, String objectKey) {
+                return thumbnailUrl(mediaId, objectKey);
+              }
             });
     assertThatThrownBy(() -> service.read("m1", "preview")).hasMessageContaining("unavailable");
   }

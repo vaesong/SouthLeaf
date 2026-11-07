@@ -126,6 +126,7 @@ export interface CatalogDraftInput {
   featuredWorkIds: string[];
   mediaAltTexts: Record<string, string>;
   heroSlides: HeroSlideInput[];
+  presentation?: Record<string, string>;
 }
 
 export type HeroTargetType = "WORK" | "PACKAGE" | "BUSINESS" | "ABOUT";

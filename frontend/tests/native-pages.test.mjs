@@ -149,8 +149,7 @@ for (const [route, loader, field] of [
     const previous = p._generation;
     p.onHide();
     assert.equal(p._generation, previous + 1);
-    assert.equal(p.data.status, "loading");
-    assert.equal(p.data.dataMode, "");
+    assert.equal(p.data.status, "success");
     assert.ok(p.data[field]);
     p.onShow();
     assert.equal(reloads, 1);
@@ -243,7 +242,10 @@ test("placeholder QR is never presented as a confirmed scannable account", () =>
     toasts.push(options);
   };
   const p = page("about/about");
-  p.update({ status: "success" });
+  p.update({
+    status: "success",
+    copy: { tabs: {}, home: {}, about: { placeholderQr: "演示占位码" } },
+  });
   p.previewQr({
     id: "qr",
     qrCodeStatus: "PLACEHOLDER",
@@ -253,4 +255,11 @@ test("placeholder QR is never presented as a confirmed scannable account", () =>
   assert.equal(toasts.length, 1);
   assert.equal(toasts[0].icon, "none");
   assert.match(toasts[0].title, /演示占位码/);
+  p.update({ copy: {} });
+  p.previewQr({
+    id: "qr",
+    qrCodeStatus: "PLACEHOLDER",
+    qrCodeMedia: { src: "demo" },
+  });
+  assert.equal(toasts.length, 1);
 });

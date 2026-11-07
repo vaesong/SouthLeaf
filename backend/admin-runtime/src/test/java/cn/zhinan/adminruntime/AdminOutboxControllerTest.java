@@ -242,6 +242,9 @@ class AdminOutboxControllerTest {
     public void markDead(String messageId, String owner, String reasonCode, Instant now) {}
 
     @Override
+    public void markStaffFollowUp(String messageId, String owner, Instant now) {}
+
+    @Override
     public List<OutboxMessage> deadLetters(int limit) {
       readCalls.incrementAndGet();
       return List.of(
@@ -257,6 +260,11 @@ class AdminOutboxControllerTest {
               null,
               null,
               "provider response body"));
+    }
+
+    @Override
+    public List<OutboxMessage> staffFollowUps(int limit) {
+      return List.of();
     }
 
     @Override

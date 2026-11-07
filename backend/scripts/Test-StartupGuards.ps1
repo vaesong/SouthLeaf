@@ -11,6 +11,7 @@ function Assert-StartupRefused([string]$Url,[string]$Arguments,[string]$Expected
     $start.EnvironmentVariables['SOUTHLEAF_DB_URL']=$Url
     $start.EnvironmentVariables['SOUTHLEAF_DB_USERNAME']=$credential.UserName
     $start.EnvironmentVariables['SOUTHLEAF_DB_PASSWORD']=$credential.GetNetworkCredential().Password
+    $start.EnvironmentVariables['SOUTHLEAF_MEDIA_DELIVERY']='file'
     $start.EnvironmentVariables['SOUTHLEAF_MEDIA_ROOT']=(Get-SouthLeafLocalMediaRoot)
     $process=[System.Diagnostics.Process]::Start($start)
     $output=$process.StandardOutput.ReadToEndAsync();$errors=$process.StandardError.ReadToEndAsync()

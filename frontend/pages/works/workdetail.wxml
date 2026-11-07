@@ -2,21 +2,15 @@
   <demo-notice mode="{{dataMode}}"></demo-notice>
   <view wx:if="{{showStatusBar}}" class="detail-topbar">
     <text bindtap="handleGoBackTap" class="back">‹</text>
-    <text>作品详情</text>
-    <button open-type="share" class="share-button">分享</button>
+    <button
+      wx:if="{{copy.workDetail.share}}"
+      open-type="share"
+      class="share-button"
+    >
+      {{copy.workDetail.share}}
+    </button>
   </view>
-  <view wx:if="{{status === 'loading'}}" class="state-panel"
-    >正在加载作品...</view
-  >
-  <view wx:elif="{{status === 'unavailable'}}" class="state-panel">
-    <text>内容暂不可用</text>
-    <button bindtap="handleGoBackTap2">返回作品</button>
-  </view>
-  <view wx:elif="{{status === 'error'}}" class="state-panel">
-    <text>作品暂时无法加载</text>
-    <button bindtap="handleLoadWorkTap">重试</button>
-  </view>
-  <block wx:else>
+  <block wx:if="{{status === 'success'}}">
     <view wx:if="{{availableMedia.length}}" class="detail-hero-cover">
       <view
         class="hero-hit"
@@ -30,7 +24,7 @@
           data-arg0="{{availableMedia[0].id || availableMedia[0].src}}"
           binderror="handleMarkGalleryMediaFailedError"
         ></image>
-        <view wx:else class="gallery-empty">图片暂不可用</view>
+        <view wx:else class="gallery-empty"></view>
       </view>
       <text bindtap="handleGoBackTap" class="detail-back-btn">‹</text>
     </view>
@@ -40,9 +34,17 @@
           <text wx:if="{{work.businessLabels.length}}" class="eyebrow"
             >{{work.businessLabel}}</text
           >
-          <text class="detail-title">{{work.title || '未命名作品'}}</text>
+          <text wx:if="{{work.title}}" class="detail-title"
+            >{{work.title}}</text
+          >
         </view>
-        <button open-type="share" class="share-button">分享</button>
+        <button
+          wx:if="{{copy.workDetail.share}}"
+          open-type="share"
+          class="share-button"
+        >
+          {{copy.workDetail.share}}
+        </button>
       </view>
       <text
         wx:if="{{work.description || work.summary}}"
@@ -50,13 +52,16 @@
         >{{work.description || work.summary}}</text
       >
       <view class="gallery-toolbar">
-        <text class="photo-count">{{availableMedia.length}} 张影像</text>
+        <text wx:if="{{copy.workDetail.photoSuffix}}" class="photo-count"
+          >{{availableMedia.length}} {{copy.workDetail.photoSuffix}}</text
+        >
         <button
-          aria-label="{{'切换相册排版，当前' + (layout === 'album' ? '画册' : '总览')}}"
+          aria-label="{{layout === 'album' ? copy.workDetail.layoutAlbum : copy.workDetail.layoutOverview}}"
           bindtap="handleCycleLayoutTap"
           class="layout-toggle"
         >
-          {{layout === 'album' ? '画册' : '总览'}}<text>↻</text>
+          {{layout === 'album' ? copy.workDetail.layoutAlbum :
+          copy.workDetail.layoutOverview}}<text>↻</text>
         </button>
       </view>
       <view class="gallery {{'gallery-' + layout}}">
@@ -77,23 +82,30 @@
             data-arg0="{{media.id || media.src}}"
             binderror="handleMarkGalleryMediaFailedError"
           ></image>
-          <view wx:else class="gallery-empty">图片暂不可用</view>
+          <view wx:else class="gallery-empty"></view>
         </view>
       </view>
-      <view wx:if="{{!availableMedia.length}}" class="gallery-empty"
-        >暂无可展示的图片</view
-      >
-      <text class="gallery-note"
-        >{{layout === 'album' ? '慢慢向下，读完这一组故事。' :
-        '轻触照片，放大查看。'}}</text
-      >
+      <view wx:if="{{!availableMedia.length}}" class="gallery-empty"></view>
     </view>
-    <view class="detail-dock">
+    <view
+      wx:if="{{copy.workDetail.dockTitle || copy.workDetail.dockSubtitle || copy.workDetail.book}}"
+      class="detail-dock"
+    >
       <view class="dock-info">
-        <text class="dock-title">喜欢这组拍摄风格？</text>
-        <text class="dock-sub">安娜全程引导 · 含专属定制妆造</text>
+        <text wx:if="{{copy.workDetail.dockTitle}}" class="dock-title"
+          >{{copy.workDetail.dockTitle}}</text
+        >
+        <text wx:if="{{copy.workDetail.dockSubtitle}}" class="dock-sub"
+          >{{copy.workDetail.dockSubtitle}}</text
+        >
       </view>
-      <button bindtap="handleBookSameTap" class="dock-action">预约同款</button>
+      <button
+        wx:if="{{copy.workDetail.book}}"
+        bindtap="handleBookSameTap"
+        class="dock-action"
+      >
+        {{copy.workDetail.book}}
+      </button>
     </view>
   </block>
 </view>

@@ -330,6 +330,7 @@ def run_migrations(state: dict[str, object], tools: dict[str, Path], build: dict
         "SOUTHLEAF_MIGRATION_URL": s1d.jdbc_url(port, str(meta["publicSchema"])),
         "SOUTHLEAF_MIGRATION_USERNAME": "s2b_public_migrator",
         "SOUTHLEAF_MIGRATION_PASSWORD": pw["publicMigrator"],
+        "SOUTHLEAF_MEDIA_DELIVERY": "file",
         "SOUTHLEAF_MEDIA_ROOT": str(media_root),
     })
     out = run_java(tools, ["-cp", str(PUBLIC_JAR), "-Dloader.main=cn.zhinan.uniapp.tooling.DatabaseMigrationMain",
@@ -424,6 +425,7 @@ def start_admin_runtime(state: dict[str, object], tools: dict[str, Path], candid
         "SOUTHLEAF_ADMIN_CONTENT_PUBLICATION_DB_PASSWORD": pw["publisher"],
         "SOUTHLEAF_ADMIN_CONTENT_PUBLICATION_DB_EXPECTED_USER": "s2b_publisher@localhost",
         "SOUTHLEAF_ADMIN_CONTENT_PUBLIC_SCHEMA": str(meta["publicSchema"]),
+        "SOUTHLEAF_ADMIN_CONTENT_MEDIA_STORE": "file",
         "SOUTHLEAF_ADMIN_CONTENT_MEDIA_ROOT": str(Path(str(meta["root"])) / "media"),
     })
     process = hidden_console_popen([str(tools["java"]), "-jar", str(candidate)], Path(str(meta["root"])), env)
@@ -469,6 +471,7 @@ def start_public_runtime(state: dict[str, object], tools: dict[str, Path], pw: d
         "SOUTHLEAF_DB_URL": s1d.jdbc_url(int(meta["mysqlPort"]), str(meta["publicSchema"])),
         "SOUTHLEAF_DB_USERNAME": "s2b_reader",
         "SOUTHLEAF_DB_PASSWORD": pw["reader"],
+        "SOUTHLEAF_MEDIA_DELIVERY": "file",
         "SOUTHLEAF_MEDIA_ROOT": str(Path(str(meta["root"])) / "media"),
         "SOUTHLEAF_BIND_ADDRESS": "127.0.0.1",
         "PORT": str(meta["publicPort"]),

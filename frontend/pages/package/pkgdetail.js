@@ -1,12 +1,14 @@
 const { getPackage } = require("../../api/public.js");
 const { priceLabel: formatPriceLabel } = require("../../api/public-display.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { packageView } = require("../../presentation/views.js");
 function present(data) {
   return {
     ...data,
-    priceLabel: formatPriceLabel(data.pkg),
+    priceLabel: formatPriceLabel(data.pkg, data.copy.packageDetail),
     pkg: packageView(data.pkg),
+    copy: ready(data.copy),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.pkg.meta?.dataMode ?? "")
       : "",
@@ -23,6 +25,7 @@ Page({
       contact: {},
     },
     mediaFailed: false,
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -31,15 +34,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      pkg: {
-        serviceItems: [],
-        tips: [],
-        notices: [],
-        contact: {},
-      },
-      status: "loading",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -54,7 +48,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: this.data.pkg.name || "公开套餐",
+      title: this.data.pkg.name || "",
       path: `/pages/package/pkgdetail?packageId=${encodeURIComponent(this.data.id)}`,
       imageUrl: this.data.pkg?.coverMedia?.src || "",
     };
@@ -77,32 +71,21 @@ Page({
       return;
     }
     const version = ++this._generation;
-    this.update({
-      pkg: {
-        serviceItems: [],
-        tips: [],
-        notices: [],
-        contact: {},
-      },
-    });
-    this.update({
-      status: "loading",
-    });
-    this.update({
-      mediaFailed: false,
-    });
+    if (!showing(this.data.status)) this.update({ status: "loading" });
     try {
       const pkg = await getPackage(this.data.id);
       if (version !== this._generation) return;
       this.update({
-        pkg: pkg,
-      });
-      this.update({
+        pkg,
+        copy: pkg.copy || {},
         status: "success",
+        mediaFailed: false,
       });
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
+        pkg: { serviceItems: [], tips: [], notices: [], contact: {} },
+        copy: {},
         status:
           error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
             ? "unavailable"

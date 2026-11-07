@@ -1,6 +1,7 @@
 package cn.zhinan.uniapp.publicquery.application;
 
 import cn.zhinan.uniapp.dto.PublicDtos;
+import cn.zhinan.uniapp.media.port.MediaDelivery;
 import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot;
 import cn.zhinan.uniapp.works.application.PublicVisibilityPolicy;
 import java.util.*;
@@ -9,11 +10,18 @@ import java.util.*;
 public final class CatalogProjection {
   private final CatalogSnapshot catalog;
   private final PublicVisibilityPolicy policy;
+  private final MediaDelivery delivery;
   private final Map<String, PublicVisibilityPolicy.Decision> decisions = new HashMap<>();
 
   public CatalogProjection(CatalogSnapshot catalog, PublicVisibilityPolicy policy) {
+    this(catalog, policy, MediaDelivery.apiPaths());
+  }
+
+  public CatalogProjection(
+      CatalogSnapshot catalog, PublicVisibilityPolicy policy, MediaDelivery delivery) {
     this.catalog = catalog;
     this.policy = policy;
+    this.delivery = delivery;
   }
 
   public CatalogSnapshot snapshot() {
@@ -104,17 +112,20 @@ public final class CatalogProjection {
         .findFirst()
         .map(
             binding -> {
-              var v = asset.variants().get(variant);
-              String prefix = "/api/v1/public/media/" + asset.id();
+              var selected = asset.variants().get(variant);
+              var thumbnail = asset.variants().get("thumbnail");
+              var preview = asset.variants().get("preview");
+              if (thumbnail == null || preview == null) return null;
               return new PublicDtos.Media(
                   asset.id(),
-                  prefix + "/thumbnail/content",
-                  prefix + "/preview/content",
-                  v.width(),
-                  v.height(),
+                  delivery.thumbnailUrl(asset.id(), thumbnail.objectKey()),
+                  delivery.previewUrl(asset.id(), preview.objectKey()),
+                  selected.width(),
+                  selected.height(),
                   asset.altText(),
                   binding.position());
-            });
+            })
+        .filter(java.util.Objects::nonNull);
   }
 
   public String accessStamp(String mediaId, String variant) {

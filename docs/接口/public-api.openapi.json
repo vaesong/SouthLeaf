@@ -2085,10 +2085,12 @@
             "type": "string"
           },
           "thumbnailUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "file 模式是本 API 的 /api/v1/public/media/{id}/thumbnail/content。cdn 模式是 CDN 主机上的短期查询签名地址，路径是内容寻址的派生对象键，不是存储桶裸键。客户端只接受构建时显式配置的 mediaOrigin。"
           },
           "previewUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "与 thumbnailUrl 同一规则，变体为 preview。cdn 模式下内容接口不转发字节；签名过期后新请求必须重新取目录。撤回后的发布不再签发新地址，已经发出的地址等到 TTL 结束，不回收已发出的字节。"
           },
           "width": {
             "type": "integer",
@@ -2608,13 +2610,21 @@
               "demo",
               "production"
             ]
+          },
+          "presentation": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "已发布的顾客可见文案。空对象表示这批没有配置句子；缺句时客户端不显示该句。"
           }
         },
         "required": [
           "serverTime",
           "contentVersion",
           "nextCursor",
-          "dataMode"
+          "dataMode",
+          "presentation"
         ]
       },
       "Error": {

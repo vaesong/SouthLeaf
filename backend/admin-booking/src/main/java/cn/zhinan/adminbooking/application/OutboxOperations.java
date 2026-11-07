@@ -43,6 +43,10 @@ public final class OutboxOperations {
     return worker.deadLetters(OutboxRules.leaseBatch(limit));
   }
 
+  public List<OutboxMessage> staffFollowUps(int limit) {
+    return worker.staffFollowUps(OutboxRules.leaseBatch(limit));
+  }
+
   public int pendingCount() {
     return worker.pendingCount(clock.instant());
   }

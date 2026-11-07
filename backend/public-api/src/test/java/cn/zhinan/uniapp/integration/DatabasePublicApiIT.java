@@ -58,6 +58,8 @@ class DatabasePublicApiIT {
     properties.add("spring.datasource.username", () -> required("SOUTHLEAF_TEST_DB_USERNAME"));
     properties.add("spring.datasource.password", () -> required("SOUTHLEAF_TEST_DB_PASSWORD"));
     properties.add("southleaf.public.mode", () -> "demo");
+    properties.add("SOUTHLEAF_MEDIA_DELIVERY", () -> "file");
+    properties.add("SOUTHLEAF_MEDIA_ROOT", () -> required("SOUTHLEAF_MEDIA_ROOT"));
   }
 
   private DriverManagerDataSource testDataSource() {

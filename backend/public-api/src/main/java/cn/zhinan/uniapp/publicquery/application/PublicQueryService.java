@@ -3,6 +3,7 @@ package cn.zhinan.uniapp.publicquery.application;
 import static cn.zhinan.uniapp.publicquery.contract.PublicRequestRules.*;
 
 import cn.zhinan.uniapp.dto.PublicDtos;
+import cn.zhinan.uniapp.media.port.MediaDelivery;
 import cn.zhinan.uniapp.publicquery.contract.PublicPage;
 import cn.zhinan.uniapp.publicquery.contract.PublicRequestRules;
 import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot;
@@ -19,25 +20,39 @@ public class PublicQueryService {
   private final CatalogReadService catalogs;
   private final PublicVisibilityPolicy visibility;
   private final Clock clock;
+  private final MediaDelivery delivery;
 
   public PublicQueryService(
       CatalogReadService catalogs, PublicVisibilityPolicy visibility, Clock clock) {
+    this(catalogs, visibility, clock, MediaDelivery.apiPaths());
+  }
+
+  public PublicQueryService(
+      CatalogReadService catalogs,
+      PublicVisibilityPolicy visibility,
+      Clock clock,
+      MediaDelivery delivery) {
     this.catalogs = catalogs;
     this.visibility = visibility;
     this.clock = clock;
+    this.delivery = delivery;
   }
 
   public record QueryResult<T>(T data, PublicDtos.Meta meta) {}
 
   private CatalogProjection projection() {
-    return new CatalogProjection(catalogs.load(), visibility);
+    return new CatalogProjection(catalogs.load(), visibility, delivery);
   }
 
   private <T> QueryResult<T> result(CatalogProjection p, T data, String next) {
     return new QueryResult<>(
         data,
         new PublicDtos.Meta(
-            clock.instant(), p.snapshot().contentVersion(), next, p.snapshot().dataMode()));
+            clock.instant(),
+            p.snapshot().contentVersion(),
+            next,
+            p.snapshot().dataMode(),
+            p.snapshot().presentation()));
   }
 
   public QueryResult<PublicDtos.Home> readHome() {
@@ -58,8 +73,8 @@ public class PublicQueryService {
                     new PublicDtos.HeroItem(
                         w.id(),
                         w.title(),
-                        "demo".equals(p.snapshot().dataMode()) ? "DEMO / 展示样例" : "公开作品",
-                        "浏览作品",
+                        line(p, "hero.fallbackSubtitle"),
+                        line(p, "hero.fallbackAction"),
                         w.coverMedia(),
                         "work",
                         w.id()))
@@ -223,6 +238,11 @@ public class PublicQueryService {
       case "ABOUT" -> "about".equals(slide.targetId());
       default -> false;
     };
+  }
+
+  private static String line(CatalogProjection p, String key) {
+    String value = p.snapshot().presentation().get(key);
+    return value == null ? "" : value;
   }
 
   private static void optionalId(String id) {

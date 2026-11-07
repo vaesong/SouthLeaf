@@ -58,8 +58,12 @@ class AdminOutboxConfiguration {
   }
 
   @Bean
-  NotificationDelivery notificationDelivery() {
-    return new TestSinkNotificationDelivery();
+  NotificationDelivery notificationDelivery(AdminRuntimeProperties runtime) {
+    return switch (runtime.outbox().deliveryMode()) {
+      case "TEST_SINK" -> new TestSinkNotificationDelivery();
+      case "MANUAL_CONTACT" -> new ManualContactNotificationDelivery();
+      default -> throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
+    };
   }
 
   @Bean

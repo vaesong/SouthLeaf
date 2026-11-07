@@ -32,6 +32,7 @@ const board = {
       dueAt: "2026-10-25T00:00:00Z",
     },
   ],
+  staffFollowUps: [],
 };
 
 describe("AdminOutboxApi", () => {
@@ -113,6 +114,41 @@ describe("AdminOutboxApi", () => {
     expect(error).toBeInstanceOf(OutboxApiError);
     expect((error as OutboxApiError).outcomeUnknown).toBe(true);
     expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it("accepts manual contact as staff follow-up and refuses a delivery claim", async () => {
+    const staff = {
+      id: messageId,
+      intent: "RESERVATION_CONFIRMED",
+      status: "STAFF",
+      attempts: 1,
+      lastError: "STAFF_CONTACT",
+      dueAt: "2026-10-25T00:00:00Z",
+    };
+    const fetcher = vi.fn().mockResolvedValueOnce(
+      response(200, {
+        code: "OK",
+        requestId: "r",
+        data: { ...board, deliveryMode: "MANUAL_CONTACT", staffFollowUps: [staff] },
+      }),
+    );
+    const api = new AdminOutboxApi(fetcher as unknown as typeof fetch);
+    await expect(api.list()).resolves.toMatchObject({
+      deliveryMode: "MANUAL_CONTACT",
+      staffFollowUps: [staff],
+    });
+    fetcher.mockResolvedValueOnce(
+      response(200, {
+        code: "OK",
+        requestId: "r",
+        data: {
+          ...board,
+          deliveryMode: "MANUAL_CONTACT",
+          staffFollowUps: [{ ...staff, lastError: "SENT" }],
+        },
+      }),
+    );
+    await expect(api.list()).rejects.toMatchObject({ code: "INVALID_OUTBOX_RESPONSE" });
   });
 
   it("rejects unsafe transport metadata and malformed response fields", async () => {

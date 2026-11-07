@@ -50,6 +50,7 @@ if($provided.Count -eq $isolatedPublic.Count){
  $env:SOUTHLEAF_DB_URL=$env:SOUTHLEAF_PUBLIC_IT_RUNTIME_URL
  $env:SOUTHLEAF_DB_USERNAME=$env:SOUTHLEAF_PUBLIC_IT_RUNTIME_USERNAME
  $env:SOUTHLEAF_DB_PASSWORD=$env:SOUTHLEAF_PUBLIC_IT_RUNTIME_PASSWORD
+ $env:SOUTHLEAF_MEDIA_DELIVERY='file'
  $env:SOUTHLEAF_MEDIA_ROOT=$env:SOUTHLEAF_PUBLIC_IT_MEDIA_ROOT
 } else {
  . "$PSScriptRoot/Local-Credentials.ps1"
@@ -61,6 +62,7 @@ if($provided.Count -eq $isolatedPublic.Count){
  $env:SOUTHLEAF_DB_URL=Get-SouthLeafLocalUrl 'southleaf_public'
  $env:SOUTHLEAF_DB_USERNAME=$reader.Username
  $env:SOUTHLEAF_DB_PASSWORD=$reader.GetNetworkCredential().Password
+ $env:SOUTHLEAF_MEDIA_DELIVERY='file'
  $env:SOUTHLEAF_MEDIA_ROOT=(Get-SouthLeafLocalMediaRoot)
 }
 Push-Location "$PSScriptRoot/.."

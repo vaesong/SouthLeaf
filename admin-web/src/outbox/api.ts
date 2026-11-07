@@ -7,11 +7,21 @@ export interface OutboxFailure {
   dueAt: string;
 }
 
+export interface StaffFollowUp {
+  id: string;
+  intent: string;
+  status: "STAFF";
+  attempts: number;
+  lastError: string;
+  dueAt: string;
+}
+
 export interface OutboxBoard {
-  deliveryMode: "TEST_SINK";
+  deliveryMode: "TEST_SINK" | "MANUAL_CONTACT";
   externalDeliveryEnabled: false;
   pendingCount: number;
   failures: OutboxFailure[];
+  staffFollowUps: StaffFollowUp[];
 }
 
 export interface OutboxRecovery {
@@ -68,12 +78,14 @@ export class AdminOutboxApi {
     const value = envelope.data;
     if (
       envelope.code !== "OK" ||
-      value?.deliveryMode !== "TEST_SINK" ||
+      (value?.deliveryMode !== "TEST_SINK" && value?.deliveryMode !== "MANUAL_CONTACT") ||
       value.externalDeliveryEnabled !== false ||
       !Number.isInteger(value.pendingCount) ||
       value.pendingCount < 0 ||
       !Array.isArray(value.failures) ||
-      !value.failures.every(validFailure)
+      !value.failures.every(validFailure) ||
+      !Array.isArray(value.staffFollowUps) ||
+      !value.staffFollowUps.every(validStaffFollowUp)
     ) {
       throw new OutboxApiError(
         502,
@@ -221,6 +233,23 @@ function validFailure(value: unknown): value is OutboxFailure {
     (row.attempts ?? -1) >= 0 &&
     typeof row.lastError === "string" &&
     /^[A-Z][A-Z0-9_]{0,63}$/.test(row.lastError) &&
+    typeof row.dueAt === "string" &&
+    !Number.isNaN(Date.parse(row.dueAt))
+  );
+}
+
+function validStaffFollowUp(value: unknown): value is StaffFollowUp {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Partial<StaffFollowUp>;
+  return (
+    typeof row.id === "string" &&
+    /^[0-9a-f-]{36}$/.test(row.id) &&
+    typeof row.intent === "string" &&
+    /^[A-Z][A-Z0-9_]{0,63}$/.test(row.intent) &&
+    row.status === "STAFF" &&
+    Number.isInteger(row.attempts) &&
+    (row.attempts ?? -1) >= 0 &&
+    row.lastError === "STAFF_CONTACT" &&
     typeof row.dueAt === "string" &&
     !Number.isNaN(Date.parse(row.dueAt))
   );

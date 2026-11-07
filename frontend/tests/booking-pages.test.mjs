@@ -259,7 +259,7 @@ test("confirmed request renders the agreement and the settlement notice", () => 
       }),
   });
   host.update({ request: { ...pending, displayStatus: "CONFIRMED", order } });
-  assert.equal(host.data.statusLabel, "已确认");
+  assert.equal(host.data.statusLabel, "");
   assert.equal(host.data.hasOrder, true);
   assert.equal(host.data.order.amountLabel, "JP¥12,345");
   assert.match(host.data.order.settlementNotice, /不收款/);
@@ -306,8 +306,8 @@ test("hide clears the booking page so stale slots never republish", async () => 
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(host.data.dataMode, "demo");
   host.onHide();
-  assert.equal(host.data.status, "loading");
-  assert.equal(host.data.dataMode, "");
+  assert.equal(host.data.status, "success");
+  assert.equal(host.data.dataMode, "demo");
   const commits = host.commits;
   host.onUnload();
   host.update({ status: "success" });

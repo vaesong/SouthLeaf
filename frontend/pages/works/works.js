@@ -5,20 +5,31 @@ const {
   rememberLayout,
   nextLayout,
 } = require("../../api/public-display.js");
+const {
+  applyTabs,
+  clearTabs,
+  ready,
+  showing,
+} = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
 function present(data) {
   const works = data.works.map(workView);
+  const copy = ready(data.copy);
   return {
     ...data,
-    sortLabel: data.sort === "oldest" ? "最早" : "最新",
-    layoutLabel: {
-      editorial: "等高",
-      grid: "瀑布",
-    }[data.layout],
+    sortLabel:
+      data.sort === "oldest"
+        ? copy.works.sortOldest || ""
+        : copy.works.sortNewest || "",
+    layoutLabel:
+      data.layout === "grid"
+        ? copy.works.layoutGrid || ""
+        : copy.works.layoutEditorial || "",
     works,
     leftCol: works.filter((_, index) => index % 2 === 0),
     rightCol: works.filter((_, index) => index % 2 === 1),
+    copy,
     dataMode: ["success", "empty"].includes(data.status) ? data.dataMode : "",
   };
 }
@@ -36,6 +47,7 @@ Page({
     layout: "grid",
     sort: "newest",
     showSortMenu: false,
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -44,11 +56,7 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      works: [],
-      status: "loading",
-      showSortMenu: false,
-    });
+    this.update({ showSortMenu: false });
   },
   onUnload() {
     this._unloaded = true;
@@ -84,6 +92,7 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1 });
     }
+    applyTabs(this, this.data.copy);
     const resume = this._hidden;
     this._hidden = false;
     const id = getApp().globalData.selectedBusinessId;
@@ -95,7 +104,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: "公开作品",
+      title: (this.data.copy.works && this.data.copy.works.title) || "",
       path: "/pages/works/works",
       imageUrl: this.data.works?.[0]?.coverMedia?.src || "",
     };
@@ -103,26 +112,14 @@ Page({
   async loadWorks(reset = true) {
     const version = reset ? ++this._generation : this._generation;
     const cursor = reset ? undefined : this.data.nextCursor;
-    if (reset) {
+    if (reset && !showing(this.data.status)) {
       this.update({
         status: "loading",
-      });
-      this.update({
-        nextCursor: null,
-      });
-      this.update({
         works: [],
-      });
-      this.update({
         businesses: [],
-      });
-      this.update({
+        nextCursor: null,
         contentVersion: "",
-      });
-      this.update({
         loadMoreError: false,
-      });
-      this.update({
         failedMedia: {},
       });
     }
@@ -156,19 +153,25 @@ Page({
       this.update({
         status: this.data.works.length ? "success" : "empty",
         dataMode: result.dataMode,
+        copy: result.copy || {},
       });
+      applyTabs(this, result.copy);
     } catch (error) {
       if (version !== this._generation) return;
       if (!reset && error.code === "PUBLIC_CURSOR_EXPIRED")
         return this.loadWorks(true);
-      if (reset)
+      if (reset) {
         this.update({
+          works: [],
+          businesses: [],
+          copy: {},
           status:
             error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
               ? "unavailable"
               : "error",
         });
-      else
+        clearTabs(this);
+      } else
         this.update({
           loadMoreError: true,
         });

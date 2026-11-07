@@ -2,6 +2,7 @@ package cn.zhinan.uniapp.dto;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Public API DTOs. These records are deliberately separate from persistence entities and contain no
@@ -142,5 +143,18 @@ public final class PublicDtos {
       Contact contact) {}
 
   public record Meta(
-      Instant serverTime, String contentVersion, String nextCursor, String dataMode) {}
+      Instant serverTime,
+      String contentVersion,
+      String nextCursor,
+      String dataMode,
+      Map<String, String> presentation) {
+    /** Error and booking responses have no catalog lines. */
+    public Meta(Instant serverTime, String contentVersion, String nextCursor, String dataMode) {
+      this(serverTime, contentVersion, nextCursor, dataMode, Map.of());
+    }
+
+    public Meta {
+      presentation = presentation == null ? Map.of() : Map.copyOf(presentation);
+    }
+  }
 }

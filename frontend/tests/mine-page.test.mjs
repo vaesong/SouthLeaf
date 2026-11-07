@@ -138,46 +138,31 @@ test("我的页面列出本人预约，并复用统一的标签与金额口径",
   assert.equal(host.data.status, "success");
   assert.equal(host.data.identityLabel, "微信用户 3F2A19");
   assert.equal(host.data.cards.length, 2);
-  assert.equal(host.data.cards[0].statusLabel, "待确认");
-  assert.equal(host.data.cards[1].statusLabel, "已确认");
+  assert.equal(host.data.cards[0].statusLabel, "");
+  assert.equal(host.data.cards[1].statusLabel, "");
   assert.equal(host.data.cards[1].order.amountLabel, "JP¥12,345");
   assert.equal(host.data.orderCount, 1);
 });
 
-test("支付只出现在已生成订单的卡片上，且阶段二一律不可用", async () => {
+test("阶段二没有支付入口", async () => {
   const host = page("mine/mine", ready([pending, confirmed]));
   await host.load();
   const [pendingCard, confirmedCard] = host.data.cards;
   assert.equal(pendingCard.payAction.visible, false);
-  assert.equal(pendingCard.payAction.label, "");
-  assert.equal(confirmedCard.payAction.visible, true);
+  assert.equal(confirmedCard.payAction.visible, false);
   assert.equal(confirmedCard.payAction.enabled, false);
-  assert.match(confirmedCard.payAction.label, /未开放/);
+  assert.equal(
+    fs
+      .readFileSync(new URL("../pages/mine/mine.wxml", import.meta.url), "utf8")
+      .includes("pay-button"),
+    false,
+  );
 });
 
-test("点击支付只解释一次，不发请求也不改状态", async () => {
-  const host = page("mine/mine", ready([pending, confirmed]));
-  await host.load();
-  modals = [];
-  wx.requests = [];
-  const before = JSON.stringify(host.data.cards);
-  host.handleSettleTap({
-    currentTarget: { dataset: { id: confirmed.reservationId } },
-  });
-  assert.equal(modals.length, 1);
-  assert.match(modals[0].content, /本阶段不收款/);
-  assert.equal(modals[0].showCancel, false);
-  assert.equal(wx.requests.length, 0);
-  assert.equal(JSON.stringify(host.data.cards), before);
-});
-
-test("没有订单的申请点击支付什么都不做", async () => {
+test("没有订单的申请不提供支付动作", async () => {
   const host = page("mine/mine", ready([pending]));
   await host.load();
-  modals = [];
-  host.handleSettleTap({
-    currentTarget: { dataset: { id: pending.reservationId } },
-  });
+  assert.equal(host.data.cards[0].payAction.visible, false);
   assert.equal(modals.length, 0);
 });
 

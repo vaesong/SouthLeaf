@@ -605,9 +605,7 @@ export function mockAdminApi(): Plugin {
             ? media
                 .filter((item) => (item.sourceFileName ?? "").toLowerCase().includes(q))
                 .slice(0, 100)
-            : media
-                .filter((item) => (item.folderId ?? null) === (folderId || null))
-                .slice(0, 500);
+            : media.filter((item) => (item.folderId ?? null) === (folderId || null)).slice(0, 500);
           send(res, 200, envelope(rows));
           return;
         }
@@ -1012,6 +1010,7 @@ export function mockAdminApi(): Plugin {
                   dueAt: "2026-11-01T02:00:00Z",
                 },
               ],
+              staffFollowUps: [],
             }),
           );
           return;

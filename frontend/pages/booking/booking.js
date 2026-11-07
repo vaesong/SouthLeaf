@@ -1,5 +1,6 @@
 const booking = require("../../api/booking.js");
 const { getBrand } = require("../../api/public.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { slotLabel } = require("../../presentation/booking-views.js");
 
@@ -40,6 +41,7 @@ function present(data) {
       active: slot.slotId === data.selectedSlotId,
     })),
     packageLabels: (data.packages || []).map((item) => item.displayName),
+    copy: ready(data.copy),
   };
 }
 
@@ -61,6 +63,7 @@ Page({
     dataMode: "",
     studioPhone: "",
     studioWechat: "",
+    copy: {},
   }),
   update(patch) {
     commit(this, present, patch);
@@ -74,13 +77,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      status: "loading",
-      selectedSlotId: "",
-      error: "",
-      message: "",
-      dataMode: "",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -101,7 +97,8 @@ Page({
   },
   async load() {
     const version = ++this._generation;
-    this.update({ status: "loading", errorMessage: "" });
+    if (!showing(this.data.status))
+      this.update({ status: "loading", errorMessage: "" });
     try {
       const [packages, slots] = await Promise.all([
         booking.getPackages(),
@@ -112,11 +109,15 @@ Page({
         packages: packages.data.items,
         slots: slots.data.items,
         dataMode: slots.meta.dataMode,
+        copy: packages.copy || {},
         status: packages.data.items.length ? "success" : "empty",
       });
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
+        packages: [],
+        slots: [],
+        copy: {},
         status: careStatus(error),
         errorMessage: "",
       });
@@ -136,6 +137,7 @@ Page({
       this.update({
         studioPhone: brand.phone || "",
         studioWechat: wechat && wechat.account ? wechat.account : "",
+        copy: brand.copy || {},
       });
     } catch (_error) {
       /* 联系方式暂时读不到时，关怀卡仍保留拨打和返回作品。 */
@@ -165,7 +167,7 @@ Page({
     if (!this.data.selectedSlotId || this.data.submitting) return;
     const pkg = this.data.packages[this.data.packageIndex];
     if (!pkg) {
-      this.update({ error: "请先选择套餐" });
+      this.update({ error: "" });
       return;
     }
     const version = ++this._generation;
@@ -182,7 +184,8 @@ Page({
       this.update({
         submitting: false,
         selectedSlotId: "",
-        message: "申请已提交，等待工作室确认",
+        message:
+          (this.data.copy.booking && this.data.copy.booking.pendingHint) || "",
       });
       wx.navigateTo({
         url:
@@ -193,7 +196,7 @@ Page({
       if (version !== this._generation) return;
       this.update({
         submitting: false,
-        error: error.message || "提交失败，请稍后重试",
+        error: (error && error.message) || "",
       });
     }
   },
@@ -236,10 +239,8 @@ Page({
   handleCallPhoneTap() {
     const phone = this.data.studioPhone;
     if (!phone) {
-      wx.showToast({
-        title: "电话暂未公开，可以先复制微信",
-        icon: "none",
-      });
+      const title = this.data.copy.booking.phoneUnavailable;
+      if (title) wx.showToast({ title, icon: "none" });
       return;
     }
     wx.makePhoneCall({ phoneNumber: phone });
@@ -247,13 +248,16 @@ Page({
   handleCopyWechatTap() {
     const account = this.data.studioWechat;
     if (!account) {
-      wx.showToast({ title: "微信号暂未公开，可以直接来电", icon: "none" });
+      const title = this.data.copy.booking.wechatUnavailable;
+      if (title) wx.showToast({ title, icon: "none" });
       return;
     }
     wx.setClipboardData({
       data: account,
-      fail: () =>
-        wx.showToast({ title: "复制失败，请手动记录微信号", icon: "none" }),
+      fail: () => {
+        const title = this.data.copy.booking.copyWechatFailed;
+        if (title) wx.showToast({ title, icon: "none" });
+      },
     });
   },
   handleGoWorksTap() {

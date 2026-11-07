@@ -31,9 +31,9 @@ public final class OutboxDispatcher {
   }
 
   /** The result of one dispatch pass. */
-  public record DispatchResult(int leased, int delivered, int retried, int dead) {
+  public record DispatchResult(int leased, int delivered, int retried, int dead, int held) {
     public static DispatchResult empty() {
-      return new DispatchResult(0, 0, 0, 0);
+      return new DispatchResult(0, 0, 0, 0, 0);
     }
   }
 
@@ -47,8 +47,14 @@ public final class OutboxDispatcher {
     int delivered = 0;
     int retried = 0;
     int dead = 0;
+    int held = 0;
     for (OutboxMessage message : leased) {
       DeliveryOutcome outcome = deliver(message);
+      if (outcome.staffFollowUp()) {
+        worker.markStaffFollowUp(message.messageId(), workerOwner, now);
+        held++;
+        continue;
+      }
       if (outcome.delivered()) {
         worker.markDelivered(message.messageId(), workerOwner, now);
         delivered++;
@@ -72,7 +78,7 @@ public final class OutboxDispatcher {
               now, message.attempts(), policy.baseRetryDelay(), policy.maximumRetryDelay()));
       retried++;
     }
-    return new DispatchResult(leased.size(), delivered, retried, dead);
+    return new DispatchResult(leased.size(), delivered, retried, dead, held);
   }
 
   /**

@@ -93,7 +93,10 @@ onMounted(() => void load());
     <div class="page-head">
       <div>
         <h1>消息通知</h1>
-        <p>没发出去的消息会列在这里，可以再试一次。</p>
+        <p v-if="board?.deliveryMode === 'MANUAL_CONTACT'">
+          这些记录只提醒工作人员联系顾客，不会标成顾客已经收到。
+        </p>
+        <p v-else>没发出去的消息会列在这里，可以再试一次。</p>
       </div>
       <div class="actions">
         <button class="btn btn-secondary btn-sm" type="button" :disabled="loading" @click="load()">
@@ -103,7 +106,15 @@ onMounted(() => void load());
     </div>
     <div v-if="board" class="note" style="margin-bottom: 18px" role="status">
       <b>说明</b>
-      <span>还有 {{ board.pendingCount }} 条在等待发送。</span>
+      <span v-if="board.deliveryMode === 'MANUAL_CONTACT'">
+        还有 {{ board.pendingCount }} 条待登记，{{ board.staffFollowUps.length }} 条待人工联系。
+      </span>
+      <span v-else>还有 {{ board.pendingCount }} 条在等待发送。</span>
+      <ul v-if="board.staffFollowUps.length">
+        <li v-for="item in board.staffFollowUps" :key="item.id">
+          {{ notificationIntentLabel(item.intent) }} · 待人工联系
+        </li>
+      </ul>
     </div>
     <p v-if="notice" class="alert-line" role="alert">
       {{ notice }}

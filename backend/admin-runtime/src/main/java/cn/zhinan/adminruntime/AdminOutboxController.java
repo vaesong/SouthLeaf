@@ -66,6 +66,9 @@ class AdminOutboxController {
                     outbox.pendingCount(),
                     outbox.deadLetters(OutboxRules.MAX_LEASE_BATCH).stream()
                         .map(AdminOutboxController::failure)
+                        .toList(),
+                    outbox.staffFollowUps(OutboxRules.MAX_LEASE_BATCH).stream()
+                        .map(AdminOutboxController::failure)
                         .toList())));
   }
 
@@ -236,7 +239,8 @@ class AdminOutboxController {
       String deliveryMode,
       boolean externalDeliveryEnabled,
       int pendingCount,
-      List<FailureView> failures) {}
+      List<FailureView> failures,
+      List<FailureView> staffFollowUps) {}
 
   record FailureView(
       String id, String intent, String status, int attempts, String lastError, String dueAt) {}

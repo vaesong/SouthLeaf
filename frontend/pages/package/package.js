@@ -1,12 +1,22 @@
 const { getBusinesses, getPackages } = require("../../api/public.js");
 const { createError } = require("../../api/api.js");
 const { groupServices } = require("../../api/public-display.js");
+const {
+  applyTabs,
+  clearTabs,
+  ready,
+  showing,
+} = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { serviceViews } = require("../../presentation/views.js");
 function present(data) {
   return {
     ...data,
-    serviceGroups: serviceViews(groupServices(data.businesses, data.packages)),
+    serviceGroups: serviceViews(
+      groupServices(data.businesses, data.packages),
+      data.copy.packageDetail,
+    ),
+    copy: ready(data.copy),
     dataMode: ["success", "empty"].includes(data.status) ? data.dataMode : "",
   };
 }
@@ -21,6 +31,7 @@ Page({
     contentVersion: "",
     failedMedia: {},
     focusBusinessId: "",
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -29,11 +40,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      businesses: [],
-      packages: [],
-      status: "loading",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -56,6 +62,7 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
+    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadPackages();
@@ -71,7 +78,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: "拍摄服务",
+      title: (this.data.copy.services && this.data.copy.services.title) || "",
       path: "/pages/package/package",
       imageUrl: this.data.serviceGroups?.[0]?.coverMedia?.src || "",
     };
@@ -79,26 +86,14 @@ Page({
   async loadPackages(reset = true) {
     const version = reset ? ++this._generation : this._generation;
     const cursor = reset ? undefined : this.data.nextCursor;
-    if (reset) {
+    if (reset && !showing(this.data.status)) {
       this.update({
         status: "loading",
-      });
-      this.update({
         businesses: [],
-      });
-      this.update({
         packages: [],
-      });
-      this.update({
         nextCursor: null,
-      });
-      this.update({
         contentVersion: "",
-      });
-      this.update({
         failedMedia: {},
-      });
-      this.update({
         loadMoreError: false,
       });
     }
@@ -133,20 +128,26 @@ Page({
       this.update({
         status: this.data.businesses.length ? "success" : "empty",
         dataMode: result.dataMode,
+        copy: result.copy || {},
       });
+      applyTabs(this, result.copy);
       this.scrollToBusiness();
     } catch (error) {
       if (version !== this._generation) return;
       if (!reset && error.code === "PUBLIC_CURSOR_EXPIRED")
         return this.loadPackages(true);
-      if (reset)
+      if (reset) {
         this.update({
+          businesses: [],
+          packages: [],
+          copy: {},
           status:
             error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
               ? "unavailable"
               : "error",
         });
-      else
+        clearTabs(this);
+      } else
         this.update({
           loadMoreError: true,
         });

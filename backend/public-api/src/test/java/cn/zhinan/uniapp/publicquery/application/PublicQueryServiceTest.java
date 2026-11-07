@@ -211,7 +211,8 @@ class PublicQueryServiceTest {
         base.featuredPackages(),
         base.featuredWorks(),
         base.overlayReleases(),
-        slides);
+        slides,
+        base.presentation());
   }
 
   @Test

@@ -15,11 +15,12 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 MODULES = ['public-api', 'admin-security-core', 'admin-db-policy', 'admin-migration-cli',
            'admin-account-cli', 'admin-security-jdbc', 'admin-runtime', 'admin-credential-crypto',
-           'admin-content', 'admin-booking']
+           'object-store', 'admin-content', 'admin-booking']
 ARTIFACTS = {m: ('uniapp-api' if m == 'public-api' else m) for m in MODULES}
 VERSION = '0.1.0-SNAPSHOT'
 EXPECTED = {
-    'public-api': set(), 'admin-security-core': set(), 'admin-db-policy': set(),
+    'public-api': {('object-store', 'compile')}, 'admin-security-core': set(), 'admin-db-policy': set(),
+    'object-store': set(),
     'admin-credential-crypto': {('admin-security-core', 'compile')},
     'admin-migration-cli': {('admin-db-policy', 'compile')},
     'admin-account-cli': {('admin-security-core', 'compile'), ('admin-credential-crypto', 'compile'),
@@ -29,7 +30,7 @@ EXPECTED = {
     'admin-runtime': {('admin-security-core', 'compile'), ('admin-security-jdbc', 'compile'),
                       ('admin-db-policy', 'compile'), ('admin-credential-crypto', 'compile'),
                       ('admin-content', 'compile'), ('admin-booking', 'compile')},
-    'admin-content': set(),
+    'admin-content': {('object-store', 'compile')},
     'admin-booking': set(),
 }
 

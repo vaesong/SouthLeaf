@@ -1,10 +1,25 @@
 const { getHome } = require("../../api/public.js");
+const {
+  applyTabs,
+  clearTabs,
+  ready,
+  showing,
+} = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { homeView } = require("../../presentation/views.js");
+const emptyHome = () => ({
+  brand: {},
+  heroItems: [],
+  businesses: [],
+  featuredWorks: [],
+  packages: [],
+  contact: {},
+});
 function present(data) {
   return {
     ...data,
-    home: homeView(data.home),
+    home: homeView(data.home, data.copy.packageDetail),
+    copy: ready(data.copy),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.home.meta?.dataMode ?? "")
       : "",
@@ -23,6 +38,7 @@ Page({
     },
     heroIndex: 0,
     failedMedia: {},
+    copy: {},
     dataMode: "",
   }),
   update(patch) {
@@ -31,17 +47,6 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({
-      home: {
-        brand: {},
-        heroItems: [],
-        businesses: [],
-        featuredWorks: [],
-        packages: [],
-        contact: {},
-      },
-      status: "loading",
-    });
   },
   onUnload() {
     this._unloaded = true;
@@ -56,7 +61,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: this.data.home.brand.shareTitle || "摄影工作室",
+      title: this.data.home.brand.shareTitle || "",
       path: "/pages/index/index",
       imageUrl: this.data.home?.heroItems?.[0]?.media?.src || "",
     };
@@ -69,39 +74,28 @@ Page({
   },
   async loadHome() {
     const version = ++this._generation;
-    this.update({
-      status: "loading",
-    });
-    this.update({
-      home: {
-        brand: {},
-        heroItems: [],
-        businesses: [],
-        featuredWorks: [],
-        packages: [],
-        contact: {},
-      },
-    });
-    this.update({
-      failedMedia: {},
-    });
+    if (!showing(this.data.status)) this.update({ status: "loading" });
     try {
       const home = await getHome();
       if (version !== this._generation) return;
       this.update({
-        home: home,
-      });
-      this.update({
+        home,
+        copy: home.copy || {},
         status: "success",
+        failedMedia: {},
       });
+      applyTabs(this, home.copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
+        home: emptyHome(),
+        copy: {},
         status:
           error.code === "PUBLIC_RESOURCE_UNAVAILABLE"
             ? "unavailable"
             : "error",
       });
+      clearTabs(this);
     }
   },
   onHeroChange(event) {
@@ -158,6 +152,7 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
     }
+    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadHome();

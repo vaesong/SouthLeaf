@@ -1,5 +1,6 @@
 package cn.zhinan.uniapp.media.application;
 
+import cn.zhinan.uniapp.media.port.MediaDelivery;
 import cn.zhinan.uniapp.media.port.MediaObjectStore;
 import cn.zhinan.uniapp.publicquery.application.CatalogProjection;
 import cn.zhinan.uniapp.publicquery.application.CatalogReadService;
@@ -10,12 +11,22 @@ public class PublicMediaService {
   private final CatalogReadService catalogs;
   private final PublicVisibilityPolicy visibility;
   private final MediaObjectStore store;
+  private final MediaDelivery delivery;
 
   public PublicMediaService(
       CatalogReadService catalogs, PublicVisibilityPolicy visibility, MediaObjectStore store) {
+    this(catalogs, visibility, store, MediaDelivery.apiPaths());
+  }
+
+  public PublicMediaService(
+      CatalogReadService catalogs,
+      PublicVisibilityPolicy visibility,
+      MediaObjectStore store,
+      MediaDelivery delivery) {
     this.catalogs = catalogs;
     this.visibility = visibility;
     this.store = store;
+    this.delivery = delivery;
   }
 
   public record Content(byte[] bytes, String contentType) {
@@ -34,7 +45,7 @@ public class PublicMediaService {
     PublicRequestRules.variant(variant);
     var before = new CatalogProjection(catalogs.load(), visibility);
     String stamp = before.accessStamp(id, variant);
-    if (stamp == null) throw PublicRequestRules.unavailable();
+    if (stamp == null || !delivery.servesBytes()) throw PublicRequestRules.unavailable();
     var descriptor = before.snapshot().assets().get(id).variants().get(variant);
     byte[] bytes = store.readVerified(descriptor);
     // A fresh database snapshot and current authorization fact are read after buffering.

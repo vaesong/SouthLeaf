@@ -19,7 +19,36 @@ public record CatalogDraft(
     List<String> featuredPackageIds,
     List<String> featuredWorkIds,
     Map<String, String> mediaAltTexts,
-    List<HeroSlide> heroSlides) {
+    List<HeroSlide> heroSlides,
+    Map<String, String> presentation) {
+  /** Callers that predate configurable page lines keep an empty presentation. */
+  public CatalogDraft(
+      Brand brand,
+      Contact contact,
+      List<TeamMember> team,
+      List<Channel> channels,
+      List<Business> businesses,
+      List<Package> packages,
+      List<String> featuredBusinessIds,
+      List<String> featuredPackageIds,
+      List<String> featuredWorkIds,
+      Map<String, String> mediaAltTexts,
+      List<HeroSlide> heroSlides) {
+    this(
+        brand,
+        contact,
+        team,
+        channels,
+        businesses,
+        packages,
+        featuredBusinessIds,
+        featuredPackageIds,
+        featuredWorkIds,
+        mediaAltTexts,
+        heroSlides,
+        Map.of());
+  }
+
   private static final Pattern ID = Pattern.compile("[A-Za-z0-9_-]{1,128}");
   private static final int MAX_BUSINESSES = 30;
   private static final List<String> INITIAL_BUSINESS_IDS =
@@ -44,6 +73,7 @@ public record CatalogDraft(
       for (var slide : heroSlides) if (slide == null) throw invalid("HERO_REQUIRED");
       heroSlides = List.copyOf(heroSlides);
     }
+    presentation = CatalogPresentation.sanitize(presentation);
   }
 
   public static CatalogDraft empty() {
@@ -70,7 +100,8 @@ public record CatalogDraft(
         List.of(),
         List.of(),
         Map.of(),
-        List.of());
+        List.of(),
+        Map.of());
   }
 
   public List<MediaReference> mediaReferences() {
@@ -129,7 +160,8 @@ public record CatalogDraft(
         featuredPackageIds,
         featured,
         mediaAltTexts,
-        slides);
+        slides,
+        presentation);
   }
 
   private List<MediaReference> mediaReferences(boolean publishedOnly) {
@@ -254,7 +286,8 @@ public record CatalogDraft(
         featuredPackageIds,
         featuredWorkIds,
         clearedAlts,
-        heroSlides);
+        heroSlides,
+        presentation);
   }
 
   /** Validate the complete snapshot before it becomes public. */

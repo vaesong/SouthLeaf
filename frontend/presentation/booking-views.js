@@ -2,37 +2,31 @@
 
 const settlement = require("./settlement.js");
 
-const STATUS = Object.freeze({
-  PENDING_CONFIRMATION: {
-    label: "待确认",
-    hint: "工作室会人工复核时段，确认前不会占用档期。",
-  },
-  CONFIRMED: {
-    label: "已确认",
-    hint: "请提前 15 分钟到店，安娜与方女士期待与你们见面。",
-  },
-  REJECTED: {
-    label: "未接受",
-    hint: "这次申请未通过，可以重新选择时段再提交。",
-  },
-  EXPIRED: {
-    label: "已过期",
-    hint: "申请已超过有效期，可以重新提交。",
-  },
-  CANCELLED: {
-    label: "已取消",
-    hint: "该预约已取消。",
-  },
+const STATUS_KEYS = Object.freeze({
+  PENDING_CONFIRMATION: "statusPending",
+  CONFIRMED: "statusConfirmed",
+  REJECTED: "statusRejected",
+  EXPIRED: "statusExpired",
+  CANCELLED: "statusCancelled",
 });
-
-const UNKNOWN = Object.freeze({ label: "状态未知", hint: "" });
-
-const statusOf = (code) => STATUS[code] || UNKNOWN;
+const HINTS = Object.freeze({
+  PENDING_CONFIRMATION: "pendingHint",
+  CONFIRMED: "confirmedHint",
+  REJECTED: "rejectedHint",
+  EXPIRED: "expiredHint",
+  CANCELLED: "cancelledHint",
+});
+const statusOf = (code, copy) => {
+  const booking = copy && copy.booking;
+  const labelKey = STATUS_KEYS[code];
+  const hintKey = HINTS[code];
+  const line = (key) =>
+    key && booking && typeof booking[key] === "string" ? booking[key] : "";
+  return { label: line(labelKey), hint: line(hintKey) };
+};
 
 const slotLabel = (slot) =>
-  slot
-    ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd
-    : "未指定时段";
+  slot ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd : "";
 
 const timeLabel = (value) =>
   value ? String(value).slice(0, 16).replace("T", " ") : "";
@@ -49,8 +43,8 @@ const orderView = (order) =>
     : null;
 
 // 一张卡片就是一条申请：列表页与详情页共用同一套标签与金额口径。
-const requestCard = (request) => {
-  const status = statusOf(request.displayStatus);
+const requestCard = (request, copy) => {
+  const status = statusOf(request.displayStatus, copy);
   return {
     reservationId: request.reservationId,
     slotLabel: slotLabel(request.requestedSlot),
@@ -65,7 +59,6 @@ const requestCard = (request) => {
 };
 
 module.exports = {
-  STATUS,
   statusOf,
   slotLabel,
   timeLabel,

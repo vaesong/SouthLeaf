@@ -21,7 +21,8 @@ public record CatalogSnapshot(
     List<String> featuredPackages,
     List<String> featuredWorks,
     Map<String, String> overlayReleases,
-    List<HeroSlide> heroSlides) {
+    List<HeroSlide> heroSlides,
+    Map<String, String> presentation) {
   /** V1-only snapshot: no S2 per-work overlay entries. */
   public CatalogSnapshot(
       String releaseId,
@@ -53,7 +54,8 @@ public record CatalogSnapshot(
         featuredPackages,
         List.of(),
         Map.of(),
-        List.of());
+        List.of(),
+        Map.of());
   }
 
   /** Existing callers keep the V1/S2 default ordering until a V3 snapshot curates featured work. */
@@ -88,7 +90,46 @@ public record CatalogSnapshot(
         featuredPackages,
         List.of(),
         overlayReleases,
-        List.of());
+        List.of(),
+        Map.of());
+  }
+
+  /** Callers that predate configurable page lines keep an empty presentation. */
+  public CatalogSnapshot(
+      String releaseId,
+      String contentVersion,
+      String dataMode,
+      String approvalStatus,
+      Brand brand,
+      Contact contact,
+      List<Business> businesses,
+      List<Package> packages,
+      List<Work> works,
+      Map<String, Asset> assets,
+      List<Binding> bindings,
+      List<String> featuredBusinesses,
+      List<String> featuredPackages,
+      List<String> featuredWorks,
+      Map<String, String> overlayReleases,
+      List<HeroSlide> heroSlides) {
+    this(
+        releaseId,
+        contentVersion,
+        dataMode,
+        approvalStatus,
+        brand,
+        contact,
+        businesses,
+        packages,
+        works,
+        assets,
+        bindings,
+        featuredBusinesses,
+        featuredPackages,
+        featuredWorks,
+        overlayReleases,
+        heroSlides,
+        Map.of());
   }
 
   /** Callers that predate configured homepage slides keep an empty slide list. */
@@ -124,7 +165,8 @@ public record CatalogSnapshot(
         featuredPackages,
         featuredWorks,
         overlayReleases,
-        List.of());
+        List.of(),
+        Map.of());
   }
 
   public CatalogSnapshot {
@@ -138,6 +180,20 @@ public record CatalogSnapshot(
     featuredBusinesses = List.copyOf(featuredBusinesses);
     featuredPackages = List.copyOf(featuredPackages);
     heroSlides = heroSlides == null ? List.of() : List.copyOf(heroSlides);
+    if (presentation == null) presentation = Map.of();
+    else {
+      var kept = new java.util.LinkedHashMap<String, String>();
+      for (var entry : presentation.entrySet()) {
+        if (entry.getKey() == null
+            || entry.getKey().length() > 64
+            || entry.getValue() == null
+            || entry.getValue().length() > 400) {
+          throw new IllegalArgumentException("presentation line is invalid");
+        }
+        if (!entry.getValue().isEmpty()) kept.put(entry.getKey(), entry.getValue());
+      }
+      presentation = Map.copyOf(kept);
+    }
   }
 
   public record Brand(

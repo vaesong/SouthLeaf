@@ -66,10 +66,14 @@ final class AdminOutboxProperties {
       return DISABLED;
     }
     if (!"enabled".equals(mode) || !webEnabled) refuse();
-    // The test sink never reports a real delivery, so it may only run where nobody relies on it.
-    // The day a real channel exists, this is the single line that has to change.
-    if (!"TEST_SINK".equals(env.get("SOUTHLEAF_ADMIN_OUTBOX_DELIVERY_MODE"))
-        || "production".equals(adminMode)) refuse();
+    String deliveryMode = env.get("SOUTHLEAF_ADMIN_OUTBOX_DELIVERY_MODE");
+    // TEST_SINK accepts facts locally and must not run in production. MANUAL_CONTACT records a
+    // staff follow-up and never reports that the customer received a message.
+    if ("TEST_SINK".equals(deliveryMode)) {
+      if ("production".equals(adminMode)) refuse();
+    } else if (!"MANUAL_CONTACT".equals(deliveryMode)) {
+      refuse();
+    }
     for (String key : KEYS) requireValue(env.get(key));
 
     String username = env.get("SOUTHLEAF_ADMIN_OUTBOX_DB_USERNAME");

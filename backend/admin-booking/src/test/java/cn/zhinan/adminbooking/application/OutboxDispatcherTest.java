@@ -81,7 +81,17 @@ class OutboxDispatcherTest {
     }
 
     @Override
+    public void markStaffFollowUp(String messageId, String owner, Instant now) {
+      report.add("STAFF:" + messageId);
+    }
+
+    @Override
     public List<OutboxMessage> deadLetters(int limit) {
+      return List.of();
+    }
+
+    @Override
+    public List<OutboxMessage> staffFollowUps(int limit) {
       return List.of();
     }
 
@@ -197,6 +207,20 @@ class OutboxDispatcherTest {
 
     assertThat(result.retried()).isEqualTo(1);
     assertThat(worker.report).containsExactly("RETRY:m1:DELIVERY_THREW");
+  }
+
+  @Test
+  void staffFollowUpIsNotADeliveryAndNotADeadLetter() {
+    FakeWorker worker = new FakeWorker(new ArrayList<>(List.of(message("m1", 0))));
+    RecordingDelivery delivery = new RecordingDelivery(DeliveryOutcome.staffHold());
+
+    OutboxDispatcher.DispatchResult result =
+        new OutboxDispatcher(worker, delivery, POLICY).dispatch("worker-1", 10, NOW);
+
+    assertThat(result.held()).isEqualTo(1);
+    assertThat(result.delivered()).isZero();
+    assertThat(result.dead()).isZero();
+    assertThat(worker.report).containsExactly("STAFF:m1");
   }
 
   @Test
