@@ -1,12 +1,7 @@
 const { getBusinesses, getPackages } = require("../../api/public.js");
 const { createError } = require("../../api/api.js");
 const { groupServices } = require("../../api/public-display.js");
-const {
-  applyTabs,
-  clearTabs,
-  ready,
-  showing,
-} = require("../../presentation/copy.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { serviceViews } = require("../../presentation/views.js");
 function present(data) {
@@ -62,7 +57,6 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
-    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadPackages();
@@ -130,7 +124,6 @@ Page({
         dataMode: result.dataMode,
         copy: result.copy || {},
       });
-      applyTabs(this, result.copy);
       this.scrollToBusiness();
     } catch (error) {
       if (version !== this._generation) return;
@@ -146,7 +139,6 @@ Page({
               ? "unavailable"
               : "error",
         });
-        clearTabs(this);
       } else
         this.update({
           loadMoreError: true,

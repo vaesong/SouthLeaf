@@ -1,11 +1,6 @@
 const booking = require("../../api/booking.js");
 const { getBrand } = require("../../api/public.js");
-const {
-  applyTabs,
-  clearTabs,
-  ready,
-  showing,
-} = require("../../presentation/copy.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const views = require("../../presentation/booking-views.js");
 const settlement = require("../../presentation/settlement.js");
@@ -74,7 +69,6 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 4 });
     }
-    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.load();
@@ -92,7 +86,6 @@ Page({
       const brand = await getBrand();
       return brand.copy || {};
     } catch (error) {
-      clearTabs(this);
       return {};
     }
   },
@@ -114,7 +107,6 @@ Page({
         status: isSessionError(error) ? "unauthenticated" : "error",
         errorMessage: "",
       });
-      if (copy.tabs) applyTabs(this, copy);
       return;
     }
     if (version !== this._generation) return;
@@ -129,7 +121,6 @@ Page({
         dataMode: response.meta.dataMode,
         status: items.length ? "success" : "empty",
       });
-      applyTabs(this, copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
@@ -138,7 +129,6 @@ Page({
         status: isSessionError(error) ? "unauthenticated" : "error",
         errorMessage: "",
       });
-      applyTabs(this, copy);
     }
   },
   handleRetryTap() {

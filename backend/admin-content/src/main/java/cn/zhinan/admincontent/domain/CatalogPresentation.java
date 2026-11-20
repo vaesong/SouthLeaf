@@ -10,11 +10,6 @@ public final class CatalogPresentation {
   public static final int MAX_LINE = 400;
   public static final List<String> KEYS =
       List.of(
-          "tabs.home",
-          "tabs.works",
-          "tabs.services",
-          "tabs.about",
-          "tabs.mine",
           "home.themesTitle",
           "home.storiesTitle",
           "home.allWorks",

@@ -4,31 +4,31 @@ Component({
     list: [
       {
         pagePath: "/pages/index/index",
-        text: "",
+        text: "首页",
         iconPath: "/static/icons/tab-home.png",
         selectedIconPath: "/static/icons/tab-home-active.png",
       },
       {
         pagePath: "/pages/works/works",
-        text: "",
+        text: "作品",
         iconPath: "/static/icons/tab-works.png",
         selectedIconPath: "/static/icons/tab-works-active.png",
       },
       {
         pagePath: "/pages/package/package",
-        text: "",
+        text: "服务",
         iconPath: "/static/icons/tab-services.png",
         selectedIconPath: "/static/icons/tab-services-active.png",
       },
       {
         pagePath: "/pages/about/about",
-        text: "",
+        text: "关于",
         iconPath: "/static/icons/tab-about.png",
         selectedIconPath: "/static/icons/tab-about-active.png",
       },
       {
         pagePath: "/pages/mine/mine",
-        text: "",
+        text: "我的",
         iconPath: "/static/icons/tab-mine.png",
         selectedIconPath: "/static/icons/tab-mine-active.png",
       },

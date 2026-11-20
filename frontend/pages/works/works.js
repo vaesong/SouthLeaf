@@ -5,12 +5,7 @@ const {
   rememberLayout,
   nextLayout,
 } = require("../../api/public-display.js");
-const {
-  applyTabs,
-  clearTabs,
-  ready,
-  showing,
-} = require("../../presentation/copy.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
 function present(data) {
@@ -92,7 +87,6 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1 });
     }
-    applyTabs(this, this.data.copy);
     const resume = this._hidden;
     this._hidden = false;
     const id = getApp().globalData.selectedBusinessId;
@@ -155,7 +149,6 @@ Page({
         dataMode: result.dataMode,
         copy: result.copy || {},
       });
-      applyTabs(this, result.copy);
     } catch (error) {
       if (version !== this._generation) return;
       if (!reset && error.code === "PUBLIC_CURSOR_EXPIRED")
@@ -170,7 +163,6 @@ Page({
               ? "unavailable"
               : "error",
         });
-        clearTabs(this);
       } else
         this.update({
           loadMoreError: true,

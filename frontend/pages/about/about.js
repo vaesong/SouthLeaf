@@ -1,11 +1,6 @@
 const { getBrand } = require("../../api/public.js");
 const { showToast } = require("../../api/api.js");
-const {
-  applyTabs,
-  clearTabs,
-  ready,
-  showing,
-} = require("../../presentation/copy.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { brandView, teamView } = require("../../presentation/views.js");
 function present(data) {
@@ -73,7 +68,6 @@ Page({
         brandLogoFailed: false,
         failedMedia: {},
       });
-      applyTabs(this, brand.copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
@@ -84,7 +78,6 @@ Page({
             ? "unavailable"
             : "error",
       });
-      clearTabs(this);
     }
   },
   callPhone() {
@@ -154,7 +147,6 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 3 });
     }
-    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadBrand();

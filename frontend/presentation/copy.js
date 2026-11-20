@@ -1,7 +1,6 @@
 "use strict";
 
 const GROUPS = [
-  "tabs",
   "home",
   "about",
   "works",
@@ -14,8 +13,6 @@ const GROUPS = [
   "settlement",
   "hero",
 ];
-const TAB_KEYS = ["home", "works", "services", "about", "mine"];
-
 const nest = (flat) => {
   const root = {};
   for (const group of GROUPS) root[group] = {};
@@ -32,24 +29,8 @@ const nest = (flat) => {
   return root;
 };
 
-const ready = (copy) => (copy && copy.tabs && copy.home ? copy : nest(null));
+const ready = (copy) => (copy && copy.home ? copy : nest(null));
 
 const showing = (status) => status === "success" || status === "empty";
 
-const applyTabs = (page, copy) => {
-  if (!page || typeof page.getTabBar !== "function") return;
-  const bar = page.getTabBar();
-  if (!bar || !bar.data || !Array.isArray(bar.data.list)) return;
-  const tabs = (copy && copy.tabs) || {};
-  bar.setData({
-    list: bar.data.list.map((item, index) => ({
-      ...item,
-      text:
-        typeof tabs[TAB_KEYS[index]] === "string" ? tabs[TAB_KEYS[index]] : "",
-    })),
-  });
-};
-
-const clearTabs = (page) => applyTabs(page, nest(null));
-
-module.exports = { nest, ready, showing, applyTabs, clearTabs };
+module.exports = { nest, ready, showing };

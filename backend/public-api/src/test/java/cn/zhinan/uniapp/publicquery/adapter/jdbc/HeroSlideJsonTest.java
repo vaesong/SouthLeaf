@@ -47,8 +47,8 @@ class HeroSlideJsonTest {
         .isInstanceOf(CatalogStorageException.class);
     assertThat(
             JdbcPublishedCatalogRepository.presentation(
-                Map.of("tabs.home", "首页", "home.signOff", "", "later.key", "保留")))
-        .containsEntry("tabs.home", "首页")
+                Map.of("home.story", "一句", "home.signOff", "", "later.key", "保留")))
+        .containsEntry("home.story", "一句")
         .containsEntry("later.key", "保留")
         .doesNotContainKey("home.signOff");
   }

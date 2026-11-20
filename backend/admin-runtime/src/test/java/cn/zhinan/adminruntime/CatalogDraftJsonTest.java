@@ -69,9 +69,10 @@ class CatalogDraftJsonTest {
     String current = JSON.writeValueAsString(CatalogDraft.empty());
     String filled =
         current.replace(
-            "\"presentation\":{}", "\"presentation\":{\"tabs.home\":\"首页\",\"home.signOff\":\"\"}");
+            "\"presentation\":{}",
+            "\"presentation\":{\"home.themesTitle\":\"主题\",\"home.signOff\":\"\"}");
     CatalogDraft draft = JSON.readValue(filled, CatalogDraft.class);
-    assertThat(draft.presentation()).containsExactly(java.util.Map.entry("tabs.home", "首页"));
+    assertThat(draft.presentation()).containsExactly(java.util.Map.entry("home.themesTitle", "主题"));
   }
 
   @Test

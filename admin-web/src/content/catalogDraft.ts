@@ -15,11 +15,6 @@ export const HERO_LIMIT = 5;
 
 /** Keep this list identical to CatalogPresentation.KEYS. Empty values render as nothing. */
 export const PRESENTATION_FIELDS = [
-  { group: "底部导航", key: "tabs.home", label: "首页" },
-  { group: "底部导航", key: "tabs.works", label: "作品" },
-  { group: "底部导航", key: "tabs.services", label: "服务" },
-  { group: "底部导航", key: "tabs.about", label: "关于" },
-  { group: "底部导航", key: "tabs.mine", label: "我的" },
   { group: "首页", key: "home.themesTitle", label: "主题栏标题" },
   { group: "首页", key: "home.storiesTitle", label: "故事栏标题" },
   { group: "首页", key: "home.allWorks", label: "全部作品" },

@@ -1,10 +1,5 @@
 const { getHome } = require("../../api/public.js");
-const {
-  applyTabs,
-  clearTabs,
-  ready,
-  showing,
-} = require("../../presentation/copy.js");
+const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { homeView } = require("../../presentation/views.js");
 const emptyHome = () => ({
@@ -84,7 +79,6 @@ Page({
         status: "success",
         failedMedia: {},
       });
-      applyTabs(this, home.copy);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
@@ -95,7 +89,6 @@ Page({
             ? "unavailable"
             : "error",
       });
-      clearTabs(this);
     }
   },
   onHeroChange(event) {
@@ -152,7 +145,6 @@ Page({
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
     }
-    applyTabs(this, this.data.copy);
     if (this._hidden) {
       this._hidden = false;
       this.loadHome();
