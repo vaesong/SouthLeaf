@@ -31,3 +31,6 @@ __pycache__/
 
 # Visual preview session. Contains a local browser key.
 /.superpowers/
+
+# Server TLS material, including the private key. Kept for upload, never committed.
+/deploy/certs/
