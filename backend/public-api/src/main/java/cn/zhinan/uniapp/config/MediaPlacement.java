@@ -1,5 +1,6 @@
 package cn.zhinan.uniapp.config;
 
+import cn.zhinan.objectstore.CosHosts;
 import cn.zhinan.objectstore.CosSigner;
 import cn.zhinan.objectstore.ObjectStoreException;
 import cn.zhinan.uniapp.media.adapter.cdn.SignedCdnMediaDelivery;
@@ -24,21 +25,32 @@ public final class MediaPlacement {
   public static final String ORIGIN = "SOUTHLEAF_MEDIA_CDN_ORIGIN";
   public static final String SECRET_ID = "SOUTHLEAF_MEDIA_COS_SECRET_ID";
   public static final String SECRET_KEY = "SOUTHLEAF_MEDIA_COS_SECRET_KEY";
+  public static final String BUCKET = "SOUTHLEAF_MEDIA_COS_BUCKET";
+  public static final String REGION = "SOUTHLEAF_MEDIA_COS_REGION";
   public static final String TTL = "SOUTHLEAF_MEDIA_URL_TTL_SECONDS";
-  private static final Set<String> CDN_KEYS = Set.of(ORIGIN, SECRET_ID, SECRET_KEY, TTL);
+  private static final Set<String> CDN_KEYS =
+      Set.of(ORIGIN, SECRET_ID, SECRET_KEY, BUCKET, REGION, TTL);
 
   private final String mode;
   private final Path root;
   private final String origin;
+  private final String signatureHost;
   private final String secretId;
   private final String secretKey;
   private final int ttlSeconds;
 
   private MediaPlacement(
-      String mode, Path root, String origin, String secretId, String secretKey, int ttlSeconds) {
+      String mode,
+      Path root,
+      String origin,
+      String signatureHost,
+      String secretId,
+      String secretKey,
+      int ttlSeconds) {
     this.mode = mode;
     this.root = root;
     this.origin = origin;
+    this.signatureHost = signatureHost;
     this.secretId = secretId;
     this.secretKey = secretKey;
     this.ttlSeconds = ttlSeconds;
@@ -52,6 +64,8 @@ public final class MediaPlacement {
             ORIGIN, text(environment, ORIGIN),
             SECRET_ID, text(environment, SECRET_ID),
             SECRET_KEY, text(environment, SECRET_KEY),
+            BUCKET, text(environment, BUCKET),
+            REGION, text(environment, REGION),
             TTL, text(environment, TTL)));
   }
 
@@ -65,11 +79,17 @@ public final class MediaPlacement {
       Path root = Path.of(rootValue);
       if (!root.isAbsolute() || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS))
         refuse("MEDIA_FILE_CONFIGURATION");
-      return new MediaPlacement("file", root, "", "", "", 0);
+      return new MediaPlacement("file", root, "", "", "", "", 0);
     }
     if (!rootValue.isBlank() || CDN_KEYS.stream().anyMatch(key -> value(env, key).isBlank()))
       refuse("MEDIA_CDN_CONFIGURATION");
     String origin = origin(value(env, ORIGIN));
+    String signatureHost;
+    try {
+      signatureHost = CosHosts.bucketHost(value(env, BUCKET), value(env, REGION));
+    } catch (ObjectStoreException invalid) {
+      throw refused("MEDIA_CDN_CONFIGURATION");
+    }
     int ttl;
     try {
       ttl = Integer.parseInt(value(env, TTL));
@@ -83,7 +103,7 @@ public final class MediaPlacement {
       refuse("MEDIA_CDN_CONFIGURATION");
     }
     return new MediaPlacement(
-        "cdn", null, origin, value(env, SECRET_ID), value(env, SECRET_KEY), ttl);
+        "cdn", null, origin, signatureHost, value(env, SECRET_ID), value(env, SECRET_KEY), ttl);
   }
 
   public boolean servesBytes() {
@@ -97,7 +117,11 @@ public final class MediaPlacement {
   public MediaDelivery delivery(Clock clock) {
     if (servesBytes()) return MediaDelivery.apiPaths();
     return new SignedCdnMediaDelivery(
-        origin, new CosSigner(secretId, secretKey), Duration.ofSeconds(ttlSeconds), clock);
+        origin,
+        signatureHost,
+        new CosSigner(secretId, secretKey),
+        Duration.ofSeconds(ttlSeconds),
+        clock);
   }
 
   private static String origin(String value) {

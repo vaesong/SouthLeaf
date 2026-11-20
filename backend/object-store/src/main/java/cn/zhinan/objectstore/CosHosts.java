@@ -1,6 +1,6 @@
 package cn.zhinan.objectstore;
 
-/** Bucket host for writes. Public reads use the CDN host, which is not derived here. */
+/** Bucket host for writes and for the host value inside a CDN read signature. */
 public final class CosHosts {
   private CosHosts() {}
 

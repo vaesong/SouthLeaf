@@ -3,6 +3,7 @@ package cn.zhinan.uniapp.media.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import cn.zhinan.objectstore.CosSigner;
 import cn.zhinan.uniapp.config.MediaPlacement;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,16 +39,26 @@ class MediaPlacementTest {
     cdn.put(MediaPlacement.ORIGIN, "https://media.example.com");
     cdn.put(MediaPlacement.SECRET_ID, "AKIDtestexample00000000000000000000");
     cdn.put(MediaPlacement.SECRET_KEY, "test-secret-key");
+    cdn.put(MediaPlacement.BUCKET, "examplebucket-1250000000");
+    cdn.put(MediaPlacement.REGION, "ap-guangzhou");
     cdn.put(MediaPlacement.TTL, "600");
     var placed = MediaPlacement.open(cdn);
     assertThat(placed.servesBytes()).isFalse();
+    String key = "ab".repeat(32) + ".jpg";
+    long now = Instant.parse("2026-11-07T00:00:00Z").getEpochSecond();
+    String bucketQuery =
+        new CosSigner("AKIDtestexample00000000000000000000", "test-secret-key")
+            .signedQuery(
+                "GET",
+                "/" + key,
+                "examplebucket-1250000000.cos.ap-guangzhou.myqcloud.com",
+                now - 60,
+                now + 600);
     String url =
         placed
             .delivery(Clock.fixed(Instant.parse("2026-11-07T00:00:00Z"), ZoneOffset.UTC))
-            .previewUrl("m1", "ab".repeat(32) + ".jpg");
-    assertThat(url)
-        .startsWith("https://media.example.com/" + "ab".repeat(32) + ".jpg?")
-        .contains("q-sign-algorithm=sha1");
+            .previewUrl("m1", key);
+    assertThat(url).isEqualTo("https://media.example.com/" + key + "?" + bucketQuery);
     assertThat(url).doesNotContain("test-secret-key");
     assertThat(placed.toString()).doesNotContain("test-secret-key");
 
