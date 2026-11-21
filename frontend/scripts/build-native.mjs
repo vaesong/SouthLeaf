@@ -65,6 +65,7 @@ try {
       (e) => "components/demo-notice/index." + e,
     ),
     ...["js", "json", "wxml", "wxss"].map((e) => "custom-tab-bar/index." + e),
+    "pages/index/brand-font.js",
     ...[
       "api/api.js",
       "api/public.js",

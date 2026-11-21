@@ -1,23 +1,17 @@
 <view class="index-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view wx:if="{{home.brand.name || home.brand.tagline}}" class="brand-strip">
-    <view>
-      <text wx:if="{{home.brand.englishName}}" class="brand-en"
-        >{{home.brand.englishName}}</text
-      >
-      <text wx:if="{{home.brand.name}}" class="brand-name"
-        >{{home.brand.name}}</text
-      >
-      <text wx:if="{{home.brand.tagline}}" class="brand-tagline"
-        >{{home.brand.tagline}}</text
-      >
+  <view wx:if="{{home.brand.name || home.brand.tagline}}" class="brand-mark">
+    <view class="mark-top">
+      <text class="mark-en">ZHI NAN</text>
+      <view class="mark-han">
+        <text>枝</text>
+        <text>南</text>
+      </view>
     </view>
-    <image
-      wx:if="{{home.brand.logoMedia}}"
-      src="{{home.brand.logoMedia.src}}"
-      mode="aspectFit"
-      class="brand-logo"
-    ></image>
+    <text class="mark-studio">摄影工作室</text>
+    <text wx:if="{{home.brand.tagline}}" class="brand-tagline"
+      >{{home.brand.tagline}}</text
+    >
   </view>
   <view
     wx:if="{{status === 'success' && home.heroItems.length}}"

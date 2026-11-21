@@ -25,39 +25,51 @@
   color: #8e5636;
   font-size: 22rpx;
 }
-.brand-strip {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 36rpx 0 12rpx;
-}
-.brand-strip > view {
+.brand-mark {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 28rpx 0 8rpx;
+  color: #1c1612;
 }
-.brand-en {
-  font-size: 20rpx;
+.mark-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.mark-en {
+  padding-left: 4rpx;
+  font-family: "Libre Bodoni", "Songti SC", "STSong", "SimSun", serif;
+  font-size: 64rpx;
+  font-weight: 700;
+  line-height: 1;
   letter-spacing: 4rpx;
-  color: #8e5636;
 }
-.brand-name {
+.mark-han {
+  display: flex;
+  flex-direction: column;
+  margin: 2rpx 0 0 8rpx;
   font-family: "Songti SC", "STSong", "SimSun", serif;
-  font-size: 44rpx;
-  letter-spacing: 8rpx;
+  font-size: 22rpx;
   font-weight: 600;
-  margin-top: 6rpx;
+  line-height: 1.05;
+}
+.mark-studio {
+  margin-top: 12rpx;
+  padding-left: 12rpx;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 12rpx;
 }
 .brand-tagline {
+  margin-top: 16rpx;
   font-size: 22rpx;
-  letter-spacing: 2rpx;
+  line-height: 1.65;
+  letter-spacing: 1rpx;
   color: #75685b;
-  margin-top: 8rpx;
-}
-.brand-logo {
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 50%;
-  background: #ffffff;
+  text-align: center;
 }
 .hero-wrap {
   margin-top: 12rpx;

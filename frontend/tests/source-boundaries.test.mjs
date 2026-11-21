@@ -58,6 +58,23 @@ test("every page that renders the demo notice declares the component", () => {
   }
 });
 
+test("home header centers the studio mark instead of the brand name", () => {
+  const wxml = text("pages/index/index.wxml");
+  assert.match(wxml, /class="brand-mark"/);
+  assert.match(wxml, />ZHI NAN</);
+  assert.match(wxml, />摄影工作室</);
+  assert.match(wxml, /home\.brand\.tagline/);
+  assert.doesNotMatch(wxml, /brand\.englishName|brand-logo/);
+  assert.match(text("app.js"), /family: "Libre Bodoni"/);
+  const font = text("pages/index/brand-font.js");
+  const encoded = font.match(/data:font\/ttf;base64,([A-Za-z0-9+/=]+)/);
+  assert.ok(encoded, "subset font");
+  assert.equal(
+    Buffer.from(encoded[1], "base64").subarray(0, 4).toString("hex"),
+    "00010000",
+  );
+});
+
 test("active static source declares only the approved PNGs", () => {
   const names = fs.readdirSync(new URL("static/icons/", root)).sort();
   assert.equal(names.length, 10);
