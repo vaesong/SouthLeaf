@@ -1,0 +1,32 @@
+<view wx:if="{{show}}">
+  <view class="mask {{lift ? 'lift' : ''}}" bindtap="onDismiss"></view>
+  <view class="sheet {{lift ? 'lift' : ''}}">
+    <view class="handle"></view>
+    <text class="eyebrow">你的样子</text>
+    <text class="title">{{title}}</text>
+    <button
+      wx:if="{{askAvatar}}"
+      class="chooser"
+      hover-class="none"
+      open-type="chooseAvatar"
+      bindchooseavatar="onChooseAvatar"
+    >
+      <image wx:if="{{preview}}" class="avatar" src="{{preview}}" mode="aspectFill" />
+      <view wx:else class="avatar placeholder">+</view>
+      <text class="chooser-label">{{avatarLabel}}</text>
+    </button>
+    <view wx:if="{{askName}}" class="field">
+      <text class="label">用户名</text>
+      <input
+        class="{{nameEmpty ? 'empty' : ''}}"
+        type="nickname"
+        placeholder="未填写"
+        placeholder-class="placeholder-text"
+        value="{{draftName}}"
+        bindinput="onName"
+        bindblur="onName"
+      />
+    </view>
+    <button class="save" hover-class="none" disabled="{{!ready}}" bindtap="onSave">保存</button>
+  </view>
+</view>

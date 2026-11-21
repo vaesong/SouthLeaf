@@ -152,4 +152,14 @@
       >{{copy.booking.mineEntry}}</view
     >
   </block>
+  <profile-sheet
+    show="{{sheetOpen}}"
+    nickname="{{sheetNickname}}"
+    has-avatar="{{sheetHasAvatar}}"
+    avatar-src="{{sheetAvatarSrc}}"
+    ask-name="{{askName}}"
+    ask-avatar="{{askAvatar}}"
+    bind:save="onProfileSave"
+    bind:dismiss="onProfileDismiss"
+  />
 </view>

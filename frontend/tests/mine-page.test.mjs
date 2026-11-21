@@ -56,7 +56,7 @@ function page(route, ports = {}) {
     wx,
     getApp: () => app,
     require(id) {
-      if (id === "../../api/booking.js") return ports;
+      if (id === "../../api/user.js") return ports;
       return createRequire(file)(id);
     },
   });
@@ -93,13 +93,13 @@ const ok = (data) => ({
   },
   requestId: "req_1",
 });
-const profile = {
-  token: "signed-token-0000",
-  customerRef: "cust_0001",
-  displayName: "微信用户 3F2A19",
-  expiresAt: "2026-10-25T02:00:00Z",
-  identity: "WECHAT",
-};
+const person = (extra = {}) => ({
+  displayName: "南北",
+  displayLabel: "南北",
+  hasAvatar: true,
+  shortId: "3F2A19",
+  ...extra,
+});
 const pending = {
   reservationId: "66666666-7777-4888-8999-000000000001",
   status: "PENDING_CONFIRMATION",
@@ -127,16 +127,22 @@ const confirmed = {
   },
 };
 
-const ready = (items) => ({
-  currentSession: async () => profile,
-  getRequests: async () => ok({ items }),
+const ready = (items, profile = person()) => ({
+  profile: async () => ({ data: profile }),
+  reservations: async () => ok({ items }),
+  saveProfile: async (patch) => ({
+    ...profile,
+    displayName: patch.displayName || profile.displayName,
+    displayLabel: patch.displayName || profile.displayLabel,
+    hasAvatar: Boolean(patch.avatarPath) || profile.hasAvatar,
+  }),
 });
 
 test("我的页面列出本人预约，并复用统一的标签与金额口径", async () => {
   const host = page("mine/mine", ready([pending, confirmed]));
   await host.load();
   assert.equal(host.data.status, "success");
-  assert.equal(host.data.identityLabel, "微信用户 3F2A19");
+  assert.equal(host.data.identityLabel, "南北");
   assert.equal(host.data.cards.length, 2);
   assert.equal(host.data.cards[0].statusLabel, "待确认");
   assert.equal(host.data.cards[1].statusLabel, "已确认");
@@ -166,17 +172,18 @@ test("没有订单的申请不提供支付动作", async () => {
   assert.equal(modals.length, 0);
 });
 
-test("拿不到身份时给出可恢复的空态，而不是通用失败", async () => {
+test("资料读失败时停在可恢复的错误态，不弹出卡片", async () => {
   const host = page("mine/mine", {
-    currentSession: async () => {
-      throw Object.assign(new Error("需要先登录"), {
-        code: "BOOKING_IDENTITY_REJECTED",
+    profile: async () => {
+      throw Object.assign(new Error("请重新进入小程序"), {
+        code: "USER_SESSION_REQUIRED",
       });
     },
-    getRequests: async () => ok({ items: [] }),
+    reservations: async () => ok({ items: [] }),
   });
   await host.load();
-  assert.equal(host.data.status, "unauthenticated");
+  assert.equal(host.data.status, "error");
+  assert.equal(host.data.sheetOpen, false);
   assert.equal(host.data.cards.length, 0);
 });
 
@@ -184,6 +191,68 @@ test("列表为空时提示还没有提交过申请", async () => {
   const host = page("mine/mine", ready([]));
   await host.load();
   assert.equal(host.data.status, "empty");
+  assert.equal(host.data.sheetOpen, false);
+});
+
+test("缺头像或用户名时我的弹出卡片，点上方可以关上", async () => {
+  const unnamed = person({
+    displayName: null,
+    displayLabel: "微信用户 3F2A19",
+    hasAvatar: false,
+  });
+  const host = page("mine/mine", ready([], unnamed));
+  await host.load();
+  assert.equal(host.data.sheetOpen, true);
+  assert.equal(host.data.askName, true);
+  assert.equal(host.data.askAvatar, true);
+  assert.equal(host.data.nickname, "");
+  assert.equal(host.data.identityLabel, "微信用户 3F2A19");
+  host.onProfileDismiss();
+  assert.equal(host.data.sheetOpen, false);
+  await host.load();
+  assert.equal(host.data.sheetOpen, false);
+  host.onHide();
+  await host.load();
+  assert.equal(host.data.sheetOpen, true);
+});
+
+test("两项都有时不再自动弹出，页面只留一个用户名", async () => {
+  const host = page("mine/mine", ready([]));
+  await host.load();
+  assert.equal(host.data.sheetOpen, false);
+  assert.equal(host.data.nickname, "南北");
+  host.handleProfileTap();
+  assert.equal(host.data.sheetOpen, true);
+  assert.equal(host.data.askName, true);
+  assert.equal(host.data.askAvatar, true);
+  const markup = fs.readFileSync(
+    new URL("../pages/mine/mine.wxml", import.meta.url),
+    "utf8",
+  );
+  assert.equal(markup.includes("以后再说"), false);
+  assert.equal(markup.includes("头像从微信里选"), false);
+  assert.equal(markup.includes('type="nickname"'), false);
+  assert.match(markup, /wx:if="\{\{showIdentity && nickname\}\}"/);
+  assert.match(markup, /wx:elif="\{\{showIdentity && identityLabel\}\}"/);
+});
+
+test("只缺一项时卡片只问那一项，保存后关上", async () => {
+  const saved = [];
+  const profile = person({ hasAvatar: false });
+  const host = page("mine/mine", {
+    profile: async () => ({ data: profile }),
+    reservations: async () => ok({ items: [] }),
+    saveProfile: async (patch) => {
+      saved.push(patch);
+      return { ...profile, hasAvatar: true };
+    },
+  });
+  await host.load();
+  assert.equal(host.data.askName, false);
+  assert.equal(host.data.askAvatar, true);
+  await host.onProfileSave({ detail: { displayName: "", avatarPath: "wxfile://a.jpg" } });
+  assert.equal(JSON.stringify(saved), JSON.stringify([{ avatarPath: "wxfile://a.jpg" }]));
+  assert.equal(host.data.sheetOpen, false);
 });
 
 test("卡片进入详情走既有的 requestdetail 路由", async () => {

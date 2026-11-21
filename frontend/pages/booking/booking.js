@@ -1,4 +1,6 @@
 const booking = require("../../api/booking.js");
+const userApi = require("../../api/user.js");
+const { gaps } = require("../../user/profile.js");
 const { getBrand } = require("../../api/public.js");
 const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
@@ -126,6 +128,12 @@ Page({
     studioPhone: "",
     studioWechat: "",
     copy: {},
+    sheetOpen: false,
+    askName: false,
+    askAvatar: false,
+    sheetNickname: "",
+    sheetHasAvatar: false,
+    sheetAvatarSrc: "",
   }),
   update(patch) {
     commit(this, present, patch);
@@ -310,7 +318,65 @@ Page({
     this.update({ selectedSlotId: slotId, error: "" });
   },
   handleSubmitTap() {
-    this.submit();
+    return this.guardSubmit();
+  },
+  async guardSubmit() {
+    if (!this.data.selectedSlotId || this.data.submitting || this.data.sheetOpen || this._savingProfile)
+      return;
+    let profile;
+    try {
+      profile = (await userApi.profile()).data;
+    } catch (error) {
+      wx.showToast({ title: "资料没有读到", icon: "none" });
+      return;
+    }
+    const gap = gaps(profile);
+    if (!gap.complete) {
+      this.update({
+        sheetOpen: true,
+        askName: gap.askName,
+        askAvatar: gap.askAvatar,
+        sheetNickname: gap.nickname,
+        sheetHasAvatar: gap.hasAvatar,
+        sheetAvatarSrc: "",
+      });
+      return;
+    }
+    await this.submit();
+  },
+  async onProfileSave(event) {
+    if (this._savingProfile) return;
+    const detail = (event && event.detail) || {};
+    const patch = {};
+    if (detail.avatarPath) patch.avatarPath = detail.avatarPath;
+    if (this.data.askName) patch.displayName = (detail.displayName || "").trim();
+    if (this.data.askName && !patch.displayName) return;
+    if (this.data.askAvatar && !patch.avatarPath && !this.data.sheetHasAvatar) return;
+    this._savingProfile = true;
+    try {
+      const profile = await userApi.saveProfile(patch);
+      const gap = gaps(profile);
+      if (!gap.complete) {
+        this.update({
+          sheetOpen: true,
+          askName: gap.askName,
+          askAvatar: gap.askAvatar,
+          sheetNickname: gap.nickname,
+          sheetHasAvatar: gap.hasAvatar,
+        });
+        wx.showToast({ title: "没有保存", icon: "none" });
+        return;
+      }
+      this.update({ sheetOpen: false });
+      await this.submit();
+    } catch (error) {
+      wx.showToast({ title: "没有保存", icon: "none" });
+    } finally {
+      this._savingProfile = false;
+    }
+  },
+  onProfileDismiss() {
+    this.update({ sheetOpen: false });
   },
   handleRetryTap() {
     this.load();

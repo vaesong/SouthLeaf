@@ -64,6 +64,9 @@ try {
     ...["js", "json", "wxml", "wxss"].map(
       (e) => "components/demo-notice/index." + e,
     ),
+    ...["js", "json", "wxml", "wxss"].map(
+      (e) => "components/profile-sheet/index." + e,
+    ),
     ...["js", "json", "wxml", "wxss"].map((e) => "custom-tab-bar/index." + e),
     "pages/index/brand-font.js",
     ...[
@@ -72,6 +75,7 @@ try {
       "api/user.js",
       "api/booking.js",
       "user/track.js",
+      "user/profile.js",
       "api/public-display.js",
       "presentation/views.js",
       "presentation/copy.js",

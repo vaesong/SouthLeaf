@@ -32,10 +32,6 @@
   width: 104rpx;
   height: 104rpx;
 }
-.nickname-input {
-  margin-top: 8rpx;
-  font-size: 26rpx;
-}
 .welcome-title {
   display: block;
   font-family: "Songti SC", "STSong", "SimSun", serif;

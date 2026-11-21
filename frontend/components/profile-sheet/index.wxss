@@ -1,0 +1,124 @@
+.mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  background: rgba(38, 32, 27, 0.46);
+}
+.mask.lift,
+.sheet.lift {
+  bottom: 168rpx;
+}
+.sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 41;
+  padding: 20rpx 44rpx calc(36rpx + env(safe-area-inset-bottom));
+  background: #fffdf9;
+  border-radius: 48rpx 48rpx 0 0;
+}
+.sheet.lift {
+  padding-bottom: 36rpx;
+}
+.handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 8rpx auto 28rpx;
+  background: #e6dccf;
+  border-radius: 8rpx;
+}
+.eyebrow {
+  display: block;
+  color: #8e5636;
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+}
+.title {
+  display: block;
+  margin: 12rpx 0 8rpx;
+  color: #26201b;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 44rpx;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.chooser {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+  width: 100%;
+  margin: 36rpx 0 8rpx;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+  line-height: 1.4;
+}
+.chooser::after,
+.save::after {
+  border: none;
+}
+.avatar {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+}
+.avatar.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e5636;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 56rpx;
+  background: #f5eae1;
+  border: 1rpx dashed #e0cbb8;
+}
+.chooser-label {
+  color: #26201b;
+  font-size: 30rpx;
+}
+.field {
+  margin-top: 28rpx;
+}
+.label {
+  display: block;
+  margin-bottom: 8rpx;
+  color: #a39688;
+  font-size: 24rpx;
+}
+.field input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0;
+  color: #26201b;
+  font-size: 32rpx;
+  text-align: left;
+  background: transparent;
+  border-bottom: 1rpx solid #e6dccf;
+}
+.field input.empty {
+  color: #a39688;
+}
+.placeholder-text {
+  color: #a39688;
+}
+.save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 88rpx;
+  margin-top: 40rpx;
+  color: #fff6ec;
+  font-size: 30rpx;
+  line-height: 1;
+  background: #26201b;
+  border-radius: 999rpx;
+}
+.save[disabled] {
+  color: #ffffff;
+  background: #d9cfc4;
+}

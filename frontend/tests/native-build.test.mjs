@@ -17,6 +17,7 @@ const sources = [
   "components",
   "custom-tab-bar",
   "presentation",
+  "user",
   "static",
   "config",
 ];

@@ -87,6 +87,12 @@ const uploadAvatar = (filePath) =>
     });
   });
 
+const saveProfile = async (patch = {}) => {
+  if (patch.avatarPath) await uploadAvatar(patch.avatarPath);
+  if (typeof patch.displayName === "string") return (await rename(patch.displayName)).data;
+  return (await profile()).data;
+};
+
 const recordVisit = (page, options = {}) =>
   post(
     "/api/v1/public/users/visits",
@@ -117,6 +123,7 @@ module.exports = {
   profile,
   reservations,
   rename,
+  saveProfile,
   uploadAvatar,
   recordVisit,
   createShare,

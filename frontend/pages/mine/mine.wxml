@@ -12,27 +12,18 @@
   <view
     wx:if="{{copy.mine.welcome || identityLabel}}"
     class="profile-welcome-card"
+    bindtap="handleProfileTap"
   >
-    <button class="profile-avatar-box" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+    <view class="profile-avatar-box">
       <image wx:if="{{avatarSrc}}" class="profile-avatar-image" src="{{avatarSrc}}" mode="aspectFill" />
       <text wx:else>{{identityInitial || '你'}}</text>
-    </button>
+    </view>
     <view>
       <text wx:if="{{copy.mine.welcome}}" class="welcome-title"
         >{{copy.mine.welcome}}</text
       >
-      <text wx:if="{{showIdentity && identityLabel}}" class="welcome-name"
-        >{{identityLabel}}</text
-      >
-      <text wx:if="{{shortId}}" class="hint">{{shortId}}</text>
-      <input
-        wx:if="{{showIdentity}}"
-        class="nickname-input"
-        type="nickname"
-        placeholder="填写昵称"
-        value="{{nickname}}"
-        bindblur="onNickname"
-      />
+      <text wx:if="{{showIdentity && nickname}}" class="welcome-name">{{nickname}}</text>
+      <text wx:elif="{{showIdentity && identityLabel}}" class="welcome-name">{{identityLabel}}</text>
     </view>
   </view>
   <view
@@ -108,4 +99,15 @@
       >
     </view>
   </block>
+  <profile-sheet
+    show="{{sheetOpen}}"
+    lift="{{true}}"
+    nickname="{{nickname}}"
+    has-avatar="{{hasAvatar}}"
+    avatar-src="{{avatarSrc}}"
+    ask-name="{{askName}}"
+    ask-avatar="{{askAvatar}}"
+    bind:save="onProfileSave"
+    bind:dismiss="onProfileDismiss"
+  />
 </view>

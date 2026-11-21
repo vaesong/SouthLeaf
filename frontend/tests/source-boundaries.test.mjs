@@ -5,7 +5,8 @@ const root = new URL("../", import.meta.url);
 const text = (file) => fs.readFileSync(new URL(file, root), "utf8");
 const routes = JSON.parse(text("app.json")).pages;
 test("runtime is exclusively native App/Page/Component with no parallel framework source", () => {
-  assert.match(text("app.js"), /^App\(/);
+  assert.match(text("app.js"), /App\(\{/);
+  assert.doesNotMatch(text("app.js"), /\buni\.|Vue|\$vm/);
   assert.match(text("components/demo-notice/index.js"), /^Component\(/);
   for (const r of routes) {
     assert.match(text(r + ".js"), /Page\(\{/);

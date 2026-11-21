@@ -1,4 +1,5 @@
 const userApi = require("../../api/user.js");
+const { gaps } = require("../../user/profile.js");
 const { getBrand } = require("../../api/public.js");
 const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
@@ -10,6 +11,7 @@ function present(data) {
     views.requestCard(request, data.copy),
   );
   const profile = data.profile || null;
+  const gap = gaps(profile);
   const label = profile && profile.displayLabel ? profile.displayLabel : "";
   return {
     ...data,
@@ -17,10 +19,13 @@ function present(data) {
     copy: ready(data.copy),
     identityLabel: label,
     identityInitial: label ? String(label).slice(0, 1) : "你",
-    nickname: profile && profile.displayName ? profile.displayName : "",
-    shortId: profile && !profile.named ? profile.shortId : "",
+    nickname: gap.nickname,
+    hasAvatar: gap.hasAvatar,
     avatarSrc: data.avatarSrc || "",
     showIdentity: ["success", "empty"].includes(data.status),
+    sheetOpen: Boolean(data.sheetOpen),
+    askName: Boolean(data.askName),
+    askAvatar: Boolean(data.askAvatar),
     settlementLabel: settlement.settlementLabel(),
     orderCount: cards.filter((card) => card.hasOrder).length,
   };
@@ -39,6 +44,10 @@ Page({
     settlementLabel: "",
     errorMessage: "",
     dataMode: "",
+    sheetOpen: false,
+    askName: false,
+    askAvatar: false,
+    hasAvatar: false,
   }),
   update(patch) {
     commit(this, present, patch);
@@ -51,6 +60,7 @@ Page({
   },
   onHide() {
     this._hidden = true;
+    this._sheetDismissed = false;
     this._generation++;
   },
   onUnload() {
@@ -98,12 +108,21 @@ Page({
         requests: [],
         copy,
         status: "error",
+        sheetOpen: false,
         errorMessage: "",
       });
       return;
     }
     if (version !== this._generation) return;
-    this.update({ profile, copy });
+    const gap = gaps(profile);
+    const sheetOpen = !gap.complete && !this._sheetDismissed;
+    this.update({
+      profile,
+      copy,
+      sheetOpen,
+      askName: sheetOpen ? gap.askName : false,
+      askAvatar: sheetOpen ? gap.askAvatar : false,
+    });
     if (profile.hasAvatar) this.loadAvatar();
     try {
       const response = await userApi.reservations();
@@ -143,24 +162,40 @@ Page({
       },
     });
   },
-  async onChooseAvatar(event) {
-    const filePath = event.detail && event.detail.avatarUrl;
-    if (!filePath) return;
+  async onProfileSave(event) {
+    const detail = (event && event.detail) || {};
+    const patch = {};
+    if (detail.avatarPath) patch.avatarPath = detail.avatarPath;
+    if (this.data.askName) patch.displayName = (detail.displayName || "").trim();
+    if (this.data.askName && !patch.displayName) return;
+    if (this.data.askAvatar && !patch.avatarPath && !this.data.hasAvatar) return;
     try {
-      await userApi.uploadAvatar(filePath);
-      this.update({ avatarSrc: filePath });
+      const profile = await userApi.saveProfile(patch);
+      const gap = gaps(profile);
+      this._sheetDismissed = gap.complete;
+      this.update({
+        profile,
+        sheetOpen: !gap.complete,
+        askName: gap.complete ? false : gap.askName,
+        askAvatar: gap.complete ? false : gap.askAvatar,
+        avatarSrc: patch.avatarPath || this.data.avatarSrc,
+      });
     } catch (error) {
-      wx.showToast({ title: "这张头像无法使用", icon: "none" });
+      wx.showToast({ title: "没有保存", icon: "none" });
     }
   },
-  async onNickname(event) {
-    const value = event.detail && event.detail.value ? event.detail.value : "";
-    try {
-      const profile = (await userApi.rename(value)).data;
-      this.update({ profile });
-    } catch (error) {
-      wx.showToast({ title: "昵称没有保存", icon: "none" });
-    }
+  onProfileDismiss() {
+    this._sheetDismissed = true;
+    this.update({ sheetOpen: false });
+  },
+  handleProfileTap() {
+    if (!this.data.profile) return;
+    const gap = gaps(this.data.profile);
+    this.update({
+      sheetOpen: true,
+      askName: gap.complete || gap.askName,
+      askAvatar: gap.complete || gap.askAvatar,
+    });
   },
   handleRetryTap() {
     this.load();

@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "demo-notice": "../../components/demo-notice/index"
+    "demo-notice": "../../components/demo-notice/index",
+    "profile-sheet": "../../components/profile-sheet/index"
   },
   "navigationBarTitleText": "预约",
   "enablePullDownRefresh": true

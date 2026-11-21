@@ -60,6 +60,7 @@ function page(route, ports = {}) {
     getApp: () => app,
     require(id) {
       if (id === "../../api/booking.js") return ports;
+      if (id === "../../api/user.js" && ports.userApi) return ports.userApi;
       return createRequire(file)(id);
     },
   });
@@ -338,4 +339,111 @@ test("hide clears the booking page so stale slots never republish", async () => 
   host.onUnload();
   host.update({ status: "success" });
   assert.equal(host.commits, commits);
+});
+
+test("看档期不读取用户信息，缺资料时提交先出卡片", async () => {
+  const calls = [];
+  let reads = 0;
+  const userApi = {
+    profile: async () => {
+      reads += 1;
+      return { data: { displayName: "", hasAvatar: false, displayLabel: "微信用户 ABCDEF" } };
+    },
+    saveProfile: async () => {
+      throw new Error("还不到保存");
+    },
+  };
+  const host = page("booking/booking", {
+    getPackages: async () => packages(),
+    getSlots: async () => slotPage(),
+    createRequest: async () => {
+      calls.push("create");
+      return ok(pending);
+    },
+    userApi,
+  });
+  host.onLoad();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(reads, 0);
+  assert.equal(host.data.status, "success");
+  host.handleSlotTap({ currentTarget: { dataset: { slot: slot.slotId } } });
+  await host.guardSubmit();
+  assert.equal(reads, 1);
+  assert.equal(calls.length, 0);
+  assert.equal(host.data.sheetOpen, true);
+  assert.equal(host.data.askName, true);
+  assert.equal(host.data.askAvatar, true);
+  host.onProfileDismiss();
+  assert.equal(host.data.sheetOpen, false);
+  assert.equal(calls.length, 0);
+});
+
+test("头像和用户名都保存之后才提交申请", async () => {
+  const calls = [];
+  const saved = [];
+  let profile = { displayName: "南北", hasAvatar: false, displayLabel: "南北" };
+  const host = page("booking/booking", {
+    getPackages: async () => packages(),
+    getSlots: async () => slotPage(),
+    createRequest: async () => {
+      calls.push("create");
+      return ok(pending);
+    },
+    userApi: {
+      profile: async () => ({ data: profile }),
+      saveProfile: async (patch) => {
+        saved.push(patch);
+        profile = {
+          displayName: patch.displayName || profile.displayName,
+          displayLabel: patch.displayName || profile.displayLabel,
+          hasAvatar: true,
+        };
+        return profile;
+      },
+    },
+  });
+  navigations = [];
+  host.onLoad();
+  await new Promise((resolve) => setImmediate(resolve));
+  host.handleSlotTap({ currentTarget: { dataset: { slot: slot.slotId } } });
+  await host.guardSubmit();
+  assert.equal(calls.length, 0);
+  assert.equal(host.data.askName, false);
+  assert.equal(host.data.askAvatar, true);
+  await host.onProfileSave({ detail: { avatarPath: "wxfile://a.jpg", displayName: "" } });
+  assert.equal(JSON.stringify(saved), JSON.stringify([{ avatarPath: "wxfile://a.jpg" }]));
+  assert.equal(calls.length, 1);
+  assert.equal(host.data.sheetOpen, false);
+  assert.equal(
+    navigations[0],
+    "/pages/booking/requestdetail?reservationId=" + pending.reservationId,
+  );
+});
+
+test("资料读不到时不提交申请", async () => {
+  const calls = [];
+  const toasts = [];
+  const previousToast = wx.showToast;
+  wx.showToast = (options) => toasts.push(options.title);
+  const host = page("booking/booking", {
+    getPackages: async () => packages(),
+    getSlots: async () => slotPage(),
+    createRequest: async () => {
+      calls.push("create");
+      return ok(pending);
+    },
+    userApi: {
+      profile: async () => {
+        throw Object.assign(new Error("请重新进入小程序"), { code: "USER_SESSION_REQUIRED" });
+      },
+    },
+  });
+  host.onLoad();
+  await new Promise((resolve) => setImmediate(resolve));
+  host.handleSlotTap({ currentTarget: { dataset: { slot: slot.slotId } } });
+  await host.guardSubmit();
+  assert.equal(calls.length, 0);
+  assert.equal(host.data.sheetOpen, false);
+  assert.equal(toasts.at(-1), "资料没有读到");
+  wx.showToast = previousToast;
 });
