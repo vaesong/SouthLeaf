@@ -36,9 +36,18 @@ export interface UserDetail {
   visits: UserVisit[];
 }
 
+export interface UserCensus {
+  total: number;
+  seenToday: number;
+  unnamed: number;
+  withReservation: number;
+  shared: number;
+}
+
 export interface UserList {
   users: UserSummary[];
   nextCursor: string | null;
+  census: UserCensus;
 }
 
 export interface SharePerson {
@@ -52,7 +61,7 @@ export interface ShareChain {
   id: string;
   page: string;
   contentId: string | null;
-  chain: { id: string; userId: string; createdAt: string }[];
+  chain: { id: string; userId: string; name: string; page: string; createdAt: string }[];
   opens: SharePerson[];
   forwards: SharePerson[];
 }
@@ -92,7 +101,15 @@ export class AdminUserApi {
     const suffix = queryText ? `?${queryText}` : "";
     const response = await this.send(`${BASE}/users${suffix}`, { method: "GET" });
     const envelope = await this.readJson<UserList>(response);
-    if (envelope.code !== "OK" || !Array.isArray(envelope.data?.users)) {
+    const census = envelope.data?.census;
+    if (
+      envelope.code !== "OK" ||
+      !Array.isArray(envelope.data?.users) ||
+      !census ||
+      [census.total, census.seenToday, census.unnamed, census.withReservation, census.shared].some(
+        (count) => typeof count !== "number",
+      )
+    ) {
       throw new UserApiError(
         502,
         "INVALID_USER_RESPONSE",

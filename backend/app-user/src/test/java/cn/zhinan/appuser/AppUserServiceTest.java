@@ -11,6 +11,7 @@ import cn.zhinan.appuser.AppUserModels.StoredReservation;
 import cn.zhinan.appuser.AppUserModels.StoredShare;
 import cn.zhinan.appuser.AppUserModels.StoredUser;
 import cn.zhinan.appuser.AppUserModels.StoredVisit;
+import cn.zhinan.appuser.AppUserModels.UserCensus;
 import cn.zhinan.appuser.AppUserModels.UserPage;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +45,22 @@ class AppUserServiceTest {
     other = service.rename(other.id(), "同名", NOW);
     service.rename(first.id(), "同名", NOW);
     assertThat(service.reservations(other.id(), NOW)).isEmpty();
+  }
+
+  @Test
+  void censusCountsTheWholeListRatherThanOnePage() {
+    MemoryStore store = new MemoryStore();
+    AppUserService service = new AppUserService(store, SCOPE);
+    StoredUser named = service.login("openid-a", NOW);
+    service.rename(named.id(), "南北", NOW);
+    service.login("openid-b", NOW.minus(Duration.ofDays(2)));
+    service.share(named.id(), "pages/index/index", null, null, null, NOW);
+    UserCensus census = service.census(NOW);
+    assertThat(census.total()).isEqualTo(2);
+    assertThat(census.seenToday()).isEqualTo(1);
+    assertThat(census.unnamed()).isEqualTo(1);
+    assertThat(census.withReservation()).isEqualTo(1);
+    assertThat(census.shared()).isEqualTo(1);
   }
 
   @Test
@@ -383,6 +400,36 @@ class AppUserServiceTest {
     @Override
     public Counts counts(String userId) {
       return new Counts(0, 0, 0);
+    }
+
+    @Override
+    public UserCensus census(Instant todayStart) {
+      int seen =
+          (int)
+              users.values().stream()
+                  .filter(user -> !user.lastSeenAt().isBefore(todayStart))
+                  .count();
+      int unnamed =
+          (int)
+              users.values().stream()
+                  .filter(user -> user.displayName() == null || user.displayName().isBlank())
+                  .count();
+      int reserved =
+          (int)
+              users.values().stream()
+                  .filter(
+                      user ->
+                          !reservations(
+                                  user.provider(), user.appScope(), user.fingerprint(), todayStart)
+                              .isEmpty())
+                  .count();
+      int shared =
+          (int)
+              users.values().stream()
+                  .filter(
+                      user -> shares.stream().anyMatch(share -> share.userId().equals(user.id())))
+                  .count();
+      return new UserCensus(users.size(), seen, unnamed, reserved, shared);
     }
 
     @Override

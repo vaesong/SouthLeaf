@@ -8,6 +8,7 @@ import cn.zhinan.appuser.AppUserModels.StoredReservation;
 import cn.zhinan.appuser.AppUserModels.StoredShare;
 import cn.zhinan.appuser.AppUserModels.StoredUser;
 import cn.zhinan.appuser.AppUserModels.StoredVisit;
+import cn.zhinan.appuser.AppUserModels.UserCensus;
 import cn.zhinan.appuser.AppUserModels.UserPage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -316,6 +317,31 @@ public final class JdbcAppUserStore implements Store {
             + " occurred_at FROM share_card s JOIN app_user u ON u.id = s.user_id WHERE"
             + " s.parent_card_id = ? ORDER BY s.created_at, s.id",
         shareId);
+  }
+
+  @Override
+  public UserCensus census(Instant todayStart) {
+    return read(
+        () -> {
+          UserCensus census =
+              jdbc.queryForObject(
+                  "SELECT (SELECT COUNT(*) FROM app_user), (SELECT COUNT(*) FROM app_user WHERE"
+                      + " last_seen_at >= ?), (SELECT COUNT(*) FROM app_user WHERE display_name IS"
+                      + " NULL OR display_name = ''), (SELECT COUNT(DISTINCT u.id) FROM app_user u"
+                      + " JOIN booking_external_identity i ON i.provider = u.provider AND"
+                      + " i.app_scope = u.app_scope AND i.subject_fingerprint = u.subject_fingerprint"
+                      + " JOIN booking_reservation r ON r.customer_id = i.customer_id), (SELECT"
+                      + " COUNT(DISTINCT user_id) FROM share_card)",
+                  (rows, row) ->
+                      new UserCensus(
+                          rows.getInt(1),
+                          rows.getInt(2),
+                          rows.getInt(3),
+                          rows.getInt(4),
+                          rows.getInt(5)),
+                  stamp(todayStart));
+          return census == null ? new UserCensus(0, 0, 0, 0, 0) : census;
+        });
   }
 
   @Override

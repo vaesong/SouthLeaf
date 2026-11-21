@@ -60,6 +60,10 @@ public final class AppUserModels {
 
   public record Counts(int visits, int shares, int forwards) {}
 
+  /** Whole-list totals. These stay correct after the visible page is only a slice. */
+  public record UserCensus(
+      int total, int seenToday, int unnamed, int withReservation, int shared) {}
+
   public record UserPage(List<StoredUser> users, Instant nextSeenAt, String nextId) {}
 
   public interface Store {
@@ -105,6 +109,8 @@ public final class AppUserModels {
     List<ShareParticipant> forwards(String shareId);
 
     Counts counts(String userId);
+
+    UserCensus census(Instant todayStart);
 
     int[] purge(Instant cutoff);
   }

@@ -8,8 +8,10 @@ import cn.zhinan.appuser.AppUserModels.StoredReservation;
 import cn.zhinan.appuser.AppUserModels.StoredShare;
 import cn.zhinan.appuser.AppUserModels.StoredUser;
 import cn.zhinan.appuser.AppUserModels.StoredVisit;
+import cn.zhinan.appuser.AppUserModels.UserCensus;
 import cn.zhinan.appuser.AppUserModels.UserPage;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -172,6 +174,15 @@ public final class AppUserService {
 
   public UserPage list(String query, Instant cursorSeen, String cursorId) {
     return store.listUsers(AppUserRules.searchQuery(query), cursorSeen, cursorId, PAGE);
+  }
+
+  public UserCensus census(Instant now) {
+    Instant start =
+        now.atZone(ZoneId.of("Asia/Shanghai"))
+            .toLocalDate()
+            .atStartOfDay(ZoneId.of("Asia/Shanghai"))
+            .toInstant();
+    return store.census(start);
   }
 
   public List<StoredVisit> visits(String userId) {

@@ -6,6 +6,7 @@ import {
   formatDateTime,
   formatPackagePrice,
   formatRelative,
+  formatSeen,
   greeting,
   mediaStatusLabel,
   notificationIntentLabel,
@@ -22,6 +23,12 @@ describe("beijing display formatting", () => {
   it("formats a date and weekday clock in Beijing time", () => {
     expect(formatDate("2026-11-02T08:00:00Z")).toBe("11 月 2 日");
     expect(formatDateTime("2026-11-02T08:00:00Z")).toBe("11 月 2 日 周一 16:00");
+  });
+
+  it("describes the last visit as today, yesterday, or a date", () => {
+    expect(formatSeen("2026-11-01T06:30:00Z", noonBeijing)).toBe("今天 14:30");
+    expect(formatSeen("2026-10-31T06:30:00Z", noonBeijing)).toBe("昨天 14:30");
+    expect(formatSeen("2026-10-29T06:30:00Z", noonBeijing)).toBe("10 月 29 日 14:30");
   });
 
   it("describes expiry as today, tomorrow, or hours", () => {

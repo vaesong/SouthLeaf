@@ -37,6 +37,18 @@ export function formatClock(value: string): string {
   return `${pad(parts.hour)}:${pad(parts.minute)}`;
 }
 
+/** Last-seen phrase: today, yesterday, or the Beijing date and clock. */
+export function formatSeen(value: string, now = new Date()): string {
+  const parts = beijingParts(value);
+  const today = beijingParts(now);
+  if (!parts || !today) return "时间待定";
+  const clock = `${pad(parts.hour)}:${pad(parts.minute)}`;
+  if (sameCalendarDay(parts, today)) return `今天 ${clock}`;
+  const yesterday = beijingParts(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+  if (yesterday && sameCalendarDay(parts, yesterday)) return `昨天 ${clock}`;
+  return `${parts.month} 月 ${parts.day} 日 ${clock}`;
+}
+
 /** Expiry relative to now, always in Beijing calendar days. */
 function sameCalendarDay(
   left: NonNullable<ReturnType<typeof beijingParts>>,

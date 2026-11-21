@@ -10,6 +10,7 @@ import cn.zhinan.appuser.AppUserModels.StoredReservation;
 import cn.zhinan.appuser.AppUserModels.StoredShare;
 import cn.zhinan.appuser.AppUserModels.StoredUser;
 import cn.zhinan.appuser.AppUserModels.StoredVisit;
+import cn.zhinan.appuser.AppUserModels.UserCensus;
 import cn.zhinan.appuser.AppUserModels.UserPage;
 import cn.zhinan.appuser.AppUserRules;
 import cn.zhinan.appuser.AppUserService;
@@ -71,9 +72,18 @@ class AdminUserController {
                   position == null ? null : position.id());
           String next =
               page.nextSeenAt() == null ? null : page.nextSeenAt().toString() + "_" + page.nextId();
+          UserCensus census = users.census(clock.instant());
           return ok(
               requestId,
-              new UserList(page.users().stream().map(AdminUserController::summary).toList(), next));
+              new UserList(
+                  page.users().stream().map(AdminUserController::summary).toList(),
+                  next,
+                  new CensusView(
+                      census.total(),
+                      census.seenToday(),
+                      census.unnamed(),
+                      census.withReservation(),
+                      census.shared())));
         });
   }
 
@@ -149,7 +159,7 @@ class AdminUserController {
                   card.id(),
                   card.page(),
                   card.contentId(),
-                  chain.stream().map(AdminUserController::shareHop).toList(),
+                  chain.stream().map(this::shareHop).toList(),
                   users.opens(shareId).stream().map(AdminUserController::person).toList(),
                   users.forwards(shareId).stream().map(AdminUserController::person).toList()));
         });
@@ -200,8 +210,18 @@ class AdminUserController {
         visit.occurredAt().toString());
   }
 
-  private static ShareHop shareHop(StoredShare share) {
-    return new ShareHop(share.id(), share.userId(), share.createdAt().toString());
+  private ShareHop shareHop(StoredShare share) {
+    String name = "还没有昵称";
+    try {
+      StoredUser sender = users.profile(share.userId());
+      if (sender.displayName() != null && !sender.displayName().isBlank()) {
+        name = sender.displayName();
+      }
+    } catch (AppUserException missing) {
+      name = "还没有昵称";
+    }
+    return new ShareHop(
+        share.id(), share.userId(), name, share.page(), share.createdAt().toString());
   }
 
   private static PersonView person(ShareParticipant person) {
@@ -317,7 +337,9 @@ class AdminUserController {
 
   record ErrorEnvelope(String code, String message, String requestId) {}
 
-  record UserList(List<UserSummary> users, String nextCursor) {}
+  record UserList(List<UserSummary> users, String nextCursor, CensusView census) {}
+
+  record CensusView(int total, int seenToday, int unnamed, int withReservation, int shared) {}
 
   record UserSummary(
       String id,
@@ -357,7 +379,7 @@ class AdminUserController {
       List<PersonView> opens,
       List<PersonView> forwards) {}
 
-  record ShareHop(String id, String userId, String createdAt) {}
+  record ShareHop(String id, String userId, String name, String page, String createdAt) {}
 
   record PersonView(String userId, String displayLabel, String shortId, String occurredAt) {}
 }
