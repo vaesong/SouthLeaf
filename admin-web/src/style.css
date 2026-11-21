@@ -2032,8 +2032,21 @@ button.upload {
   font-size: 24px;
   line-height: 1.2;
 }
+.booking {
+  cursor: pointer;
+}
 .booking .who b {
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.record-id {
+  display: block;
+  margin-bottom: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  word-break: break-all;
 }
 .booking .who small {
   display: block;
@@ -2137,6 +2150,12 @@ button.slot:disabled {
   flex-wrap: wrap;
   gap: 8px 14px;
   margin: 12px 0;
+}
+.pick-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
 }
 
 /* 通知 & 发布记录 */

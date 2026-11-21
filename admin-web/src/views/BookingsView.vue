@@ -11,6 +11,7 @@ import {
   type ReservationDetail,
   type ReservationSummary,
 } from "../bookings/api";
+import StatusChip from "../components/StatusChip.vue";
 import {
   beijingParts,
   formatClock,
@@ -47,7 +48,9 @@ const cards = ref<
     id: string;
     title: string;
     source: string;
+    status: string;
     expiresAt: string;
+    createdAt: string;
     startAt: string | null;
   }>
 >([]);
@@ -326,7 +329,9 @@ async function decorate(list: ReservationSummary[]) {
       id: item.id,
       title,
       source: reservationSourceLabel(item.source),
+      status: item.status,
       expiresAt: item.expiresAt,
+      createdAt: item.createdAt,
       startAt,
     });
   }
@@ -339,7 +344,42 @@ function shootParts(value: string | null) {
 }
 
 function slotOption(slot: OpenSlot) {
-  return `${formatDateTime(slot.startAt)} – ${formatClock(slot.endAt)}`;
+  return `${formatClock(slot.startAt)}–${formatClock(slot.endAt)}`;
+}
+
+function slotGroups(list: OpenSlot[]) {
+  const groups: Array<{ label: string; slots: OpenSlot[] }> = [];
+  for (const slot of list) {
+    const parts = beijingParts(slot.startAt);
+    const label = parts ? `${parts.month}月${parts.day}日 ${parts.weekday}` : "时间待定";
+    const last = groups[groups.length - 1];
+    if (last?.label === label) last.slots.push(slot);
+    else groups.push({ label, slots: [slot] });
+  }
+  return groups;
+}
+
+function statusTone(status: string) {
+  if (status === "CONFIRMED" || status === "ACTIVE") return "live" as const;
+  if (status === "PENDING_CONFIRMATION") return "warn" as const;
+  if (status === "CANCELLED" || status === "REJECTED" || status === "EXPIRED") return "off" as const;
+  return "draft" as const;
+}
+
+const detailWhen = computed(() => {
+  const start = order.value?.snapshot.startAt;
+  if (start) return formatDateTime(start);
+  if (!detail.value) return "";
+  return slotTime(detail.value.reservation.slotId);
+});
+
+async function copyReservationId(id: string) {
+  try {
+    await navigator.clipboard.writeText(id);
+    notice.value = "编号已复制，可以贴到查找框。";
+  } catch {
+    notice.value = "复制失败，请手动选择下面的编号。";
+  }
 }
 
 const detailIsPending = computed(() => detail.value?.reservation.status === "PENDING_CONFIRMATION");
@@ -364,7 +404,7 @@ onMounted(() => void refreshPending());
     <div class="page-head">
       <div>
         <h1>预约处理</h1>
-        <p>先回复还在等你确认的客人。本阶段不收款。</p>
+        <p>先处理还在等回复的预约。查以前的单子时，贴上完整编号。本阶段不收款。</p>
       </div>
       <div class="actions">
         <form class="search" @submit.prevent="lookup()">
@@ -386,17 +426,21 @@ onMounted(() => void refreshPending());
         </form>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab on" type="button">
-        待确认<span class="n">{{ pending.length }}</span>
-      </button>
-    </div>
     <p v-if="notice" class="alert-line" role="alert">{{ notice }}</p>
     <p v-if="!canRead">缺少预约查阅能力</p>
     <template v-else>
       <section class="card" style="margin-bottom: 18px">
+        <div class="card-head">
+          <h2>待确认</h2>
+          <p>{{ pending.length }} 单还在等回复</p>
+        </div>
         <div v-if="cards.length === 0" class="card-pad">目前没有待确认预约。</div>
-        <div v-for="card in cards" :key="card.id" class="booking">
+        <div
+          v-for="card in cards"
+          :key="card.id"
+          class="booking"
+          @click="selectReservation(card.id)"
+        >
           <div class="date-box">
             <template v-if="shootParts(card.startAt)">
               <small>{{ shootParts(card.startAt)?.month }} 月</small>
@@ -408,44 +452,52 @@ onMounted(() => void refreshPending());
             </template>
             <template v-else>
               <small>时间</small>
-              <b style="font-size: 16px">待定</b>
+              <b style="font-size: 16px">待安排</b>
             </template>
           </div>
           <div class="who">
-            <b>{{ card.title }}</b>
-            <small>预约编号 {{ tailNumber(card.id) }} · {{ formatRelative(card.expiresAt) }}</small>
+            <b>{{ card.title }} <StatusChip :tone="statusTone(card.status)" :text="reservationStatusLabel(card.status)" /></b>
+            <small>{{ card.source }} · {{ formatDateTime(card.createdAt) }} 提交</small>
+            <small>{{ tailNumber(card.id) }} · {{ formatRelative(card.expiresAt) }}</small>
           </div>
           <div class="acts">
-            <button class="btn btn-primary btn-sm" type="button" @click="selectReservation(card.id)">
+            <button
+              class="btn btn-primary btn-sm"
+              type="button"
+              @click.stop="selectReservation(card.id)"
+            >
               处理
             </button>
           </div>
         </div>
       </section>
-      <section v-if="detail" class="card card-pad detail-section" style="margin-top: 18px">
-        <h2>预约详情</h2>
+      <section v-if="detail" class="card detail-section" style="margin-top: 18px">
+        <div class="card-head">
+          <h2>{{ detailWhen || "时间待安排" }}</h2>
+          <p>{{ reservationStatusLabel(detail.reservation.status) }} · {{ reservationSourceLabel(detail.reservation.source) }}</p>
+        </div>
+        <div class="card-pad">
         <dl>
           <div>
             <dt>预约编号</dt>
-            <dd>{{ tailNumber(detail.reservation.id) }}</dd>
-          </div>
-          <div>
-            <dt>状态</dt>
-            <dd>{{ reservationStatusLabel(detail.reservation.status) }}</dd>
-          </div>
-          <div>
-            <dt>来源</dt>
-            <dd>{{ reservationSourceLabel(detail.reservation.source) }}</dd>
-          </div>
-          <div>
-            <dt>拍摄时间</dt>
             <dd>
-              {{ slotTime(detail.reservation.slotId) }}
+              <span class="record-id">{{ detail.reservation.id }}</span>
+              <button
+                class="btn btn-secondary btn-sm"
+                type="button"
+                @click="copyReservationId(detail.reservation.id)"
+              >
+                复制编号
+              </button>
             </dd>
           </div>
           <div>
             <dt>提交时间</dt>
             <dd>{{ formatDateTime(detail.reservation.createdAt) }}</dd>
+          </div>
+          <div>
+            <dt>保留到</dt>
+            <dd>{{ formatDateTime(detail.reservation.expiresAt) }} · {{ formatRelative(detail.reservation.expiresAt) }}</dd>
           </div>
         </dl>
         <div v-if="detail.assignments.length">
@@ -470,9 +522,11 @@ onMounted(() => void refreshPending());
               class="select"
               :disabled="busy"
             >
-              <option v-for="slot in confirmSlots" :key="slot.id" :value="slot.id">
-                {{ slotOption(slot) }}
-              </option>
+              <optgroup v-for="group in slotGroups(confirmSlots)" :key="group.label" :label="group.label">
+                <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
+                  {{ slotOption(slot) }}
+                </option>
+              </optgroup>
             </select>
             <button
               v-if="confirmSlots.length"
@@ -531,9 +585,11 @@ onMounted(() => void refreshPending());
               class="select"
               :disabled="busy"
             >
-              <option v-for="slot in slots" :key="slot.id" :value="slot.id">
-                {{ slotOption(slot) }}
-              </option>
+              <optgroup v-for="group in slotGroups(slots)" :key="group.label" :label="group.label">
+                <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
+                  {{ slotOption(slot) }}
+                </option>
+              </optgroup>
             </select>
             <button
               v-if="slots.length"
@@ -545,6 +601,7 @@ onMounted(() => void refreshPending());
               {{ busy ? "处理中…" : "确认改期" }}
             </button>
           </template>
+        </div>
         </div>
       </section>
       <section
@@ -565,6 +622,10 @@ onMounted(() => void refreshPending());
           <div>
             <dt>状态</dt>
             <dd>{{ reservationStatusLabel(order.lifecycle) }}</dd>
+          </div>
+          <div>
+            <dt>记录金额</dt>
+            <dd>{{ order.snapshot.currencyCode }} {{ order.snapshot.amountMinorUnits }}</dd>
           </div>
         </dl>
         <ol v-if="order.revisions.length" class="revision-list">

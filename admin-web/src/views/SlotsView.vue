@@ -159,6 +159,50 @@ function isoDate(date: Date) {
   return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
 
+function dayKey(date: Date) {
+  const parts = beijingParts(date);
+  if (!parts) return 0;
+  return parts.year * 10000 + parts.month * 100 + parts.day;
+}
+
+function isBeforeToday(date: Date) {
+  const today = beijingParts(new Date());
+  if (!today) return false;
+  return dayKey(date) < today.year * 10000 + today.month * 100 + today.day;
+}
+
+function shortDate(date: Date) {
+  const parts = beijingParts(date);
+  if (!parts) return "";
+  return `${parts.month}月${parts.day}日`;
+}
+
+const weekRange = computed(() => {
+  const first = days.value[0];
+  const last = days.value[6];
+  if (!first || !last) return "";
+  return `${shortDate(first)} – ${shortDate(last)}`;
+});
+
+const onThisWeek = computed(
+  () => cursor.value.getTime() === startOfWeek(new Date()).getTime(),
+);
+
+const slotMinutes = computed(() => currentRule.value?.rules?.slotDurationMinutes ?? 120);
+
+function setAllTimes(on: boolean) {
+  selectedTimes.value = on ? [...START_TIMES] : [];
+}
+
+function selectSpacedTimes() {
+  const step = Math.max(1, Math.ceil(slotMinutes.value / 60));
+  selectedTimes.value = START_TIMES.filter((_, index) => index % step === 0);
+}
+
+function setAllDates(on: boolean) {
+  selectedDates.value = on ? days.value.map(isoDate).filter((date) => date) : [];
+}
+
 function toggle(list: string[], value: string) {
   const next = list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
   next.sort();
@@ -230,8 +274,8 @@ async function openCell(date: Date, time: string) {
     openError.value = "请先设置预约规则";
     return;
   }
+  if (isBeforeToday(date)) return;
   const day = isoDate(date);
-  if (!window.confirm(`开放 ${day} ${time}？`)) return;
   openBusy.value = true;
   openError.value = "";
   try {
@@ -255,17 +299,32 @@ async function openThisWeek() {
     openError.value = "先勾选要重复的开始时间。";
     return;
   }
-  const dates = days.value.map(isoDate).filter((date) => date);
+  const dates = days.value
+    .filter((day) => !isBeforeToday(day))
+    .map(isoDate)
+    .filter((date) => date);
+  if (dates.length === 0) {
+    openError.value = "这一周已经过去了，请切到后面的一周。";
+    return;
+  }
+  const count = dates.length * selectedTimes.value.length;
+  if (
+    !window.confirm(
+      `开放 ${dates.length} 天、每天 ${selectedTimes.value.length} 个开始时间，一共 ${count} 个？已经开过或重叠的会跳过。`,
+    )
+  )
+    return;
   openBusy.value = true;
   openError.value = "";
   try {
     const items = await slotsApi.openWeek(dates, selectedTimes.value, newBookingIdempotencyKey());
+    const opened = items.filter((item) => item.ok).length;
     const failed = items.filter((item) => !item.ok);
-    if (failed.length === 0) openNotice.value = "这一周已按勾选的时间开放";
-    else
-      openError.value = failed
-        .map((item) => `${item.date} ${item.startTime}：${slotFailureText(item.reason)}`)
-        .join("；");
+    if (failed.length === 0) openNotice.value = `已开放 ${opened} 个时段`;
+    else {
+      const reasons = [...new Set(failed.map((item) => slotFailureText(item.reason)))];
+      openError.value = `开放了 ${opened} 个，跳过 ${failed.length} 个：${reasons.join("、")}`;
+    }
     await load();
   } catch (error) {
     openError.value = error instanceof Error ? error.message : "档期暂时无法开放。";
@@ -398,10 +457,13 @@ onMounted(async () => {
     <div class="page-head">
       <div>
         <h1>档期安排</h1>
-        <p>点空格子开放一个时段。绿色是客人可以约的时间。</p>
+        <p>{{ weekRange }}。点空格子开放一个时段，绿色是客人可以约的时间。</p>
       </div>
       <div class="actions">
         <button class="btn btn-secondary btn-sm" type="button" @click="shift(-7)">上一周</button>
+        <button class="btn btn-secondary btn-sm" type="button" :disabled="onThisWeek" @click="cursor = startOfWeek(new Date()); load()">
+          本周
+        </button>
         <button class="btn btn-secondary btn-sm" type="button" @click="shift(7)">下一周</button>
         <button
           class="btn btn-accent btn-sm"
@@ -419,7 +481,16 @@ onMounted(async () => {
     <p v-if="!canRead" class="alert-line">当前账号不能查看档期。</p>
     <p v-if="errorText" class="alert-line" role="alert">{{ errorText }}</p>
     <div v-if="canWriteSlots" class="card card-pad" style="margin-bottom: 18px">
-      <p class="hint">勾选常用开始时间，一次开放到当前这一周。已经开过或重叠的格子会跳过。</p>
+      <p class="hint">
+        勾选开始时间，一次开放到这一周还没过去的日子。一档 {{ slotMinutes }} 分钟，挨得太近的开始时间会重叠并跳过。
+      </p>
+      <div class="pick-tools">
+        <button class="btn btn-secondary btn-sm" type="button" @click="setAllTimes(true)">全选</button>
+        <button class="btn btn-secondary btn-sm" type="button" @click="setAllTimes(false)">清空</button>
+        <button class="btn btn-secondary btn-sm" type="button" @click="selectSpacedTimes">
+          按时长隔开
+        </button>
+      </div>
       <div class="time-picks">
         <label v-for="time in START_TIMES" :key="time" class="check">
           <input
@@ -468,10 +539,11 @@ onMounted(async () => {
               v-else
               class="slot empty"
               type="button"
-              :disabled="!canWriteSlots || openBusy || !currentRule?.configured"
+              :disabled="!canWriteSlots || openBusy || !currentRule?.configured || isBeforeToday(day)"
+              :aria-label="isBeforeToday(day) ? '已过去' : `开放 ${isoDate(day)} ${time}`"
               @click="openCell(day, time)"
             >
-              开放
+              {{ isBeforeToday(day) ? "" : "+" }}
             </button>
           </div>
         </template>
@@ -524,6 +596,10 @@ onMounted(async () => {
         </div>
         <div v-else class="field">
           <label>这一周的哪几天</label>
+          <div class="pick-tools">
+            <button class="btn btn-secondary btn-sm" type="button" @click="setAllDates(true)">全选</button>
+            <button class="btn btn-secondary btn-sm" type="button" @click="setAllDates(false)">清空</button>
+          </div>
           <label v-for="day in days" :key="day.toISOString()" class="check">
             <input
               type="checkbox"
@@ -535,6 +611,13 @@ onMounted(async () => {
         </div>
         <div class="field">
           <label>开始时间</label>
+          <div v-if="openMode === 'week'" class="pick-tools">
+            <button class="btn btn-secondary btn-sm" type="button" @click="setAllTimes(true)">全选</button>
+            <button class="btn btn-secondary btn-sm" type="button" @click="setAllTimes(false)">清空</button>
+            <button class="btn btn-secondary btn-sm" type="button" @click="selectSpacedTimes">
+              按时长隔开
+            </button>
+          </div>
           <label v-for="time in START_TIMES" :key="time" class="check">
             <input
               v-if="openMode === 'week'"
