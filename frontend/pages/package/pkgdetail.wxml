@@ -3,7 +3,7 @@
   <view class="detail-topbar">
     <text bindtap="handleGoBackTap" class="round-btn">‹</text>
     <button
-      wx:if="{{copy.packageDetail.share}}"
+      wx:if="{{status === 'success' && copy.packageDetail.share}}"
       open-type="share"
       class="share-button"
     >

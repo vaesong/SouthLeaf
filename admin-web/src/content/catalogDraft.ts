@@ -13,7 +13,7 @@ export const FEATURED_LIMIT = 3;
 export const FEATURED_WORK_LIMIT = 6;
 export const HERO_LIMIT = 5;
 
-/** Keep this list identical to CatalogPresentation.KEYS. Empty values render as nothing. */
+/** Keep this list identical to CatalogPresentation.KEYS. Empty values keep the mini program's built-in sentence. */
 export const PRESENTATION_FIELDS = [
   { group: "首页", key: "home.themesTitle", label: "主题栏标题" },
   { group: "首页", key: "home.storiesTitle", label: "故事栏标题" },

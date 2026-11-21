@@ -259,7 +259,7 @@ test("confirmed request renders the agreement and the settlement notice", () => 
       }),
   });
   host.update({ request: { ...pending, displayStatus: "CONFIRMED", order } });
-  assert.equal(host.data.statusLabel, "");
+  assert.equal(host.data.statusLabel, "已确认");
   assert.equal(host.data.hasOrder, true);
   assert.equal(host.data.order.amountLabel, "JP¥12,345");
   assert.match(host.data.order.settlementNotice, /不收款/);

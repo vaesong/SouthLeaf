@@ -23,6 +23,7 @@ globalThis.wx = {
 const api = require("../api/api.js");
 const mapped = require("../api/public.js");
 const display = require("../api/public-display.js");
+const { nest } = require("../presentation/copy.js");
 const media = (id = "a") => ({
   id,
   previewUrl: `/api/v1/public/media/${id}/preview/content`,
@@ -334,13 +335,25 @@ test("confirmed prices gain a yuan mark without rewriting inquiry copy", () => {
     display.priceLabel({ priceType: "FIXED", displayPrice: "价格待确认" }),
     "价格待确认",
   );
-  assert.equal(display.priceLabel({ priceType: "INQUIRY" }), "");
+  assert.equal(display.priceLabel({ priceType: "INQUIRY" }), "价格请询");
   assert.equal(
-    display.priceLabel({ priceType: "INQUIRY" }, { priceInquiry: "价格请询" }),
-    "价格请询",
+    display.priceLabel({ priceType: "INQUIRY" }, { priceInquiry: "面议" }),
+    "面议",
   );
-  assert.equal(display.priceLabel({ priceType: "FROM", displayPrice: "" }), "");
-  assert.equal(display.priceLabel({}), "");
+  assert.equal(
+    display.priceLabel({ priceType: "FROM", displayPrice: "" }),
+    "起价以确认资料为准",
+  );
+  assert.equal(display.priceLabel({}), "价格待公布");
+});
+test("interface sentences keep defaults until a published line replaces one", () => {
+  const defaults = nest(null);
+  assert.equal(defaults.home.themesTitle, "拍摄主题");
+  assert.equal(defaults.mine.menuBooking, "预约咨询");
+  assert.equal(defaults.packageDetail.durationLabel, "参考时长（分钟）");
+  const replaced = nest({ "home.themesTitle": "本期主题", "mine.title": "" });
+  assert.equal(replaced.home.themesTitle, "本期主题");
+  assert.equal(replaced.mine.title, "我的预约");
 });
 test("gallery uses validated detail media without substituting summary covers", () => {
   const a = { id: "a", src: "a.png" };

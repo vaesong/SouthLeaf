@@ -7,15 +7,24 @@ const yuanLabel = (value, fallback) => {
   return `¥${text}`;
 };
 
-const priceLine = (lines, key) =>
-  lines && typeof lines[key] === "string" ? lines[key] : "";
+const priceLine = (lines, key, fallback) => {
+  const value = lines && lines[key];
+  return typeof value === "string" && value ? value : fallback;
+};
 const priceLabel = (pkg = {}, lines = {}) => {
-  if (pkg.priceType === "INQUIRY") return priceLine(lines, "priceInquiry");
+  if (pkg.priceType === "INQUIRY")
+    return priceLine(lines, "priceInquiry", "价格请询");
   if (pkg.priceType === "FROM")
-    return yuanLabel(pkg.displayPrice, priceLine(lines, "priceFromMissing"));
+    return yuanLabel(
+      pkg.displayPrice,
+      priceLine(lines, "priceFromMissing", "起价以确认资料为准"),
+    );
   if (pkg.priceType === "FIXED")
-    return yuanLabel(pkg.displayPrice, priceLine(lines, "priceFixedMissing"));
-  return priceLine(lines, "priceUnpublished");
+    return yuanLabel(
+      pkg.displayPrice,
+      priceLine(lines, "priceFixedMissing", "价格以确认资料为准"),
+    );
+  return priceLine(lines, "priceUnpublished", "价格待公布");
 };
 
 const groupServices = (businesses = [], packages = []) =>

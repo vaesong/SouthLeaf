@@ -1,6 +1,9 @@
 <view class="about-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view wx:if="{{copy.about.title || copy.about.summary}}" class="page-intro">
+  <view
+    wx:if="{{status === 'success' && (copy.about.title || copy.about.summary)}}"
+    class="page-intro"
+  >
     <text class="eyebrow">ABOUT US</text>
     <text wx:if="{{copy.about.title}}" class="page-title"
       >{{copy.about.title}}</text

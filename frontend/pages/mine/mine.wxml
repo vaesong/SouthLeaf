@@ -13,7 +13,7 @@
     wx:if="{{copy.mine.welcome || identityLabel}}"
     class="profile-welcome-card"
   >
-    <view class="profile-avatar-box">{{identityInitial}}</view>
+    <view class="profile-avatar-box">{{identityInitial || '你'}}</view>
     <view>
       <text wx:if="{{copy.mine.welcome}}" class="welcome-title"
         >{{copy.mine.welcome}}</text

@@ -42,16 +42,17 @@ const mapMedia = (input) => {
         : "";
     if (!origin || typeof url !== "string" || !url.startsWith(origin + "/"))
       invalid();
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch {
-      invalid();
-    }
+    // 模块参数里的 URL 会挡住构造器，真机的脚本环境也不提供可用的 URL。
+    // 只接受「图片域名 + /64位哈希.后缀 + 签名查询」这一种地址。
+    const rest = url.slice(origin.length);
+    const queryAt = rest.indexOf("?");
+    const pathname = queryAt === -1 ? rest : rest.slice(0, queryAt);
+    const search = queryAt === -1 ? "" : rest.slice(queryAt + 1);
     if (
-      parsed.origin !== origin ||
-      !/^\/[0-9a-f]{64}\.(jpg|png)$/.test(parsed.pathname) ||
-      !parsed.search.includes("q-sign-algorithm=sha1")
+      pathname.includes("#") ||
+      search.includes("#") ||
+      !/^\/[0-9a-f]{64}\.(jpg|png)$/.test(pathname) ||
+      !search.includes("q-sign-algorithm=sha1")
     )
       invalid();
     return url;

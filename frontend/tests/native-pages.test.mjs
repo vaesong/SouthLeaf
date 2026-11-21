@@ -261,5 +261,7 @@ test("placeholder QR is never presented as a confirmed scannable account", () =>
     qrCodeStatus: "PLACEHOLDER",
     qrCodeMedia: { src: "demo" },
   });
-  assert.equal(toasts.length, 1);
+  assert.equal(previews, 0);
+  assert.equal(toasts.length, 2);
+  assert.match(toasts[1].title, /演示占位/);
 });

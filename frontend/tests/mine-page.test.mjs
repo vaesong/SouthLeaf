@@ -138,8 +138,8 @@ test("我的页面列出本人预约，并复用统一的标签与金额口径",
   assert.equal(host.data.status, "success");
   assert.equal(host.data.identityLabel, "微信用户 3F2A19");
   assert.equal(host.data.cards.length, 2);
-  assert.equal(host.data.cards[0].statusLabel, "");
-  assert.equal(host.data.cards[1].statusLabel, "");
+  assert.equal(host.data.cards[0].statusLabel, "待确认");
+  assert.equal(host.data.cards[1].statusLabel, "已确认");
   assert.equal(host.data.cards[1].order.amountLabel, "JP¥12,345");
   assert.equal(host.data.orderCount, 1);
 });

@@ -1,87 +1,144 @@
 <view class="works-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view class="page-intro">
-    <text class="eyebrow">PORTFOLIO</text>
-    <view class="title-row">
-      <text wx:if="{{copy.works.title}}" class="page-title"
-        >{{copy.works.title}}</text
+  <block wx:if="{{status === 'success' || status === 'empty'}}">
+    <view class="page-intro">
+      <text class="eyebrow">PORTFOLIO</text>
+      <view class="title-row">
+        <text wx:if="{{copy.works.title}}" class="page-title"
+          >{{copy.works.title}}</text
+        >
+        <view class="title-actions">
+          <button
+            aria-label="{{sortLabel}}"
+            aria-expanded="{{showSortMenu}}"
+            bindtap="handleShowSortMenuTap"
+            class="sort-toggle"
+          >
+            <text>{{sortLabel}}</text>
+            <view class="sort-caret"></view>
+          </button>
+          <button
+            aria-label="{{layoutLabel}}"
+            bindtap="handleCycleLayoutTap"
+            class="layout-toggle"
+          >
+            <text class="layout-icon">▦</text>{{layoutLabel}}<text
+              class="chevron"
+              >↻</text
+            >
+          </button>
+          <view wx:if="{{showSortMenu}}" class="sort-popover">
+            <button
+              data-arg0="{{'newest'}}"
+              bindtap="handleSelectSortTap"
+              class="sort-choice {{sort === 'newest' ? 'selected' : ''}}"
+            >
+              {{copy.works.sortNewest}}<text
+                >{{sort === 'newest' ? '✓' : ''}}</text
+              >
+            </button>
+            <button
+              data-arg0="{{'oldest'}}"
+              bindtap="handleSelectSortTap2"
+              class="sort-choice {{sort === 'oldest' ? 'selected' : ''}}"
+            >
+              {{copy.works.sortOldest}}<text
+                >{{sort === 'oldest' ? '✓' : ''}}</text
+              >
+            </button>
+          </view>
+        </view>
+      </view>
+      <text wx:if="{{copy.works.summary}}" class="page-summary"
+        >{{copy.works.summary}}</text
       >
-      <view class="title-actions">
-        <button
-          aria-label="{{sortLabel}}"
-          aria-expanded="{{showSortMenu}}"
-          bindtap="handleShowSortMenuTap"
-          class="sort-toggle"
+    </view>
+    <view
+      wx:if="{{showSortMenu}}"
+      bindtap="handleShowSortMenuTap2"
+      class="sort-dismiss"
+    ></view>
+    <scroll-view
+      scroll-x="{{true}}"
+      show-scrollbar="{{false}}"
+      class="filter-row"
+    >
+      <view
+        data-arg0="{{''}}"
+        bindtap="handleSelectFilterTap"
+        class="filter-chip {{selectedBusinessId === '' ? 'active' : ''}}"
+        >{{copy.works.all}}</view
+      >
+      <view
+        wx:for="{{businesses}}"
+        wx:for-item="business"
+        wx:for-index="index"
+        data-arg0="{{business.id}}"
+        bindtap="handleSelectFilterTap2"
+        wx:key="id"
+        class="filter-chip {{selectedBusinessId === business.id ? 'active' : ''}}"
+        >{{business.name}}</view
+      >
+    </scroll-view>
+    <view wx:if="{{works.length && layout === 'grid'}}" class="waterfall">
+      <view class="waterfall-col">
+        <view
+          wx:for="{{leftCol}}"
+          wx:for-item="work"
+          wx:key="id"
+          data-arg0="{{work.id}}"
+          bindtap="handleOpenWorkTap"
+          class="work-item"
         >
-          <text>{{sortLabel}}</text>
-          <view class="sort-caret"></view>
-        </button>
-        <button
-          aria-label="{{layoutLabel}}"
-          bindtap="handleCycleLayoutTap"
-          class="layout-toggle"
+          <image
+            wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
+            src="{{work.coverMedia.src}}"
+            mode="widthFix"
+            data-arg0="{{work.id}}"
+            binderror="handleMarkMediaFailedError"
+          ></image>
+          <view wx:else class="media-empty"></view>
+          <view class="work-copy">
+            <text wx:if="{{work.businessLabels.length}}" class="work-category"
+              >{{work.businessLabel}}</text
+            >
+            <text wx:if="{{work.title}}" class="work-title"
+              >{{work.title}}</text
+            >
+          </view>
+        </view>
+      </view>
+      <view class="waterfall-col">
+        <view
+          wx:for="{{rightCol}}"
+          wx:for-item="work"
+          wx:key="id"
+          data-arg0="{{work.id}}"
+          bindtap="handleOpenWorkTap"
+          class="work-item"
         >
-          <text class="layout-icon">▦</text>{{layoutLabel}}<text class="chevron"
-            >↻</text
-          >
-        </button>
-        <view wx:if="{{showSortMenu}}" class="sort-popover">
-          <button
-            data-arg0="{{'newest'}}"
-            bindtap="handleSelectSortTap"
-            class="sort-choice {{sort === 'newest' ? 'selected' : ''}}"
-          >
-            {{copy.works.sortNewest}}<text
-              >{{sort === 'newest' ? '✓' : ''}}</text
+          <image
+            wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
+            src="{{work.coverMedia.src}}"
+            mode="widthFix"
+            data-arg0="{{work.id}}"
+            binderror="handleMarkMediaFailedError"
+          ></image>
+          <view wx:else class="media-empty"></view>
+          <view class="work-copy">
+            <text wx:if="{{work.businessLabels.length}}" class="work-category"
+              >{{work.businessLabel}}</text
             >
-          </button>
-          <button
-            data-arg0="{{'oldest'}}"
-            bindtap="handleSelectSortTap2"
-            class="sort-choice {{sort === 'oldest' ? 'selected' : ''}}"
-          >
-            {{copy.works.sortOldest}}<text
-              >{{sort === 'oldest' ? '✓' : ''}}</text
+            <text wx:if="{{work.title}}" class="work-title"
+              >{{work.title}}</text
             >
-          </button>
+          </view>
         </view>
       </view>
     </view>
-    <text wx:if="{{copy.works.summary}}" class="page-summary"
-      >{{copy.works.summary}}</text
-    >
-  </view>
-  <view
-    wx:if="{{showSortMenu}}"
-    bindtap="handleShowSortMenuTap2"
-    class="sort-dismiss"
-  ></view>
-  <scroll-view
-    scroll-x="{{true}}"
-    show-scrollbar="{{false}}"
-    class="filter-row"
-  >
-    <view
-      data-arg0="{{''}}"
-      bindtap="handleSelectFilterTap"
-      class="filter-chip {{selectedBusinessId === '' ? 'active' : ''}}"
-      >{{copy.works.all}}</view
-    >
-    <view
-      wx:for="{{businesses}}"
-      wx:for-item="business"
-      wx:for-index="index"
-      data-arg0="{{business.id}}"
-      bindtap="handleSelectFilterTap2"
-      wx:key="id"
-      class="filter-chip {{selectedBusinessId === business.id ? 'active' : ''}}"
-      >{{business.name}}</view
-    >
-  </scroll-view>
-  <view wx:if="{{works.length && layout === 'grid'}}" class="waterfall">
-    <view class="waterfall-col">
+    <view wx:elif="{{works.length}}" class="works-list layout-editorial">
       <view
-        wx:for="{{leftCol}}"
+        wx:for="{{works}}"
         wx:for-item="work"
         wx:key="id"
         data-arg0="{{work.id}}"
@@ -91,7 +148,7 @@
         <image
           wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
           src="{{work.coverMedia.src}}"
-          mode="widthFix"
+          mode="aspectFill"
           data-arg0="{{work.id}}"
           binderror="handleMarkMediaFailedError"
         ></image>
@@ -104,70 +161,20 @@
         </view>
       </view>
     </view>
-    <view class="waterfall-col">
-      <view
-        wx:for="{{rightCol}}"
-        wx:for-item="work"
-        wx:key="id"
-        data-arg0="{{work.id}}"
-        bindtap="handleOpenWorkTap"
-        class="work-item"
-      >
-        <image
-          wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
-          src="{{work.coverMedia.src}}"
-          mode="widthFix"
-          data-arg0="{{work.id}}"
-          binderror="handleMarkMediaFailedError"
-        ></image>
-        <view wx:else class="media-empty"></view>
-        <view class="work-copy">
-          <text wx:if="{{work.businessLabels.length}}" class="work-category"
-            >{{work.businessLabel}}</text
-          >
-          <text wx:if="{{work.title}}" class="work-title">{{work.title}}</text>
-        </view>
-      </view>
-    </view>
-  </view>
-  <view wx:elif="{{works.length}}" class="works-list layout-editorial">
     <view
-      wx:for="{{works}}"
-      wx:for-item="work"
-      wx:key="id"
-      data-arg0="{{work.id}}"
-      bindtap="handleOpenWorkTap"
-      class="work-item"
+      wx:if="{{(status === 'success' || status === 'empty') && !works.length && copy.works.empty}}"
+      class="state-panel empty-state"
     >
-      <image
-        wx:if="{{work.coverMedia && !failedMedia[work.id]}}"
-        src="{{work.coverMedia.src}}"
-        mode="aspectFill"
-        data-arg0="{{work.id}}"
-        binderror="handleMarkMediaFailedError"
-      ></image>
-      <view wx:else class="media-empty"></view>
-      <view class="work-copy">
-        <text wx:if="{{work.businessLabels.length}}" class="work-category"
-          >{{work.businessLabel}}</text
-        >
-        <text wx:if="{{work.title}}" class="work-title">{{work.title}}</text>
-      </view>
+      <text>{{copy.works.empty}}</text>
     </view>
-  </view>
-  <view
-    wx:if="{{(status === 'success' || status === 'empty') && !works.length && copy.works.empty}}"
-    class="state-panel empty-state"
-  >
-    <text>{{copy.works.empty}}</text>
-  </view>
-  <view wx:if="{{nextCursor && works.length}}" class="load-more">
-    <button
-      wx:if="{{copy.works.loadMore}}"
-      disabled="{{loadingMore}}"
-      bindtap="handleLoadMoreTap"
-    >
-      {{copy.works.loadMore}}
-    </button>
-  </view>
+    <view wx:if="{{nextCursor && works.length}}" class="load-more">
+      <button
+        wx:if="{{copy.works.loadMore}}"
+        disabled="{{loadingMore}}"
+        bindtap="handleLoadMoreTap"
+      >
+        {{copy.works.loadMore}}
+      </button>
+    </view>
+  </block>
 </view>

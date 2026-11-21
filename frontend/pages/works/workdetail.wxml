@@ -2,13 +2,7 @@
   <demo-notice mode="{{dataMode}}"></demo-notice>
   <view wx:if="{{showStatusBar}}" class="detail-topbar">
     <text bindtap="handleGoBackTap" class="back">‹</text>
-    <button
-      wx:if="{{copy.workDetail.share}}"
-      open-type="share"
-      class="share-button"
-    >
-      {{copy.workDetail.share}}
-    </button>
+    <text>作品详情</text>
   </view>
   <block wx:if="{{status === 'success'}}">
     <view wx:if="{{availableMedia.length}}" class="detail-hero-cover">

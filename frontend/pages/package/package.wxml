@@ -1,18 +1,18 @@
 <view class="package-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
-  <view
-    wx:if="{{copy.services.title || copy.services.summary}}"
-    class="page-intro"
-  >
-    <text class="eyebrow">THE SERVICE COLLECTION</text>
-    <text wx:if="{{copy.services.title}}" class="page-title"
-      >{{copy.services.title}}</text
-    >
-    <text wx:if="{{copy.services.summary}}" class="page-summary"
-      >{{copy.services.summary}}</text
-    >
-  </view>
   <block wx:if="{{status === 'success' || status === 'empty'}}">
+    <view
+      wx:if="{{copy.services.title || copy.services.summary}}"
+      class="page-intro"
+    >
+      <text class="eyebrow">THE SERVICE COLLECTION</text>
+      <text wx:if="{{copy.services.title}}" class="page-title"
+        >{{copy.services.title}}</text
+      >
+      <text wx:if="{{copy.services.summary}}" class="page-summary"
+        >{{copy.services.summary}}</text
+      >
+    </view>
     <view
       wx:for="{{serviceGroups}}"
       wx:for-item="business"

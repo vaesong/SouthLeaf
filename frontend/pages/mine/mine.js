@@ -84,9 +84,9 @@ Page({
   async publishedCopy() {
     try {
       const brand = await getBrand();
-      return brand.copy || {};
+      return ready(brand.copy);
     } catch (error) {
-      return {};
+      return ready(null);
     }
   },
   async load() {

@@ -494,7 +494,7 @@ onMounted(async () => {
       <div v-if="draft.presentation" class="card">
         <div class="card-head">
           <h2>小程序文案</h2>
-          <p>留空则顾客看不到这句。保存并发布之后才会出现。</p>
+          <p>留空就用小程序原来的那句。填写并发布后，才会换成这里的句子。</p>
         </div>
         <div v-for="group in copyGroups" :key="group.name" class="card-pad">
           <p class="hint">{{ group.name }}</p>

@@ -79,12 +79,12 @@ Page({
     const version = ++this._generation;
     if (!showing(this.data.status))
       this.update({ status: "loading", errorMessage: "" });
-    let copy = {};
+    let copy = ready(null);
     try {
       const brand = await getBrand();
-      copy = brand.copy || {};
+      copy = ready(brand.copy);
     } catch (error) {
-      copy = {};
+      copy = ready(null);
     }
     if (version !== this._generation) return;
     try {

@@ -2,9 +2,11 @@
   ><demo-notice mode="{{dataMode}}"></demo-notice
   ><view class="request-topbar"
     ><text bindtap="handleBackTap">‹</text
-    ><text wx:if="{{copy.requestDetail.title}}"
+    ><text wx:if="{{status === 'success' && copy.requestDetail.title}}"
       >{{copy.requestDetail.title}}</text
-    ><text class="topbar-hint">{{statusLabel}}</text></view
+    ><text wx:if="{{status === 'success'}}" class="topbar-hint"
+      >{{statusLabel}}</text
+    ></view
   ><block wx:if="{{status === 'success'}}"
     ><view class="section"
       ><text class="status-title">{{statusLabel}}</text
@@ -32,7 +34,7 @@
     ><view wx:else class="section"
       ><text wx:if="{{copy.requestDetail.confirmedTitle}}" class="section-title"
         >{{copy.requestDetail.confirmedTitle}}</text
-      ></view
+      ><text class="hint">工作室确认后，这里会显示套餐与时段约定。</text></view
     ><button
       wx:if="{{copy.requestDetail.anotherSlot}}"
       class="secondary-button"

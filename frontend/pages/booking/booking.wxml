@@ -110,7 +110,9 @@
       <text wx:if="{{copy.booking.slotsTitle}}" class="section-title"
         >{{copy.booking.slotsTitle}}</text
       >
-      <view wx:if="{{slotRows.length === 0}}" class="hint"></view>
+      <view wx:if="{{slotRows.length === 0}}" class="hint"
+        >所选日期内没有空余时段</view
+      >
       <view wx:else class="slots-picker-grid">
         <view
           wx:for="{{slotRows}}"

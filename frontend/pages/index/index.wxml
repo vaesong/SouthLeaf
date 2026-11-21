@@ -223,7 +223,7 @@
     </scroll-view>
   </view>
   <view
-    wx:if="{{copy.home.story || copy.home.signOff || copy.home.aboutLink}}"
+    wx:if="{{status === 'success' && (copy.home.story || copy.home.signOff || copy.home.aboutLink)}}"
     bindtap="handleGoAboutTap"
     class="studio-story-card"
   >

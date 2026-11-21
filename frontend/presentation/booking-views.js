@@ -26,7 +26,9 @@ const statusOf = (code, copy) => {
 };
 
 const slotLabel = (slot) =>
-  slot ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd : "";
+  slot
+    ? slot.localDate + " " + slot.localStart + "-" + slot.localEnd
+    : "未指定时段";
 
 const timeLabel = (value) =>
   value ? String(value).slice(0, 16).replace("T", " ") : "";
