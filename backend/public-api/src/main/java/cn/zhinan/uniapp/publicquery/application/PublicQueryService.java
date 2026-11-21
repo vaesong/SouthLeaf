@@ -81,17 +81,7 @@ public class PublicQueryService {
             .toList();
     var configuredHeroes = configuredHeroes(p);
     var heroes = configuredHeroes.isEmpty() ? fallbackHeroes : configuredHeroes;
-    var businesses =
-        p.snapshot().featuredBusinesses().stream()
-            .limit(3)
-            .map(
-                id ->
-                    p.snapshot().businesses().stream()
-                        .filter(v -> v.id().equals(id))
-                        .findFirst()
-                        .orElseThrow())
-            .map(p::business)
-            .toList();
+    var businesses = List.<PublicDtos.BusinessSummary>of();
     var packages =
         p.snapshot().featuredPackages().stream()
             .limit(3)

@@ -39,7 +39,7 @@ class PublicQueryServiceTest {
   @Test
   void homePreservesExplicitCurationWithoutDuplicatePackages() {
     var home = service(CatalogFixture::permittedBatch).readHome();
-    assertThat(home.data().businesses()).extracting(b -> b.id()).containsExactly("b2", "b1");
+    assertThat(home.data().businesses()).isEmpty();
     assertThat(home.data().packages()).isEmpty();
     assertThat(home.data().heroItems()).hasSize(2);
     assertThat(home.data().heroItems()).extracting(item -> item.target()).containsOnly("work");

@@ -96,8 +96,12 @@ const days = computed(() =>
 );
 
 const times = computed(() => {
-  const values = new Set(slots.value.map((slot) => formatClock(slot.startAt)));
-  return [...values].filter((value) => value !== "时间待定").sort();
+  const values = new Set<string>(START_TIMES);
+  for (const slot of slots.value) {
+    const clock = formatClock(slot.startAt);
+    if (clock !== "时间待定") values.add(clock);
+  }
+  return [...values].sort();
 });
 
 function dayLabel(date: Date) {
@@ -219,6 +223,56 @@ watch(
   },
   { deep: true },
 );
+
+async function openCell(date: Date, time: string) {
+  if (!canWriteSlots.value || openBusy.value) return;
+  if (!currentRule.value?.configured) {
+    openError.value = "请先设置预约规则";
+    return;
+  }
+  const day = isoDate(date);
+  if (!window.confirm(`开放 ${day} ${time}？`)) return;
+  openBusy.value = true;
+  openError.value = "";
+  try {
+    await slotsApi.open(day, time, newBookingIdempotencyKey());
+    openNotice.value = `已开放 ${day} ${time}`;
+    await load();
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : "档期暂时无法开放。";
+  } finally {
+    openBusy.value = false;
+  }
+}
+
+async function openThisWeek() {
+  if (!canWriteSlots.value || openBusy.value) return;
+  if (!currentRule.value?.configured) {
+    openError.value = "请先设置预约规则";
+    return;
+  }
+  if (selectedTimes.value.length === 0) {
+    openError.value = "先勾选要重复的开始时间。";
+    return;
+  }
+  const dates = days.value.map(isoDate).filter((date) => date);
+  openBusy.value = true;
+  openError.value = "";
+  try {
+    const items = await slotsApi.openWeek(dates, selectedTimes.value, newBookingIdempotencyKey());
+    const failed = items.filter((item) => !item.ok);
+    if (failed.length === 0) openNotice.value = "这一周已按勾选的时间开放";
+    else
+      openError.value = failed
+        .map((item) => `${item.date} ${item.startTime}：${slotFailureText(item.reason)}`)
+        .join("；");
+    await load();
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : "档期暂时无法开放。";
+  } finally {
+    openBusy.value = false;
+  }
+}
 
 function openSlotEditor() {
   openError.value = "";
@@ -344,7 +398,7 @@ onMounted(async () => {
     <div class="page-head">
       <div>
         <h1>档期安排</h1>
-        <p>绿色格子是可以预约的时段。</p>
+        <p>点空格子开放一个时段。绿色是客人可以约的时间。</p>
       </div>
       <div class="actions">
         <button class="btn btn-secondary btn-sm" type="button" @click="shift(-7)">上一周</button>
@@ -361,8 +415,30 @@ onMounted(async () => {
       </div>
     </div>
     <p v-if="openNotice" class="notice-line">{{ openNotice }}</p>
+    <p v-if="openError" class="alert-line" role="alert">{{ openError }}</p>
     <p v-if="!canRead" class="alert-line">当前账号不能查看档期。</p>
     <p v-if="errorText" class="alert-line" role="alert">{{ errorText }}</p>
+    <div v-if="canWriteSlots" class="card card-pad" style="margin-bottom: 18px">
+      <p class="hint">勾选常用开始时间，一次开放到当前这一周。已经开过或重叠的格子会跳过。</p>
+      <div class="time-picks">
+        <label v-for="time in START_TIMES" :key="time" class="check">
+          <input
+            type="checkbox"
+            :checked="selectedTimes.includes(time)"
+            @change="selectedTimes = toggle(selectedTimes, time)"
+          />
+          {{ time }}
+        </label>
+      </div>
+      <button
+        class="btn btn-accent btn-sm"
+        type="button"
+        :disabled="openBusy || !currentRule?.configured"
+        @click="openThisWeek"
+      >
+        开放到这一周
+      </button>
+    </div>
     <p v-if="loading">正在读取档期…</p>
     <div v-else class="card week-wrap">
       <div class="week">
@@ -388,9 +464,17 @@ onMounted(async () => {
             >
               {{ cellLabel(cellAt(day, time)!) }}
             </button>
+            <button
+              v-else
+              class="slot empty"
+              type="button"
+              :disabled="!canWriteSlots || openBusy || !currentRule?.configured"
+              @click="openCell(day, time)"
+            >
+              开放
+            </button>
           </div>
         </template>
-        <p v-if="times.length === 0" class="card-pad">这一周还没有可预约的时段。</p>
       </div>
     </div>
     <div class="card" style="margin-top: 18px">

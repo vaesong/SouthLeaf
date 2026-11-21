@@ -283,7 +283,6 @@ async function main() {
       (await page.getByTestId("catalog-business-published").isChecked()),
   );
   await openSection(page, "/home-layout");
-  await page.getByTestId("catalog-brand-discovery-heading").fill("Synthetic UI discovery");
   await page.getByTestId("catalog-brand-share-title").fill("Synthetic UI share title");
   await openSection(page, "/about");
   await page.getByTestId("catalog-brand-english-name").fill("Synthetic UI Studio");

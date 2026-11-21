@@ -23,7 +23,7 @@ globalThis.wx = {
 };
 const api = require("../api/public.js");
 const home = await api.getHome();
-assert.equal(home.businesses.length, 3);
+assert.equal(home.businesses.length, 0);
 assert.equal(home.packages.length, 0);
 const brand = await api.getBrand();
 assert.equal(brand.team.length, 2);

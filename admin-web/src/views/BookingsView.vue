@@ -125,6 +125,9 @@ async function lookup(id = lookupId.value, preserveNotice = false) {
   } finally {
     loading.value = false;
   }
+  if (detail.value?.reservation.status === "PENDING_CONFIRMATION" && canConfirm.value) {
+    await loadConfirmSlots();
+  }
 }
 
 async function loadSlots() {
@@ -410,30 +413,11 @@ onMounted(() => void refreshPending());
           </div>
           <div class="who">
             <b>{{ card.title }}</b>
-            <small>{{ card.source }} · 预约编号 {{ tailNumber(card.id) }}</small>
+            <small>预约编号 {{ tailNumber(card.id) }} · {{ formatRelative(card.expiresAt) }}</small>
           </div>
-          <div class="expire">{{ formatRelative(card.expiresAt) }}</div>
           <div class="acts">
-            <button
-              class="btn btn-secondary btn-sm"
-              type="button"
-              @click="selectReservation(card.id)"
-            >
-              改期
-            </button>
-            <button
-              class="btn btn-danger-ghost btn-sm"
-              type="button"
-              @click="selectReservation(card.id)"
-            >
-              婉拒
-            </button>
-            <button
-              class="btn btn-primary btn-sm"
-              type="button"
-              @click="selectReservation(card.id)"
-            >
-              确认预约
+            <button class="btn btn-primary btn-sm" type="button" @click="selectReservation(card.id)">
+              处理
             </button>
           </div>
         </div>
@@ -478,14 +462,7 @@ onMounted(() => void refreshPending());
           style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px"
         >
           <template v-if="canConfirm">
-            <button
-              class="btn btn-secondary"
-              type="button"
-              :disabled="busy || loadingConfirmSlots"
-              @click="loadConfirmSlots"
-            >
-              {{ loadingConfirmSlots ? "查询时段中…" : "查询可占用时段" }}
-            </button>
+            <p v-if="loadingConfirmSlots" class="hint">正在读取可预约时段…</p>
             <select
               v-if="confirmSlots.length"
               id="confirm-slot"
@@ -504,7 +481,15 @@ onMounted(() => void refreshPending());
               :disabled="busy || !confirmSlot"
               @click="confirmAndCreateOrder"
             >
-              {{ busy ? "处理中…" : "核对并确认成单" }}
+              {{ busy ? "处理中…" : "核对并确认" }}
+            </button>
+            <button
+              class="btn btn-secondary"
+              type="button"
+              :disabled="busy || loadingConfirmSlots"
+              @click="loadConfirmSlots"
+            >
+              重新读取时段
             </button>
           </template>
           <button

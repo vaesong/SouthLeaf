@@ -207,7 +207,7 @@ class DatabasePublicApiIT {
   void homeAndMetadataComeFromTheSameDatabasePublication() throws Exception {
     mvc.perform(get("/api/v1/public/home"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data.businesses.length()").value(3))
+        .andExpect(jsonPath("$.data.businesses.length()").value(0))
         .andExpect(jsonPath("$.data.packages.length()").value(0))
         .andExpect(jsonPath("$.data.brand.englishName").value("SOUTHLEAF STUDIO"))
         .andExpect(

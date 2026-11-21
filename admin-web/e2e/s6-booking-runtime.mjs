@@ -189,7 +189,6 @@ try {
       : await page.locator(".order-section").innerText();
   assert.doesNotMatch(pendingOrderText, /S6 Synthetic Test Package/);
 
-  await page.getByRole("button", { name: "查询可占用时段" }).click();
   await page.locator("#confirm-slot").waitFor({ timeout: 15000 });
   await page.locator("#confirm-slot").selectOption(confirmSlotId);
   await Promise.all([
@@ -197,7 +196,7 @@ try {
       assert.match(dialog.message(), /请核对后确认/);
       await dialog.accept();
     }),
-    page.getByRole("button", { name: "核对并确认成单" }).click(),
+    page.getByRole("button", { name: "核对并确认" }).click(),
   ]);
   await page
     .getByRole("alert")

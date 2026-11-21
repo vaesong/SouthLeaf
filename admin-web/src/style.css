@@ -2005,7 +2005,7 @@ button.upload {
 }
 .booking {
   display: grid;
-  grid-template-columns: 86px 1fr 180px auto;
+  grid-template-columns: 92px 1fr auto;
   gap: 18px;
   align-items: center;
   padding: 18px 22px;
@@ -2126,6 +2126,17 @@ button.slot:disabled {
   background: var(--accent-soft);
   color: var(--accent-2);
   border: 1px solid #ebcdb9;
+}
+.slot.empty {
+  background: transparent;
+  color: var(--ink-4, #b5a89a);
+  border: 1px dashed var(--line-2);
+}
+.time-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 12px 0;
 }
 
 /* 通知 & 发布记录 */

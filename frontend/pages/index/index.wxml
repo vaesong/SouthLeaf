@@ -69,39 +69,6 @@
     </swiper>
   </view>
   <view
-    wx:if="{{status === 'success' && home.businesses.length}}"
-    class="content-section"
-  >
-    <view wx:if="{{copy.home.themesTitle}}" class="section-heading">
-      <text class="section-title">{{copy.home.themesTitle}}</text>
-    </view>
-    <scroll-view
-      scroll-x="{{true}}"
-      class="pill-scroll"
-      show-scrollbar="{{false}}"
-    >
-      <view
-        wx:for="{{home.businesses}}"
-        wx:for-item="business"
-        wx:for-index="index"
-        data-arg0="{{business.id}}"
-        bindtap="handleGoServicesTap2"
-        wx:key="id"
-        class="pill-item"
-      >
-        <image
-          wx:if="{{business.coverMedia && !failedMedia['business-' + business.id]}}"
-          src="{{business.coverMedia.src}}"
-          mode="aspectFill"
-          data-arg0="{{'business-' + business.id}}"
-          binderror="handleMarkMediaFailedError"
-          class="pill-thumb"
-        ></image>
-        <text>{{business.name}}</text>
-      </view>
-    </scroll-view>
-  </view>
-  <view
     wx:if="{{status === 'success' && home.featuredWorks.length}}"
     class="content-section"
   >
@@ -223,16 +190,11 @@
     </scroll-view>
   </view>
   <view
-    wx:if="{{status === 'success' && (copy.home.story || copy.home.signOff || copy.home.aboutLink)}}"
+    wx:if="{{status === 'success'}}"
     bindtap="handleGoAboutTap"
     class="studio-story-card"
   >
     <text wx:if="{{copy.home.story}}" class="quote">{{copy.home.story}}</text>
-    <text wx:if="{{copy.home.signOff}}" class="studio-sign"
-      >{{copy.home.signOff}}</text
-    >
-    <text wx:if="{{copy.home.aboutLink}}" class="studio-more"
-      >{{copy.home.aboutLink}}</text
-    >
+    <text class="studio-more">认识工作室理念与主理人 →</text>
   </view>
 </view>

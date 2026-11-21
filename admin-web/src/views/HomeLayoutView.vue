@@ -21,7 +21,6 @@ import {
   FEATURED_LIMIT,
   FEATURED_WORK_LIMIT,
   HERO_LIMIT,
-  presentationGroups,
   moveItem,
   syncMediaAltTexts,
   toggleLimitedIds,
@@ -36,7 +35,6 @@ import {
 } from "../content/uploadFiles";
 import { useCatalogAccess, useCatalogLeaveGuard } from "../content/useCatalog";
 
-const copyGroups = presentationGroups();
 const api = requireContentApi();
 const { store, canEdit } = useCatalogAccess();
 const leave = useCatalogLeaveGuard(store);
@@ -67,18 +65,6 @@ const heroSlides = computed(() =>
 function workOf(id: string) {
   return works.value.find((item) => item.workId === id);
 }
-
-const previewBusinesses = computed(() => {
-  const current = draft.value;
-  if (!current) return [];
-  return current.featuredBusinessIds
-    .map((id) => current.businesses.find((item) => item.id === id))
-    .filter((item): item is NonNullable<typeof item> => !!item)
-    .map((item) => ({
-      name: item.name,
-      imageUrl: item.coverMediaId ? mediaContentPath(item.coverMediaId, "thumbnail") : "",
-    }));
-});
 
 const previewHero = computed(() => {
   const slide = heroSlides.value.find((item) => item.enabled);
@@ -467,20 +453,10 @@ onMounted(async () => {
         </div>
       </div>
       <div class="card">
-        <div class="card-head"><h2>首页文案</h2></div>
-        <div class="card-pad grid-2">
+        <div class="card-head"><h2>分享卡片标题</h2></div>
+        <div class="card-pad">
           <div class="field">
-            <label>首页栏目标题</label>
-            <input
-              v-model="draft.brand.discoveryHeading"
-              class="input"
-              maxlength="255"
-              data-testid="catalog-brand-discovery-heading"
-              :disabled="!canEdit"
-            />
-          </div>
-          <div class="field">
-            <label>分享卡片标题</label>
+            <label>转发给朋友时显示的标题</label>
             <input
               v-model="draft.brand.shareTitle"
               class="input"
@@ -493,67 +469,22 @@ onMounted(async () => {
       </div>
       <div v-if="draft.presentation" class="card">
         <div class="card-head">
-          <h2>小程序文案</h2>
+          <h2>首页底部短句</h2>
           <p>留空就用小程序原来的那句。填写并发布后，才会换成这里的句子。</p>
         </div>
-        <div v-for="group in copyGroups" :key="group.name" class="card-pad">
-          <p class="hint">{{ group.name }}</p>
-          <div class="grid-2">
-            <div v-for="field in group.fields" :key="field.key" class="field">
-              <label>{{ field.label }}</label>
-              <input
-                v-model="draft.presentation[field.key]"
-                class="input"
-                maxlength="400"
-                :disabled="!canEdit"
-                :data-testid="'catalog-presentation-' + field.key"
-              />
-            </div>
+        <div class="card-pad">
+          <div class="field">
+            <label>显示在首页最下面</label>
+            <textarea
+              v-model="draft.presentation['home.story']"
+              class="textarea"
+              maxlength="400"
+              rows="3"
+              :disabled="!canEdit"
+              data-testid="catalog-presentation-home.story"
+            ></textarea>
           </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <h2>精选业务</h2>
-          <p>最多 {{ FEATURED_LIMIT }} 个，按点选顺序排列</p>
-        </div>
-        <div class="picker">
-          <button
-            v-for="item in draft.businesses"
-            :key="item.id"
-            class="pick"
-            :class="{ on: draft.featuredBusinessIds.includes(item.id) }"
-            type="button"
-            :disabled="!canEdit || !item.published"
-            data-testid="catalog-featured-business"
-            :data-business-id="item.id"
-            @click="
-              draft.featuredBusinessIds = pickLimited(
-                draft.featuredBusinessIds,
-                item.id,
-                FEATURED_LIMIT,
-                '最多选 3 个',
-              )
-            "
-          >
-            <span class="no">{{
-              draft.featuredBusinessIds.indexOf(item.id) >= 0
-                ? draft.featuredBusinessIds.indexOf(item.id) + 1
-                : "·"
-            }}</span>
-            <MediaThumb :media-id="item.coverMediaId" quiet />
-            <div class="t">
-              {{ item.name || "未命名" }}
-              <StatusChip
-                :tone="item.published ? 'live' : 'off'"
-                :text="item.published ? '已上架' : '未上架'"
-              />
-            </div>
-          </button>
-        </div>
-        <p v-if="limitHint" class="card-pad hint" data-testid="catalog-featured-limit">
-          {{ limitHint }}
-        </p>
       </div>
       <div class="card" id="featured-works">
         <div class="card-head">
@@ -683,6 +614,7 @@ onMounted(async () => {
             </button>
           </div>
           <p v-if="draft.featuredPackageIds.length === 0" class="hint">还没有精选套餐。</p>
+          <p v-if="limitHint" class="hint" data-testid="catalog-featured-limit">{{ limitHint }}</p>
         </div>
       </div>
       <SideDrawer :open="workDrawer" title="选择作品" @close="workDrawer = false">
@@ -740,9 +672,7 @@ onMounted(async () => {
       <template #caption>小程序首页实时预览（草稿）</template>
       <MiniHomePreview
         :title="draft.brand.name"
-        :heading="draft.brand.discoveryHeading"
-        :address="[draft.contact.address, draft.contact.workingHours].filter(Boolean).join(' · ')"
-        :businesses="previewBusinesses"
+        :story="draft.presentation?.['home.story'] || ''"
         :works="previewWorks"
         :hero="previewHero"
       />

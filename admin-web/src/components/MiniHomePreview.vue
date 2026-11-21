@@ -1,10 +1,8 @@
 <script setup lang="ts">
 defineProps<{
   title: string;
-  heading: string;
-  businesses: Array<{ name: string; imageUrl: string }>;
+  story: string;
   works: Array<{ title: string; imageUrl: string }>;
-  address: string;
   hero?: { title: string; subtitle: string; action: string; imageUrl: string } | null;
 }>();
 </script>
@@ -36,21 +34,15 @@ defineProps<{
     </div>
   </div>
   <div class="mp-sec">
-    <h4>{{ heading || "精选业务" }}</h4>
-    <div class="mp-biz">
-      <div v-for="item in businesses.slice(0, 3)" :key="item.name">
-        <div class="ph"><img v-if="item.imageUrl" :src="item.imageUrl" alt="" /></div>
-        {{ item.name }}
-      </div>
-    </div>
-  </div>
-  <div class="mp-sec">
     <h4>精选作品</h4>
     <div class="mp-works">
-      <div v-for="item in works.slice(0, 4)" :key="item.title" class="ph">
+      <div v-for="item in works.slice(0, 3)" :key="item.title" class="ph">
         <img v-if="item.imageUrl" :src="item.imageUrl" alt="" />
       </div>
     </div>
   </div>
-  <div v-if="address" class="mp-studio"><b>来工作室坐坐</b>{{ address }}</div>
+  <div class="mp-studio">
+    <b>{{ story || "底部短句使用小程序原来的那句" }}</b>
+    认识工作室理念与主理人 →
+  </div>
 </template>
