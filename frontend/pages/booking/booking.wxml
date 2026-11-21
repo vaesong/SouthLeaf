@@ -87,27 +87,34 @@
       <text wx:if="{{copy.booking.dateTitle}}" class="section-title"
         >{{copy.booking.dateTitle}}</text
       >
-      <view class="date-row">
-        <picker mode="date" value="{{from}}" bindchange="handleFromChange">
-          <view class="date-chip">
-            <text wx:if="{{copy.booking.rangeStart}}" class="chip-label"
-              >{{copy.booking.rangeStart}}</text
-            >
-            <text class="chip-value">{{from}}</text>
+      <view class="day-switch">
+        <view
+          class="day-arrow {{canShiftEarlier ? '' : 'day-arrow-off'}}"
+          data-delta="-1"
+          bindtap="handleShiftDayTap"
+          >‹</view
+        >
+        <picker
+          class="day-picker"
+          mode="date"
+          value="{{selectedDay}}"
+          start="{{earliestDay}}"
+          end="{{latestDay}}"
+          bindchange="handleDayPickTap"
+        >
+          <view class="day-copy">
+            <text class="day-title">{{dayMonth}}{{dayNumber}}日</text>
+            <text class="day-week">{{dayWeekday}}</text>
           </view>
         </picker>
-        <picker mode="date" value="{{to}}" bindchange="handleToChange">
-          <view class="date-chip">
-            <text wx:if="{{copy.booking.rangeEnd}}" class="chip-label"
-              >{{copy.booking.rangeEnd}}</text
-            >
-            <text class="chip-value">{{to}}</text>
-          </view>
-        </picker>
+        <view
+          class="day-arrow {{canShiftLater ? '' : 'day-arrow-off'}}"
+          data-delta="1"
+          bindtap="handleShiftDayTap"
+          >›</view
+        >
       </view>
-    </view>
-    <view class="section">
-      <text wx:if="{{copy.booking.slotsTitle}}" class="section-title"
+      <text wx:if="{{copy.booking.slotsTitle}}" class="section-title time-title"
         >{{copy.booking.slotsTitle}}</text
       >
       <view wx:if="{{slotRows.length === 0}}" class="hint"

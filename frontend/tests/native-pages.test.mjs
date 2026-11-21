@@ -275,4 +275,16 @@ test("placeholder QR is never presented as a confirmed scannable account", () =>
   assert.equal(previews, 0);
   assert.equal(toasts.length, 2);
   assert.match(toasts[1].title, /演示占位/);
+  p.previewQr({
+    id: "qr",
+    label: "微信",
+    account: "southleaf",
+    qrCodeStatus: "CONFIRMED",
+    qrCodeMedia: { src: "confirmed.png" },
+  });
+  assert.equal(previews, 0);
+  assert.equal(p.data.qrOpen, true);
+  assert.equal(p.data.qrSrc, "confirmed.png");
+  p.closeQr();
+  assert.equal(p.data.qrOpen, false);
 });

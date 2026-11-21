@@ -184,11 +184,37 @@ test("booking page presents slots and keeps the selected slot across a reload", 
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(host.data.status, "success");
   assert.equal(host.data.packageLabels[0], "虚构演示套餐");
-  assert.equal(host.data.slotRows[0].label, "2026-10-26 10:00-11:30");
+  assert.equal(host.data.selectedDay, "2026-10-26");
+  assert.equal(host.data.dayNumber, "26");
+  assert.equal(host.data.dayMonth, "10月");
+  assert.equal(host.data.slotRows[0].label, "10:00");
   host.handleSlotTap({ currentTarget: { dataset: { slot: slot.slotId } } });
   assert.equal(host.data.selectedSlotId, slot.slotId);
   assert.equal(host.data.slotRows[0].active, true);
   assert.ok(host._pendingKey.startsWith("mp-"));
+  host.update({
+    selectedDay: "2026-11-21",
+    earliestDay: "2026-11-21",
+    latestDay: "2026-12-21",
+    from: "2026-11-21",
+    to: "2026-12-21",
+    slots: [
+      { slotId: "a", localDate: "2026-11-21", localStart: "10:00" },
+      { slotId: "b", localDate: "2026-11-22", localStart: "14:00" },
+    ],
+    selectedSlotId: "",
+  });
+  host.handleShiftDayTap({ currentTarget: { dataset: { delta: "1" } } });
+  assert.equal(host.data.selectedDay, "2026-11-22");
+  assert.equal(host.data.dayWeekday, "星期日");
+  assert.equal(host.data.slotRows[0].label, "14:00");
+  host.handleShiftDayTap({ currentTarget: { dataset: { delta: "-1" } } });
+  assert.equal(host.data.selectedDay, "2026-11-21");
+  host.handleShiftDayTap({ currentTarget: { dataset: { delta: "-1" } } });
+  assert.equal(host.data.selectedDay, "2026-11-21");
+  host.handleDayPickTap({ detail: { value: "2026-11-25" } });
+  assert.equal(host.data.selectedDay, "2026-11-25");
+  assert.equal(host.data.dayNumber, "25");
 });
 
 test("submit sends one idempotent request and opens the receipt page", async () => {

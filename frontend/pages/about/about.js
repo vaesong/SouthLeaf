@@ -21,6 +21,11 @@ Page({
     brand: {},
     brandLogoFailed: false,
     failedMedia: {},
+    qrOpen: false,
+    qrTitle: "",
+    qrAccount: "",
+    qrSrc: "",
+    qrErrorKey: "",
     copy: {},
     dataMode: "",
   }),
@@ -67,6 +72,7 @@ Page({
         status: "success",
         brandLogoFailed: false,
         failedMedia: {},
+        qrOpen: false,
       });
     } catch (error) {
       if (version !== this._generation) return;
@@ -123,11 +129,18 @@ Page({
       this.data.failedMedia[`qr-${channel.id}`]
     )
       return;
-    wx.previewImage({
-      current: channel.qrCodeMedia.src,
-      urls: [channel.qrCodeMedia.src],
+    this.update({
+      qrOpen: true,
+      qrTitle: channel.label || "",
+      qrAccount: channel.account || "",
+      qrSrc: channel.qrCodeMedia.src,
+      qrErrorKey: "qr-" + channel.id,
     });
   },
+  closeQr() {
+    this.update({ qrOpen: false });
+  },
+  holdQr() {},
   copyAddress() {
     if (this.data.brand.address)
       wx.setClipboardData({
@@ -168,6 +181,16 @@ Page({
   },
   handlePreviewQrTap(event) {
     this.previewQr(event.currentTarget.dataset.arg0);
+  },
+  handleCloseQrTap() {
+    this.closeQr();
+  },
+  handleHoldQrTap() {
+    this.holdQr();
+  },
+  handleQrFailedError(event) {
+    this.markMediaFailed(event.currentTarget.dataset.errorKey);
+    this.closeQr();
   },
   handleMarkMediaFailedError2(event) {
     this.markMediaFailed(event.currentTarget.dataset.errorKey);

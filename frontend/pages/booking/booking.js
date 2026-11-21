@@ -32,12 +32,71 @@ const newKey = () =>
   "-" +
   Math.random().toString(36).slice(2, 10);
 
+const firstBookableDay = (slots) => {
+  for (const slot of slots || []) {
+    if (slot && slot.localDate) return slot.localDate;
+  }
+  return "";
+};
+const dayHasSlot = (slots, day) =>
+  (slots || []).some((slot) => slot && slot.localDate === day);
+const WEEKDAYS = [
+  "星期日",
+  "星期一",
+  "星期二",
+  "星期三",
+  "星期四",
+  "星期五",
+  "星期六",
+];
+const shiftDay = (iso, delta) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  if (!match || (delta !== 1 && delta !== -1)) return "";
+  const date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
+  date.setDate(date.getDate() + delta);
+  return (
+    date.getFullYear() +
+    "-" +
+    two(date.getMonth() + 1) +
+    "-" +
+    two(date.getDate())
+  );
+};
+const dayParts = (iso) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  if (!match) return { dayMonth: "", dayNumber: "", dayWeekday: "" };
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Number(match[1]), month - 1, day);
+  return {
+    dayMonth: month + "月",
+    dayNumber: String(day),
+    dayWeekday: WEEKDAYS[date.getDay()] || "",
+  };
+};
+
 function present(data) {
+  const selectedDay = data.selectedDay || "";
+  const visible = selectedDay
+    ? (data.slots || []).filter((slot) => slot.localDate === selectedDay)
+    : [];
   return {
     ...data,
-    slotRows: (data.slots || []).map((slot) => ({
+    selectedDay,
+    ...dayParts(selectedDay),
+    canShiftEarlier: Boolean(
+      selectedDay && data.earliestDay && selectedDay > data.earliestDay,
+    ),
+    canShiftLater: Boolean(
+      selectedDay && data.latestDay && selectedDay < data.latestDay,
+    ),
+    slotRows: visible.map((slot) => ({
       slotId: slot.slotId,
-      label: slotLabel(slot),
+      label: slot.localStart || slotLabel(slot),
       active: slot.slotId === data.selectedSlotId,
     })),
     packageLabels: (data.packages || []).map((item) => item.displayName),
@@ -56,6 +115,9 @@ Page({
     packageLabels: [],
     from: "",
     to: "",
+    earliestDay: "",
+    latestDay: "",
+    selectedDay: "",
     slots: [],
     slotRows: [],
     selectedSlotId: "",
@@ -71,7 +133,12 @@ Page({
   onLoad() {
     this._generation = 0;
     this._pendingKey = "";
-    this.update({ from: dayOffset(0), to: dayOffset(6) });
+    this.update({
+      from: dayOffset(0),
+      to: dayOffset(6),
+      earliestDay: dayOffset(0),
+      latestDay: dayOffset(30),
+    });
     this.load();
   },
   onHide() {
@@ -105,9 +172,16 @@ Page({
         booking.getSlots(this.data.from, this.data.to),
       ]);
       if (version !== this._generation) return;
+      const items = slots.data.items || [];
+      const selectedDay =
+        (dayHasSlot(items, this.data.selectedDay) && this.data.selectedDay) ||
+        firstBookableDay(items) ||
+        this.data.selectedDay ||
+        this.data.from;
       this.update({
         packages: packages.data.items,
-        slots: slots.data.items,
+        slots: items,
+        selectedDay,
         dataMode: slots.meta.dataMode,
         copy: packages.copy || {},
         status: packages.data.items.length ? "success" : "empty",
@@ -150,7 +224,8 @@ Page({
       const response = await booking.getSlots(this.data.from, this.data.to);
       if (version !== this._generation) return;
       this.update({
-        slots: response.data.items,
+        slots: response.data.items || [],
+        selectedDay: this.data.selectedDay,
         dataMode: response.meta.dataMode,
         status: "success",
       });
@@ -208,13 +283,24 @@ Page({
     if (!Number.isInteger(index) || index < 0) return;
     this.update({ packageIndex: index });
   },
-  handleFromChange(event) {
-    this.update({ from: event.detail.value, selectedSlotId: "" });
-    this.reloadSlots();
+  chooseDay(day) {
+    if (!day || day === this.data.selectedDay) return;
+    if (this.data.earliestDay && day < this.data.earliestDay) return;
+    if (this.data.latestDay && day > this.data.latestDay) return;
+    this.update({ selectedDay: day, selectedSlotId: "" });
+    const known = dayHasSlot(this.data.slots, day);
+    const inside = day >= this.data.from && day <= this.data.to;
+    if (!known && !inside) {
+      this.update({ from: day, to: day });
+      this.reloadSlots();
+    }
   },
-  handleToChange(event) {
-    this.update({ to: event.detail.value, selectedSlotId: "" });
-    this.reloadSlots();
+  handleShiftDayTap(event) {
+    const delta = Number(event.currentTarget.dataset.delta);
+    this.chooseDay(shiftDay(this.data.selectedDay, delta));
+  },
+  handleDayPickTap(event) {
+    this.chooseDay(event.detail.value);
   },
   handleSlotTap(event) {
     const slotId = event.currentTarget.dataset.slot;

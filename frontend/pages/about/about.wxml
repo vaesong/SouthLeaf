@@ -172,4 +172,15 @@
     class="boundary-note"
     >{{copy.about.boundary}}</text
   >
+  <view wx:if="{{qrOpen}}" class="qr-mask" catchtap="handleCloseQrTap">
+    <view class="qr-sheet" catchtap="handleHoldQrTap">
+      <image
+        class="qr-sheet-image"
+        src="{{qrSrc}}"
+        mode="aspectFit"
+        data-error-key="{{qrErrorKey}}"
+        binderror="handleQrFailedError"
+      ></image>
+    </view>
+  </view>
 </view>
