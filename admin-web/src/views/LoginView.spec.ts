@@ -77,6 +77,10 @@ describe("LoginView", () => {
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
+    const record = wrapper.get('a[href="https://beian.miit.gov.cn/"]');
+    expect(record.text()).toBe("粤ICP备2026183994号");
+    expect(record.attributes("target")).toBe("_blank");
+    expect(record.attributes("rel")).toContain("noopener");
     expect(wrapper.text()).toContain("账号或密码不正确，或账号目前不可用。");
     expect(wrapper.text()).not.toContain("synthetic secret details");
     expect(password.element.value).toBe("");

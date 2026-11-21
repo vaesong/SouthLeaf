@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { AdminApiError } from "../auth/api";
 import { authStoreKey } from "../auth/store";
 import { safeReturnPath } from "../auth/navigation";
+import IcpRecord from "../components/IcpRecord.vue";
 
 function requireAuthStore() {
   const store = inject(authStoreKey);
@@ -103,74 +104,77 @@ onMounted(() => {
 
 <template>
   <main class="login-screen">
-    <section class="card login-wrap">
-      <div class="login-art" aria-hidden="true">
-        <div class="ph"></div>
-        <div class="txt">
-          <small>枝南影像</small>
-          <b>欢迎回来</b>
-          <span>登录后继续今天的工作。</span>
+    <div class="login-stack">
+      <section class="card login-wrap">
+        <div class="login-art" aria-hidden="true">
+          <div class="ph"></div>
+          <div class="txt">
+            <small>枝南影像</small>
+            <b>欢迎回来</b>
+            <span>登录后继续今天的工作。</span>
+          </div>
         </div>
-      </div>
-      <form class="login-form" @submit.prevent="submit">
-        <div class="brand" style="padding: 0">
-          <div class="brand-mark">枝</div>
-          <div><b>枝南影像</b><small>只使用已授权的工作账号</small></div>
-        </div>
-        <h1>登录后台</h1>
-        <div class="field">
-          <label for="account-id">账号</label>
-          <input
-            id="account-id"
-            v-model="accountId"
-            class="input"
-            name="username"
-            autocomplete="username"
-            maxlength="64"
-            placeholder="请输入账号"
-            :disabled="submitting"
-            required
-          />
-        </div>
-        <div class="field">
-          <label for="account-password">密码</label>
-          <input
-            id="account-password"
-            v-model="password"
-            class="input"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            maxlength="512"
-            placeholder="请输入密码"
-            :disabled="submitting"
-            required
-          />
-        </div>
-        <p v-if="message" class="alert-line" role="alert">
-          {{ message }}<small v-if="requestId">请求编号 {{ requestId }}</small>
-        </p>
-        <p v-if="!auth.state.csrfReady" role="status">
-          {{ csrfLoading ? "正在准备安全验证…" : "需要完成安全初始化才能登录。" }}
+        <form class="login-form" @submit.prevent="submit">
+          <div class="brand" style="padding: 0">
+            <div class="brand-mark">枝</div>
+            <div><b>枝南影像</b><small>只使用已授权的工作账号</small></div>
+          </div>
+          <h1>登录后台</h1>
+          <div class="field">
+            <label for="account-id">账号</label>
+            <input
+              id="account-id"
+              v-model="accountId"
+              class="input"
+              name="username"
+              autocomplete="username"
+              maxlength="64"
+              placeholder="请输入账号"
+              :disabled="submitting"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="account-password">密码</label>
+            <input
+              id="account-password"
+              v-model="password"
+              class="input"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              maxlength="512"
+              placeholder="请输入密码"
+              :disabled="submitting"
+              required
+            />
+          </div>
+          <p v-if="message" class="alert-line" role="alert">
+            {{ message }}<small v-if="requestId">请求编号 {{ requestId }}</small>
+          </p>
+          <p v-if="!auth.state.csrfReady" role="status">
+            {{ csrfLoading ? "正在准备安全验证…" : "需要完成安全初始化才能登录。" }}
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              :disabled="csrfLoading"
+              @click="refreshCsrf(true)"
+            >
+              重试初始化
+            </button>
+          </p>
           <button
-            class="btn btn-ghost btn-sm"
-            type="button"
-            :disabled="csrfLoading"
-            @click="refreshCsrf(true)"
+            class="btn btn-primary btn-block"
+            type="submit"
+            style="height: 44px"
+            :disabled="!canSubmit"
           >
-            重试初始化
+            {{ submitting ? "正在验证…" : "登录" }}
           </button>
-        </p>
-        <button
-          class="btn btn-primary btn-block"
-          type="submit"
-          style="height: 44px"
-          :disabled="!canSubmit"
-        >
-          {{ submitting ? "正在验证…" : "登录" }}
-        </button>
-        <p class="hint">连续多次失败会暂时锁定。忘记密码请联系技术人员重置，本页不能修改密码。</p>
-      </form>
-    </section>
+          <p class="hint">连续多次失败会暂时锁定。忘记密码请联系技术人员重置，本页不能修改密码。</p>
+        </form>
+      </section>
+      <IcpRecord />
+    </div>
   </main>
 </template>

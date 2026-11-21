@@ -2533,6 +2533,30 @@ a.nav-item {
   place-items: center;
   padding: 32px 16px;
 }
+.login-stack {
+  width: min(1040px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.login-stack > .login-wrap,
+.login-stack > .icp-record {
+  width: 100%;
+}
+.icp-record {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+.icp-record a:hover {
+  color: var(--ink-2);
+  text-decoration: underline;
+}
+.page > .icp-record {
+  margin-top: 36px;
+}
 .login-screen .login-wrap {
   width: min(1040px, 100%);
   border-radius: 18px;

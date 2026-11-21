@@ -6,6 +6,7 @@ import { authStoreKey } from "./auth/store";
 import { AdminBookingApi } from "./bookings/api";
 import AppIcon from "./components/AppIcon.vue";
 import ConfirmDialog from "./components/ConfirmDialog.vue";
+import IcpRecord from "./components/IcpRecord.vue";
 import { mediaContentPath } from "./content/api";
 import { catalogStoreKey } from "./content/catalogStore";
 import { formatDateTime, shopReason } from "./content/format";
@@ -309,6 +310,7 @@ onMounted(async () => {
           {{ catalog.state.notice }}
         </p>
         <slot />
+        <IcpRecord />
       </div>
     </div>
     <ConfirmDialog
