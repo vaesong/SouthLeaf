@@ -48,7 +48,7 @@ Page({
     this.update({
       id: typeof id === "string" && /^[A-Za-z0-9-]{8,64}$/.test(id) ? id : "",
     });
-    require("../../user/track").enter(this).then(() => this.load()).catch(() => {});
+    require("../../user/track.js").enter(this).then(() => this.load()).catch(() => {});
   },
   onHide() {
     this._hidden = true;
@@ -59,7 +59,7 @@ Page({
     this._generation++;
   },
   onShow() {
-    require("../../user/track").enter(this).catch(() => {});
+    require("../../user/track.js").enter(this).catch(() => {});
     if (this._hidden) {
       this._hidden = false;
       this.load();

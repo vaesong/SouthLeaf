@@ -69,7 +69,9 @@ try {
     ...[
       "api/api.js",
       "api/public.js",
+      "api/user.js",
       "api/booking.js",
+      "user/track.js",
       "api/public-display.js",
       "presentation/views.js",
       "presentation/copy.js",

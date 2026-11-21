@@ -9,6 +9,7 @@ export const routes = [
   "pages/booking/booking",
   "pages/booking/requestdetail",
   "pages/mine/mine",
+  "pages/gate/gate",
 ];
 // Syntax checks are not ownership, filing, DNS, certificate or deployment approval.
 function plainOrigin(value, httpsOnly) {

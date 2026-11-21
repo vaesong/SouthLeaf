@@ -51,10 +51,10 @@ Page({
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    require("../../user/track").enter(this).then(() => this.loadPackages()).catch(() => {});
+    require("../../user/track.js").enter(this).then(() => this.loadPackages()).catch(() => {});
   },
   onShow() {
-    require("../../user/track").enter(this).catch(() => {});
+    require("../../user/track.js").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
@@ -72,7 +72,7 @@ Page({
     }
   },
   onShareAppMessage() {
-    return require("../../user/track").share(
+    return require("../../user/track.js").share(
       this,
       {
         title: (this.data.copy.services && this.data.copy.services.title) || "",

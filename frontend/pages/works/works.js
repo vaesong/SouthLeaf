@@ -72,10 +72,10 @@ Page({
     this.update({
       selectedBusinessId: options?.businessId || "",
     });
-    require("../../user/track").enter(this).then(() => this.loadWorks()).catch(() => {});
+    require("../../user/track.js").enter(this).then(() => this.loadWorks()).catch(() => {});
   },
   onShow() {
-    require("../../user/track").enter(this).catch(() => {});
+    require("../../user/track.js").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1 });
     }
@@ -89,7 +89,7 @@ Page({
     } else if (resume) this.loadWorks();
   },
   onShareAppMessage() {
-    return require("../../user/track").share(
+    return require("../../user/track.js").share(
       this,
       {
         title: (this.data.copy.works && this.data.copy.works.title) || "",

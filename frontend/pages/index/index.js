@@ -55,7 +55,7 @@ Page({
     }
   },
   onShareAppMessage() {
-    return require("../../user/track").share(
+    return require("../../user/track.js").share(
       this,
       {
         title: this.data.home.brand.shareTitle || "",
@@ -69,7 +69,7 @@ Page({
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    require("../../user/track").enter(this).then(() => this.loadHome()).catch(() => {});
+    require("../../user/track.js").enter(this).then(() => this.loadHome()).catch(() => {});
   },
   async loadHome() {
     const version = ++this._generation;
@@ -146,7 +146,7 @@ Page({
     });
   },
   onShow() {
-    require("../../user/track").enter(this).catch(() => {});
+    require("../../user/track.js").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
     }

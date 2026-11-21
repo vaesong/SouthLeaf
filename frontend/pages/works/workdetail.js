@@ -52,7 +52,7 @@ Page({
     }
   },
   onShareAppMessage() {
-    return require("../../user/track").share(
+    return require("../../user/track.js").share(
       this,
       {
         title: this.data.work.title || "",
@@ -80,7 +80,7 @@ Page({
     this.update({
       id: typeof id === "string" && id.trim().length <= 128 ? id.trim() : "",
     });
-    require("../../user/track").enter(this).then(() => this.loadWork()).catch(() => {});
+    require("../../user/track.js").enter(this).then(() => this.loadWork()).catch(() => {});
   },
   async loadWork() {
     if (!this.data.id) {
@@ -154,7 +154,7 @@ Page({
     });
   },
   onShow() {
-    require("../../user/track").enter(this).catch(() => {});
+    require("../../user/track.js").enter(this).catch(() => {});
     if (this._hidden) {
       this._hidden = false;
       this.loadWork();
