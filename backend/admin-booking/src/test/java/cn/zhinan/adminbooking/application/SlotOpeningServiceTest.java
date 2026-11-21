@@ -71,15 +71,19 @@ class SlotOpeningServiceTest {
         .isEqualTo("SLOT_OVERLAP");
     assertThat(fixture.slots).hasSize(1);
 
+    var soon =
+        fixture.service.open(
+            "owner", "s".repeat(16), LocalDate.parse("2026-11-01"), LocalTime.parse("18:00"));
+    assertThat(soon.slot().startAt()).isEqualTo(Instant.parse("2026-11-01T10:00:00Z"));
     assertThatThrownBy(
             () ->
                 fixture.service.open(
                     "owner",
                     "n".repeat(16),
                     LocalDate.parse("2026-11-01"),
-                    LocalTime.parse("18:00")))
+                    LocalTime.parse("07:00")))
         .extracting(error -> ((BookingException) error).reason())
-        .isEqualTo("SLOT_OUTSIDE_WINDOW");
+        .isEqualTo("SLOT_ALREADY_STARTED");
 
     var edge =
         fixture.service.open(

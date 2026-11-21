@@ -122,15 +122,20 @@ class BookingRulesAndSlotsIT {
         .isEqualTo("SLOT_OVERLAP");
     assertThat(count("booking_service_slot")).isEqualTo(1);
 
+    var soon =
+        slots.open(
+            "owner", "c".repeat(16), LocalDate.parse("2026-11-01"), LocalTime.parse("18:00"));
+    assertThat(soon.slot().startAt()).isEqualTo(Instant.parse("2026-11-01T10:00:00Z"));
+    assertThat(count("booking_service_slot")).isEqualTo(2);
     assertThatThrownBy(
             () ->
                 slots.open(
                     "owner",
-                    "c".repeat(16),
+                    "p".repeat(16),
                     LocalDate.parse("2026-11-01"),
-                    LocalTime.parse("18:00")))
+                    LocalTime.parse("07:00")))
         .extracting(error -> ((BookingException) error).reason())
-        .isEqualTo("SLOT_OUTSIDE_WINDOW");
+        .isEqualTo("SLOT_ALREADY_STARTED");
 
     for (int index = 0; index < BookingRules.MAX_SLOTS_PER_DAY - 1; index++)
       insertOpenSlot(DAY.atTime(10, index).atZone(SlotOpeningService.BUSINESS_ZONE).toInstant());

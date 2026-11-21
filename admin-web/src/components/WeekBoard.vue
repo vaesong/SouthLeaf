@@ -44,6 +44,13 @@ const errorText = ref("");
 const notice = ref("");
 const selectedKey = ref("");
 const closeTarget = ref<BoardSlot | null>(null);
+const review = ref<{
+  title: string;
+  message: string;
+  confirmText: string;
+  danger: boolean;
+  run: () => Promise<void>;
+} | null>(null);
 const anchored = ref(false);
 const keys = new Map<string, string>();
 let openKey: string | null = null;
@@ -388,28 +395,39 @@ function openAsk(ask: SlotAsk) {
   void openExact(`${parts.year}-${month}-${day}`, formatClock(ask.startAt));
 }
 
-async function confirmAsk(ask: SlotAsk, slot: BoardSlot) {
+function confirmAsk(ask: SlotAsk, slot: BoardSlot) {
   if (!canConfirm.value || busy.value) return;
-  const reviewed = [
-    "按客人要的时间确认。确认后会占住这个时段。",
-    "",
-    tailNumber(ask.id),
-    whenLabel(slot.startAt, slot.endAt),
-    "本阶段不收款。",
-  ].join("\n");
-  if (!window.confirm(reviewed)) return;
-  await writeAsk("confirm", ask, () =>
-    bookingApi.confirm(ask.id, slot.id, `"r${ask.version}"`, keyFor(`confirm:${ask.id}`)),
-  );
+  review.value = {
+    title: "确认预约",
+    message: `按客人要的时间确认。确认后会占住这个时段：${tailNumber(ask.id)}，${whenLabel(slot.startAt, slot.endAt)}。本阶段不收款。`,
+    confirmText: "确认",
+    danger: false,
+    run: () =>
+      writeAsk("confirm", ask, () =>
+        bookingApi.confirm(ask.id, slot.id, `"r${ask.version}"`, keyFor(`confirm:${ask.id}`)),
+      ),
+  };
 }
 
-async function rejectAsk(ask: SlotAsk) {
+function rejectAsk(ask: SlotAsk) {
   if (!canReject.value || busy.value) return;
-  const reviewed = ["拒绝后不会占住档期。", "", tailNumber(ask.id)].join("\n");
-  if (!window.confirm(reviewed)) return;
-  await writeAsk("reject", ask, () =>
-    bookingApi.reject(ask.id, `"r${ask.version}"`, keyFor(`reject:${ask.id}`)),
-  );
+  review.value = {
+    title: "拒绝申请",
+    message: `拒绝后不会占住档期。${tailNumber(ask.id)}。`,
+    confirmText: "拒绝申请",
+    danger: true,
+    run: () =>
+      writeAsk("reject", ask, () =>
+        bookingApi.reject(ask.id, `"r${ask.version}"`, keyFor(`reject:${ask.id}`)),
+      ),
+  };
+}
+
+async function runReview() {
+  const current = review.value;
+  if (!current || busy.value) return;
+  review.value = null;
+  await current.run();
 }
 
 async function writeAsk(action: "confirm" | "reject", ask: SlotAsk, run: () => Promise<unknown>) {
@@ -607,6 +625,16 @@ onMounted(() => void load());
       </div>
     </div>
     <p v-if="!canWriteSlots && canRead" class="hint">当前账号只能查看档期，不能开放或关闭。</p>
+    <ConfirmDialog
+      :open="review !== null"
+      :title="review?.title ?? ''"
+      :message="review?.message ?? ''"
+      :confirm-text="review?.confirmText ?? '确认'"
+      :danger="review?.danger"
+      :confirm-disabled="busy"
+      @cancel="review = null"
+      @confirm="runReview"
+    />
     <ConfirmDialog
       :open="closeTarget !== null"
       title="关闭档期"

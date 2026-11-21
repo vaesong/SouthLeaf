@@ -102,7 +102,6 @@ describe("WeekBoard", () => {
       )
       .mockResolvedValueOnce(response(200, desk("OCCUPIED", false)));
     vi.stubGlobal("fetch", fetcher as unknown as typeof fetch);
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const wrapper = mountBoard();
     await flushPromises();
 
@@ -111,6 +110,10 @@ describe("WeekBoard", () => {
     await wrapper.get("button.cal-block").trigger("click");
     expect(wrapper.text()).toContain("可以确认");
     await wrapper.get("button.btn-primary").trigger("click");
+    expect(wrapper.get(".modal").text()).toContain("按客人要的时间确认");
+    expect(wrapper.get(".modal").text()).toContain("尾号 90ad");
+    expect(wrapper.get(".modal").text()).toContain("本阶段不收款");
+    await wrapper.get(".modal button.btn-primary").trigger("click");
     await flushPromises();
 
     const write = fetcher.mock.calls[2]?.[1] as RequestInit;

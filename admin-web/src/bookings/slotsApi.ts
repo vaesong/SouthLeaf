@@ -77,7 +77,8 @@ export function slotFailureText(code: string | null): string {
   if (code === "SLOT_PENDING_REQUEST") return "这个时段还有待确认的申请，不能关闭";
   if (code === "SLOT_OVERLAP") return "和当天已有档期重叠";
   if (code === "SLOT_DAY_FULL") return "这一天的档期已经排满";
-  if (code === "SLOT_OUTSIDE_WINDOW") return "不在可以开放的日期范围内";
+  if (code === "SLOT_ALREADY_STARTED") return "这个时间已经过去了";
+  if (code === "SLOT_OUTSIDE_WINDOW") return "超过了可以开放的最远日期";
   return "这个时段暂时不能开放";
 }
 

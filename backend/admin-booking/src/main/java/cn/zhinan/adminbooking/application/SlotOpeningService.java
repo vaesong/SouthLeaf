@@ -33,8 +33,9 @@ import java.util.Optional;
 
 /**
  * Opens and closes slots for the studio. This path does not call {@code
- * BookingApplication.closeSlot}. Lead time and the furthest date are absolute instants: earliest is
- * {@code now} plus the rule's hours, and latest is {@code now} plus the rule's days, inclusive.
+ * BookingApplication.closeSlot}. A start that is already past is refused. The furthest date is
+ * {@code now} plus the rule's days, inclusive. The rule's minimum lead time limits customer
+ * requests, not this studio opening.
  *
  * <p>An open locks the operating-rule head before any slot row. Confirm, reschedule and this close
  * lock only the slot and never the rule head, so they cannot cycle with an open. Two opens
@@ -208,8 +209,9 @@ public final class SlotOpeningService {
       return new OpenedSlot(existing, true);
     }
     Instant now = clock.instant();
-    if (start.isBefore(now.plus(Duration.ofHours(rule.minAdvanceHours())))
-        || start.isAfter(now.plus(Duration.ofDays(rule.maxAdvanceDays()))))
+    if (start.isBefore(now))
+      throw new BookingException(BookingFailure.INVALID_REQUEST, "SLOT_ALREADY_STARTED");
+    if (start.isAfter(now.plus(Duration.ofDays(rule.maxAdvanceDays()))))
       throw new BookingException(BookingFailure.INVALID_REQUEST, "SLOT_OUTSIDE_WINDOW");
     Instant dayStart = date.atStartOfDay(BUSINESS_ZONE).toInstant();
     Instant dayEnd = date.plusDays(1).atStartOfDay(BUSINESS_ZONE).toInstant();
