@@ -73,6 +73,9 @@ class CatalogDraftJsonTest {
             "\"presentation\":{\"home.themesTitle\":\"主题\",\"home.signOff\":\"\"}");
     CatalogDraft draft = JSON.readValue(filled, CatalogDraft.class);
     assertThat(draft.presentation()).containsExactly(java.util.Map.entry("home.themesTitle", "主题"));
+    String published = JSON.writeValueAsString(draft.publicationSnapshot());
+    assertThat(published).contains("\"home.themesTitle\":\"主题\"");
+    assertThat(published).doesNotContain("home.signOff");
   }
 
   @Test

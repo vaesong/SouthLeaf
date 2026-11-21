@@ -127,7 +127,8 @@ public record CatalogDraft(
             .filter(HeroSlide::enabled)
             .sorted(
                 java.util.Comparator.comparingInt(HeroSlide::position).thenComparing(HeroSlide::id))
-            .toList());
+            .toList(),
+        presentation);
   }
 
   /** Featured works plus enabled slide targets that must pass the publication work gate. */
@@ -195,7 +196,8 @@ public record CatalogDraft(
       List<String> featuredBusinessIds,
       List<String> featuredPackageIds,
       List<String> featuredWorkIds,
-      List<HeroSlide> heroSlides) {
+      List<HeroSlide> heroSlides,
+      Map<String, String> presentation) {
     public PublicationSnapshot {
       team = List.copyOf(team);
       channels = List.copyOf(channels);
@@ -205,6 +207,7 @@ public record CatalogDraft(
       featuredPackageIds = List.copyOf(featuredPackageIds);
       featuredWorkIds = List.copyOf(featuredWorkIds);
       heroSlides = List.copyOf(heroSlides);
+      presentation = presentation == null ? Map.of() : Map.copyOf(presentation);
     }
   }
 
