@@ -2545,6 +2545,11 @@ a.nav-item {
 }
 .icp-record {
   margin: 18px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 10px;
+  row-gap: 2px;
   text-align: center;
   font-size: 12px;
   line-height: 1.6;
