@@ -27,16 +27,14 @@ public record WorkDraft(
 
   /** Shape rules for any saved draft; completeness is checked separately at publication. */
   public WorkDraft validated() {
-    if (title == null
-        || summary == null
-        || subjectScopeRef == null
-        || title.length() > ContentRules.MAX_TITLE
-        || summary.length() > ContentRules.MAX_SUMMARY
-        || (!subjectScopeRef.isEmpty() && !ContentRules.scopeRef(subjectScopeRef))
-        || businessIds.size() > ContentRules.MAX_BUSINESSES
-        || media.size() > ContentRules.MAX_MEDIA
-        || hasControl(title)
-        || hasControl(summary)) invalid("DRAFT_FIELD_INVALID");
+    if (title == null || summary == null || subjectScopeRef == null) invalid("DRAFT_FIELD_INVALID");
+    if (title.length() > ContentRules.MAX_TITLE) invalid("DRAFT_TITLE_TOO_LONG");
+    if (summary.length() > ContentRules.MAX_SUMMARY) invalid("DRAFT_SUMMARY_TOO_LONG");
+    if (!subjectScopeRef.isEmpty() && !ContentRules.scopeRef(subjectScopeRef))
+      invalid("DRAFT_SCOPE_INVALID");
+    if (businessIds.size() > ContentRules.MAX_BUSINESSES) invalid("DRAFT_BUSINESS_LIMIT");
+    if (hasControl(title)) invalid("DRAFT_TITLE_CONTROL");
+    if (hasDisallowedSummaryControl(summary)) invalid("DRAFT_SUMMARY_CONTROL");
     var seenBusiness = new HashSet<String>();
     for (String id : businessIds)
       if (!ContentRules.businessId(id) || !seenBusiness.add(id)) invalid("DRAFT_BUSINESS_INVALID");
@@ -75,6 +73,13 @@ public record WorkDraft(
 
   private static boolean hasControl(String value) {
     return value.chars().anyMatch(c -> c < 0x20 || c == 0x7f);
+  }
+
+  /** Introductions may wrap. Other control characters still cannot be stored. */
+  private static boolean hasDisallowedSummaryControl(String value) {
+    return value
+        .chars()
+        .anyMatch(c -> c != '\n' && c != '\r' && c != '\t' && (c < 0x20 || c == 0x7f));
   }
 
   private static void invalid(String reason) {

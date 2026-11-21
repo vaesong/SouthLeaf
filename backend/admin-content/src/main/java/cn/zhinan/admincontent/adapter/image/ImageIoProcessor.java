@@ -46,21 +46,29 @@ public final class ImageIoProcessor implements ImageProcessor {
       throw new ContentException(ContentFailure.MEDIA_TOO_LARGE, "MEDIA_TOO_LARGE");
     final String format = imageFormat(declaredContentType);
     byte[] image = format.equals("PNG") ? pngImage(bytes) : jpegImage(bytes);
-    BufferedImage decoded = decode(image, format);
-    BufferedImage normalized = normalize(decoded, format);
+    Decoded decoded = decode(image, format);
+    BufferedImage normalized = normalize(decoded.image(), format);
     var variants = new ArrayList<EncodedVariant>(2);
-    variants.add(encode("thumbnail", normalized, ContentRules.THUMBNAIL_EDGE, format));
-    variants.add(encode("preview", normalized, ContentRules.PREVIEW_EDGE, format));
+    variants.add(encode("thumbnail", normalized, ContentRules.THUMBNAIL_EDGE, format, 0.85f));
+    variants.add(
+        encode(
+            "preview",
+            normalized,
+            ContentRules.PREVIEW_EDGE,
+            format,
+            ContentRules.PREVIEW_JPEG_QUALITY));
     return new ProcessedImage(
         format,
         ContentRules.sha256(bytes),
         bytes.length,
-        decoded.getWidth(),
-        decoded.getHeight(),
+        decoded.sourceWidth(),
+        decoded.sourceHeight(),
         variants);
   }
 
-  private static BufferedImage decode(byte[] bytes, String format) {
+  private record Decoded(BufferedImage image, int sourceWidth, int sourceHeight) {}
+
+  private static Decoded decode(byte[] bytes, String format) {
     try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
       if (input == null) reject("MEDIA_DECODE");
       var readers = ImageIO.getImageReaders(input);
@@ -81,15 +89,19 @@ public final class ImageIoProcessor implements ImageProcessor {
         reader.setInput(input, true, true);
         int width = reader.getWidth(0);
         int height = reader.getHeight(0);
-        if (width < 1
-            || height < 1
-            || width > ContentRules.MAX_EDGE
-            || height > ContentRules.MAX_EDGE
-            || (long) width * height > ContentRules.MAX_PIXELS) reject("MEDIA_DIMENSIONS");
-        BufferedImage image = reader.read(0);
+        if (width < 1 || height < 1) reject("MEDIA_DIMENSIONS");
+        if (width > ContentRules.MAX_EDGE || height > ContentRules.MAX_EDGE) reject("MEDIA_EDGE");
+        if ((long) width * height > ContentRules.MAX_PIXELS) reject("MEDIA_PIXELS");
+        int subsample = subsampleFor(width, height);
+        var parameters = reader.getDefaultReadParam();
+        if (subsample > 1) parameters.setSourceSubsampling(subsample, subsample, 0, 0);
+        BufferedImage image = reader.read(0, parameters);
         if (warned.get() || image == null) reject("MEDIA_INTEGRITY");
-        if (image.getWidth() != width || image.getHeight() != height) reject("MEDIA_INTEGRITY");
-        return image;
+        int expectedWidth = (width + subsample - 1) / subsample;
+        int expectedHeight = (height + subsample - 1) / subsample;
+        if (image.getWidth() != expectedWidth || image.getHeight() != expectedHeight)
+          reject("MEDIA_INTEGRITY");
+        return new Decoded(image, width, height);
       } finally {
         reader.dispose();
       }
@@ -116,30 +128,34 @@ public final class ImageIoProcessor implements ImageProcessor {
     return target;
   }
 
+  /** Keeps a phone-sized original from being expanded into a full bitmap on this host. */
+  private static int subsampleFor(int width, int height) {
+    int longEdge = Math.max(width, height);
+    if (longEdge <= ContentRules.DECODE_EDGE) return 1;
+    return (int) Math.ceil(longEdge / (double) ContentRules.DECODE_EDGE);
+  }
+
   private static EncodedVariant encode(
-      String variant, BufferedImage source, int maxEdge, String format) {
-    double scale =
-        Math.min(1.0, (double) maxEdge / Math.max(source.getWidth(), source.getHeight()));
-    int width = Math.max(1, (int) Math.round(source.getWidth() * scale));
-    int height = Math.max(1, (int) Math.round(source.getHeight() * scale));
-    BufferedImage scaled = source;
-    if (width != source.getWidth() || height != source.getHeight()) {
-      scaled = new BufferedImage(width, height, source.getType());
-      Graphics2D graphics = scaled.createGraphics();
-      try {
-        graphics.setRenderingHint(
-            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        graphics.setRenderingHint(
-            RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        graphics.setRenderingHint(
-            RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.drawImage(source, 0, 0, width, height, null);
-      } finally {
-        graphics.dispose();
+      String variant, BufferedImage source, int maxEdge, String format, float quality) {
+    int edge = maxEdge;
+    float jpegQuality = quality;
+    BufferedImage scaled = scale(source, edge);
+    byte[] bytes = format.equals("PNG") ? writePng(scaled) : writeJpeg(scaled, jpegQuality);
+    while (bytes.length > ContentRules.MAX_STORED_OBJECT_BYTES) {
+      if (format.equals("JPEG") && jpegQuality > 0.66f) {
+        jpegQuality = Math.max(0.66f, jpegQuality - 0.1f);
+        bytes = writeJpeg(scaled, jpegQuality);
+        continue;
       }
+      if (edge <= ContentRules.THUMBNAIL_EDGE) break;
+      edge = Math.max(ContentRules.THUMBNAIL_EDGE, (int) Math.floor(edge * 0.85));
+      jpegQuality = quality;
+      scaled = scale(source, edge);
+      bytes = format.equals("PNG") ? writePng(scaled) : writeJpeg(scaled, jpegQuality);
     }
-    byte[] bytes = format.equals("PNG") ? writePng(scaled) : writeJpeg(scaled);
     if (bytes.length > ContentRules.MAX_STORED_OBJECT_BYTES) reject("MEDIA_DERIVATIVE_TOO_LARGE");
+    int width = scaled.getWidth();
+    int height = scaled.getHeight();
     String sha = ContentRules.sha256(bytes);
     String extension = format.equals("PNG") ? ".png" : ".jpg";
     String contentType = format.equals("PNG") ? "image/png" : "image/jpeg";
@@ -159,7 +175,27 @@ public final class ImageIoProcessor implements ImageProcessor {
     }
   }
 
-  private static byte[] writeJpeg(BufferedImage image) {
+  private static BufferedImage scale(BufferedImage source, int maxEdge) {
+    double scale =
+        Math.min(1.0, (double) maxEdge / Math.max(source.getWidth(), source.getHeight()));
+    int width = Math.max(1, (int) Math.round(source.getWidth() * scale));
+    int height = Math.max(1, (int) Math.round(source.getHeight() * scale));
+    if (width == source.getWidth() && height == source.getHeight()) return source;
+    var scaled = new BufferedImage(width, height, source.getType());
+    Graphics2D graphics = scaled.createGraphics();
+    try {
+      graphics.setRenderingHint(
+          RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+      graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+      graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      graphics.drawImage(source, 0, 0, width, height, null);
+    } finally {
+      graphics.dispose();
+    }
+    return scaled;
+  }
+
+  private static byte[] writeJpeg(BufferedImage image, float quality) {
     var writers = ImageIO.getImageWritersByFormatName("jpeg");
     if (!writers.hasNext()) reject("MEDIA_ENCODE");
     var writer = writers.next();
@@ -168,7 +204,7 @@ public final class ImageIoProcessor implements ImageProcessor {
       writer.setOutput(stream);
       ImageWriteParam parameters = writer.getDefaultWriteParam();
       parameters.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-      parameters.setCompressionQuality(0.85f);
+      parameters.setCompressionQuality(quality);
       writer.write(null, new IIOImage(image, null, null), parameters);
     } catch (IOException failure) {
       reject("MEDIA_ENCODE");

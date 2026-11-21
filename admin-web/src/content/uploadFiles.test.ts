@@ -25,7 +25,9 @@ describe("uploadFilesSequentially", () => {
     expect(keys).toHaveLength(2);
     expect(new Set(keys).size).toBe(2);
     expect(keys[0]).toMatch(/^[A-Za-z0-9_-]{16,64}$/);
-    expect(uploadFailureText("bad.jpg", failure?.error)).toBe("bad.jpg：图片超过 30MB。");
+    expect(uploadFailureText("bad.jpg", failure?.error)).toBe(
+      "bad.jpg：图片文件超过 30MB。可以先把文件压小，像素不用改。",
+    );
   });
 
   it("does not start the next file until the current upload finishes", async () => {

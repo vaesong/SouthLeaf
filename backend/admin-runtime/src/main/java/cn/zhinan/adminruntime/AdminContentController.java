@@ -51,7 +51,7 @@ import tools.jackson.databind.json.JsonMapper;
 @RequestMapping("/api/admin/v1")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 class AdminContentController {
-  private static final int MAX_DRAFT_BYTES = 16 * 1024;
+  private static final int MAX_DRAFT_BYTES = ContentRules.MAX_DRAFT_BYTES;
   private static final int MAX_CATALOG_BYTES = 262_144;
   private static final int MAX_EMPTY_BODY_BYTES = 64;
   private static final Pattern ETAG = Pattern.compile("\"v([1-9][0-9]{0,8})\"");
@@ -790,7 +790,6 @@ class AdminContentController {
               }
               if (mediaId == null || alt == null) invalid();
               media.add(new WorkDraft.MediaBinding(mediaId, alt));
-              if (media.size() > ContentRules.MAX_MEDIA) invalid();
             }
           }
           default -> invalid();

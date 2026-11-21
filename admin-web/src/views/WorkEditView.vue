@@ -20,7 +20,7 @@ import {
   uploadFailureText,
   uploadFilesSequentially,
 } from "../content/uploadFiles";
-import { addWorkMedia, WORK_MEDIA_LIMIT_TEXT } from "../content/workMedia";
+import { addWorkMedia } from "../content/workMedia";
 import { catalogStoreKey } from "../content/catalogStore";
 import { requireContentApi } from "../content/inject";
 import {
@@ -158,31 +158,21 @@ function toggleBusiness(id: string) {
 }
 
 function chooseMedia(mediaId: string) {
-  const outcome = addWorkMedia(form.selected, mediaId);
-  if (outcome === "added") {
-    if (!form.cover) form.cover = mediaId;
-  } else if (outcome === "full") {
-    notice.value = WORK_MEDIA_LIMIT_TEXT;
-  }
+  if (addWorkMedia(form.selected, mediaId) === "added" && !form.cover) form.cover = mediaId;
 }
 
 async function uploadMedia(files: File[], folderId: string | null = null) {
   uploading.value = true;
   notice.value = "";
-  let blocked = false;
   const failure = await uploadFilesSequentially(files, async (file, key) => {
     const result = await api.upload(file, file.name, key, folderId);
     library.value = rememberUploadedMedia(library.value, result.media);
-    const outcome = addWorkMedia(form.selected, result.media.mediaId);
-    if (outcome === "added") {
-      if (!form.cover) form.cover = result.media.mediaId;
-    } else if (outcome === "full") blocked = true;
+    if (addWorkMedia(form.selected, result.media.mediaId) === "added" && !form.cover)
+      form.cover = result.media.mediaId;
   });
   if (failure) {
     notice.value = uploadFailureText(failure.file.name, failure.error);
     requestId.value = describeFailure(failure.error).requestId;
-  } else if (blocked) {
-    notice.value = WORK_MEDIA_LIMIT_TEXT;
   }
   uploading.value = false;
 }
@@ -380,7 +370,7 @@ onMounted(() => {
           </div>
         </div>
         <div class="field">
-          <label>图片<em>最多 9 张 · 点星标设为封面</em></label>
+          <label>图片<em>点星标设为封面</em></label>
           <div class="thumbs">
             <div v-for="mediaId in form.selected" :key="mediaId" class="work-thumb">
               <div class="thumb" :class="{ cover: form.cover === mediaId }">
@@ -412,13 +402,7 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-            <button
-              v-if="form.selected.length < 9"
-              class="upload"
-              type="button"
-              :disabled="!canEdit"
-              @click="pickerOpen = true"
-            >
+            <button class="upload" type="button" :disabled="!canEdit" @click="pickerOpen = true">
               <AppIcon name="plus" />
               添加
             </button>

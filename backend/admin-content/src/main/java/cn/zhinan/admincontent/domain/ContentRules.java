@@ -20,14 +20,26 @@ public final class ContentRules {
   public static final int MAX_SOURCE_FILE_NAME = 120;
   public static final int MAX_FOLDER_NAME = 40;
   public static final int MAX_FOLDER_DEPTH = 3;
-  public static final int MAX_EDGE = 8192;
-  public static final long MAX_PIXELS = 24_000_000L;
+
+  /** Longest side accepted from a camera or phone export. */
+  public static final int MAX_EDGE = 12_000;
+
+  /** Total pixels accepted before the image is reduced for display. */
+  public static final long MAX_PIXELS = 50_000_000L;
+
   public static final int THUMBNAIL_EDGE = 480;
-  public static final int PREVIEW_EDGE = 1600;
+
+  /** Longest side stored for the guest-facing image. Larger originals are reduced to this. */
+  public static final int PREVIEW_EDGE = 3840;
+
+  /** Longest side decoded in memory. Bigger originals are subsampled down to about this size. */
+  public static final int DECODE_EDGE = 4096;
+
+  public static final float PREVIEW_JPEG_QUALITY = 0.92f;
   public static final int MAX_TITLE = 80;
   public static final int MAX_SUMMARY = 400;
   public static final int MAX_ALT = 120;
-  public static final int MAX_MEDIA = 9;
+  public static final int MAX_DRAFT_BYTES = 1024 * 1024;
   public static final int MAX_BUSINESSES = 3;
   public static final String PURPOSE = "PUBLIC_WORK_DISPLAY";
   public static final String CHANNEL = "WECHAT_MINI_PROGRAM";

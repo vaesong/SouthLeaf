@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 final class AdminOriginFilter extends OncePerRequestFilter {
   static final String UPLOAD_PATH = "/api/admin/v1/media/uploads";
   static final long MAX_UPLOAD_REQUEST_BYTES = ContentRules.MAX_UPLOAD_BYTES + 64L * 1024;
-  private static final long MAX_PUT_BYTES = 16 * 1024;
+  private static final long MAX_PUT_BYTES = ContentRules.MAX_DRAFT_BYTES;
   private final AdminOriginPolicy originPolicy;
 
   AdminOriginFilter(AdminOriginPolicy originPolicy) {
@@ -80,7 +80,7 @@ final class AdminOriginFilter extends OncePerRequestFilter {
         }
         if (request.getContentLengthLong() > MAX_PUT_BYTES) {
           AdminHttpResponses.writeError(
-              response, 413, "PAYLOAD_TOO_LARGE", "The request body exceeds 16 KiB.");
+              response, 413, "PAYLOAD_TOO_LARGE", "The request body exceeds 1 MiB.");
           return;
         }
       }

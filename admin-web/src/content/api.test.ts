@@ -282,7 +282,7 @@ describe("AdminContentApi", () => {
       describeFailure(
         new ContentApiError(413, "MEDIA_TOO_LARGE", "too big", "r", "MEDIA_TOO_LARGE"),
       ).text,
-    ).toBe("图片超过 30MB。");
+    ).toBe("图片文件超过 30MB。可以先把文件压小，像素不用改。");
     expect(
       describeFailure(
         new ContentApiError(
@@ -298,7 +298,37 @@ describe("AdminContentApi", () => {
       describeFailure(
         new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_DIMENSIONS"),
       ).text,
-    ).toBe("图片边长或像素超过上限。");
+    ).toBe("图片尺寸无法识别，请换一张 JPEG 或 PNG。");
+    expect(
+      describeFailure(new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_EDGE"))
+        .text,
+    ).toBe("图片的宽或高超过 12000 像素。缩小长边后再上传。");
+    expect(
+      describeFailure(new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_PIXELS"))
+        .text,
+    ).toBe("图片超过 5000 万像素。手机直接导出的原片可以上传，比这更大的需要先缩小。");
+    expect(
+      describeFailure(
+        new ContentApiError(
+          400,
+          "INVALID_REQUEST",
+          "The request is invalid.",
+          "r",
+          "DRAFT_TITLE_CONTROL",
+        ),
+      ).text,
+    ).toBe("标题不能换行。");
+    expect(
+      describeFailure(
+        new ContentApiError(
+          400,
+          "INVALID_REQUEST",
+          "The request is invalid.",
+          "r",
+          "DRAFT_COVER_UNBOUND",
+        ),
+      ).text,
+    ).toBe("封面必须是这组作品里已经选中的一张图片。");
     expect(
       describeFailure(
         new ContentApiError(422, "MEDIA_REJECTED", "rejected", "r", "MEDIA_SIGNATURE"),

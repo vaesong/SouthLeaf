@@ -70,7 +70,13 @@ class ContentDomainTest {
         .hasMessageContaining("DRAFT_BUSINESS_INVALID");
     assertThatThrownBy(
             () -> new WorkDraft("x".repeat(81), "s", "x", List.of(), List.of(), null).validated())
-        .hasMessageContaining("DRAFT_FIELD_INVALID");
+        .hasMessageContaining("DRAFT_TITLE_TOO_LONG");
+    assertThat(
+            new WorkDraft("t", "第一行\n第二行", "x", List.of(), List.of(), null).validated().summary())
+        .isEqualTo("第一行\n第二行");
+    assertThatThrownBy(
+            () -> new WorkDraft("第一行\n第二行", "s", "x", List.of(), List.of(), null).validated())
+        .hasMessageContaining("DRAFT_TITLE_CONTROL");
   }
 
   @Test

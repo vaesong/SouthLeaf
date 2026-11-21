@@ -88,6 +88,7 @@
   color: #75685b;
   font-size: 26rpx;
   line-height: 1.9;
+  white-space: pre-line;
 }
 .gallery-toolbar {
   display: flex;

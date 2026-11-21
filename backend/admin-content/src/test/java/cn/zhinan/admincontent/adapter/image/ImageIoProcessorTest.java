@@ -34,7 +34,7 @@ class ImageIoProcessorTest {
     assertThat(thumb.metadata().variant()).isEqualTo("thumbnail");
     assertThat(thumb.metadata().width()).isEqualTo(480);
     assertThat(thumb.metadata().height()).isEqualTo(240);
-    assertThat(preview.metadata().width()).isEqualTo(1600);
+    assertThat(preview.metadata().width()).isEqualTo(2000);
     for (var variant : result.variants()) {
       assertThat(variant.metadata().objectKey())
           .isEqualTo(variant.metadata().sha256() + ".png")
@@ -102,9 +102,27 @@ class ImageIoProcessorTest {
   }
 
   @Test
+  void largeOriginalKeepsItsSizeAndStoresADisplayPreview() throws Exception {
+    byte[] source = pngWithTextChunk(8192, 4, "x");
+    var result = processor.process(source, "image/png");
+    assertThat(result.sourceWidth()).isEqualTo(8192);
+    assertThat(result.sourceHeight()).isEqualTo(4);
+    assertThat(result.variants().get(1).metadata().width()).isEqualTo(ContentRules.PREVIEW_EDGE);
+    assertThat(result.variants().get(0).metadata().width()).isEqualTo(ContentRules.THUMBNAIL_EDGE);
+  }
+
+  @Test
   void rejectsOversizedDimensionsBeforeDecoding() throws Exception {
-    byte[] wide = pngWithTextChunk(8193, 1, "x");
-    expect(() -> processor.process(wide, "image/png"), ContentFailure.MEDIA_REJECTED);
+    byte[] wide = pngWithTextChunk(ContentRules.MAX_EDGE + 1, 1, "x");
+    assertThatThrownBy(() -> processor.process(wide, "image/png"))
+        .isInstanceOf(ContentException.class)
+        .extracting(e -> ((ContentException) e).reason())
+        .isEqualTo("MEDIA_EDGE");
+    byte[] dense = pngDimensionClaim(10_000, 5_001);
+    assertThatThrownBy(() -> processor.process(dense, "image/png"))
+        .isInstanceOf(ContentException.class)
+        .extracting(e -> ((ContentException) e).reason())
+        .isEqualTo("MEDIA_PIXELS");
   }
 
   private static void expect(Runnable call, ContentFailure failure) {
@@ -143,6 +161,45 @@ class ImageIoProcessorTest {
       writer.dispose();
     }
     return output.toByteArray();
+  }
+
+  /** Header only, so a 50-megapixel claim does not allocate a bitmap. */
+  static byte[] pngDimensionClaim(int width, int height) throws Exception {
+    byte[] data = new byte[13];
+    data[0] = (byte) (width >>> 24);
+    data[1] = (byte) (width >>> 16);
+    data[2] = (byte) (width >>> 8);
+    data[3] = (byte) width;
+    data[4] = (byte) (height >>> 24);
+    data[5] = (byte) (height >>> 16);
+    data[6] = (byte) (height >>> 8);
+    data[7] = (byte) height;
+    data[8] = 8;
+    data[9] = 2;
+    var output = new ByteArrayOutputStream();
+    output.write(new byte[] {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'});
+    writePngChunk(output, "IHDR", data);
+    writePngChunk(output, "IEND", new byte[0]);
+    return output.toByteArray();
+  }
+
+  private static void writePngChunk(ByteArrayOutputStream output, String type, byte[] data)
+      throws Exception {
+    output.write((data.length >>> 24) & 0xff);
+    output.write((data.length >>> 16) & 0xff);
+    output.write((data.length >>> 8) & 0xff);
+    output.write(data.length & 0xff);
+    byte[] name = type.getBytes(StandardCharsets.US_ASCII);
+    output.write(name);
+    output.write(data);
+    var crc = new java.util.zip.CRC32();
+    crc.update(name);
+    crc.update(data);
+    long sum = crc.getValue();
+    output.write((int) ((sum >>> 24) & 0xff));
+    output.write((int) ((sum >>> 16) & 0xff));
+    output.write((int) ((sum >>> 8) & 0xff));
+    output.write((int) (sum & 0xff));
   }
 
   static byte[] jpeg(int width, int height) throws Exception {
