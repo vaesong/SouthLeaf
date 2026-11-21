@@ -231,6 +231,11 @@ test("brand, QR, team and share fields are read from the contract", () => {
   assert.equal(b.shareTitle, "Studio share");
   assert.equal(b.team[0].portraitMedia.id, "person");
   assert.equal(b.contact.channels[0].qrCodeMedia.id, "qr");
+  assert.equal(b.coverMedia, null);
+  assert.equal(
+    mapped.mapBrand({ ...brand(), coverMedia: media("cover") }).coverMedia.id,
+    "cover",
+  );
   assert.throws(() => mapped.mapBrand({}));
 });
 test("transport preserves metadata only after validating the new envelope", async () => {

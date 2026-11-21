@@ -55,6 +55,7 @@ public final class PublicDtos {
       String tagline,
       String description,
       Media logoMedia,
+      Media coverMedia,
       Contact contact,
       List<TeamMember> team) {
     public Brand {

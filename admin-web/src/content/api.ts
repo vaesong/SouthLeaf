@@ -75,6 +75,7 @@ export interface CatalogDraftInput {
     tagline: string;
     description: string;
     logoMediaId: string | null;
+    coverMediaId: string | null;
   };
   contact: { phone: string; address: string; workingHours: string };
   team: Array<{

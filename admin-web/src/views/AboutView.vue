@@ -38,6 +38,7 @@ const editingMember = computed(() =>
   editingIndex.value === null ? null : (draft.value?.team[editingIndex.value] ?? null),
 );
 const logoOpen = ref(false);
+const coverOpen = ref(false);
 const qrOpen = ref<number | null>(null);
 
 function platformMark(platform: string) {
@@ -51,6 +52,17 @@ function chooseLogo(id: string) {
   if (!draft.value) return;
   draft.value.brand.logoMediaId = id;
   logoOpen.value = false;
+}
+
+function chooseCover(id: string) {
+  if (!draft.value) return;
+  draft.value.brand.coverMediaId = id;
+  coverOpen.value = false;
+}
+
+function clearCover() {
+  if (!draft.value) return;
+  draft.value.brand.coverMediaId = null;
 }
 
 function chooseQr(id: string) {
@@ -245,6 +257,57 @@ onMounted(async () => {
                 data-testid="catalog-brand-description"
                 :disabled="!canEdit"
               ></textarea>
+            </div>
+            <div class="field span-2">
+              <label>关于页封面</label>
+              <p class="hint">留空就用原来的文字介绍。选择并发布后，关于页上半屏显示这张照片。</p>
+              <div class="logo-edit">
+                <button
+                  class="cover-pick"
+                  type="button"
+                  data-testid="catalog-brand-cover-media"
+                  :disabled="!canEdit"
+                  @click="coverOpen = true"
+                >
+                  <img
+                    v-if="draft.brand.coverMediaId"
+                    :src="mediaContentPath(draft.brand.coverMediaId, 'thumbnail')"
+                    alt=""
+                  />
+                  <span v-else>照片</span>
+                </button>
+                <div class="field">
+                  <div class="cover-actions">
+                    <button
+                      class="btn btn-secondary btn-sm"
+                      type="button"
+                      :disabled="!canEdit"
+                      @click="coverOpen = true"
+                    >
+                      {{ draft.brand.coverMediaId ? "更换" : "从图片库选择" }}
+                    </button>
+                    <button
+                      v-if="draft.brand.coverMediaId"
+                      class="btn btn-ghost btn-sm"
+                      type="button"
+                      :disabled="!canEdit"
+                      @click="clearCover"
+                    >
+                      移除
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <MediaPicker
+                :open="coverOpen"
+                :media="media"
+                :model-value="draft.brand.coverMediaId"
+                :uploading="uploading"
+                :notice="mediaError"
+                @close="coverOpen = false"
+                @choose="chooseCover"
+                @upload="uploadMedia"
+              />
             </div>
           </div>
         </div>
@@ -613,6 +676,9 @@ onMounted(async () => {
         :hours="draft.contact.workingHours"
         :logo-url="
           draft.brand.logoMediaId ? mediaContentPath(draft.brand.logoMediaId, 'thumbnail') : ''
+        "
+        :cover-url="
+          draft.brand.coverMediaId ? mediaContentPath(draft.brand.coverMediaId, 'thumbnail') : ''
         "
         :team="publishedTeam"
       />

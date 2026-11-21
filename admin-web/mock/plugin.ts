@@ -12,6 +12,7 @@ type Draft = {
     tagline: string;
     description: string;
     logoMediaId: string | null;
+    coverMediaId: string | null;
   };
   contact: { phone: string; address: string; workingHours: string };
   team: Array<Record<string, unknown>>;
@@ -117,6 +118,7 @@ function emptyDraft(): Draft {
       tagline: "虚构的一句话",
       description: `${MARKER} 这是本地模拟文案，不是真实工作室。`,
       logoMediaId: MEDIA[0],
+      coverMediaId: null,
     },
     contact: {
       phone: "010-0000-0000",

@@ -1210,6 +1210,50 @@ a {
   margin-bottom: 4px;
   color: #fff;
 }
+.mp-cover {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  background: #2a211f;
+}
+.mp-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mp-cover-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 36px 16px 14px;
+  background: linear-gradient(to top, rgba(18, 11, 8, 0.86) 8%, rgba(18, 11, 8, 0.35) 55%, rgba(18, 11, 8, 0));
+  color: #f7f2ec;
+}
+.mp-cover-copy b,
+.mp-cover-copy small,
+.mp-cover-copy strong {
+  display: block;
+}
+.mp-cover-copy b {
+  margin-bottom: 6px;
+  color: rgba(247, 242, 236, 0.75);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+}
+.mp-cover-copy small {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(247, 242, 236, 0.84);
+}
+.mp-cover-copy strong {
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
 .mp-about-head {
   display: flex;
   flex-direction: column;
@@ -1394,6 +1438,28 @@ a {
 .logo-edit {
   display: flex;
   gap: 18px;
+  align-items: center;
+}
+.cover-pick {
+  width: 132px;
+  height: 88px;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sunk);
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.cover-pick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cover-actions {
+  display: flex;
+  gap: 8px;
   align-items: center;
 }
 .logo-big {

@@ -138,6 +138,7 @@ describe("AdminContentApi", () => {
         tagline: "",
         description: "",
         logoMediaId: null,
+        coverMediaId: null,
       },
       contact: { phone: "", address: "", workingHours: "" },
       team: [],

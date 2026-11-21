@@ -204,9 +204,31 @@ public record CatalogSnapshot(
       String tagline,
       String description,
       String logoMediaId,
+      String coverMediaId,
       List<TeamMember> team) {
     public Brand {
       team = List.copyOf(team);
+    }
+
+    public Brand(
+        String name,
+        String englishName,
+        String discoveryHeading,
+        String shareTitle,
+        String tagline,
+        String description,
+        String logoMediaId,
+        List<TeamMember> team) {
+      this(
+          name,
+          englishName,
+          discoveryHeading,
+          shareTitle,
+          tagline,
+          description,
+          logoMediaId,
+          null,
+          team);
     }
 
     public Brand(

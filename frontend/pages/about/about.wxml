@@ -1,7 +1,25 @@
 <view class="about-page">
   <demo-notice mode="{{dataMode}}"></demo-notice>
+  <view wx:if="{{showCover}}" class="story-cover">
+    <image
+      class="story-photo"
+      src="{{brand.coverMedia.src}}"
+      mode="aspectFill"
+      data-arg0="cover"
+      binderror="handleMarkMediaFailedError"
+    ></image>
+    <view class="story-veil">
+      <text wx:if="{{brand.name}}" class="story-brand">{{brand.name}}</text>
+      <text wx:if="{{brand.coverKicker}}" class="story-kicker"
+        >{{brand.coverKicker}}</text
+      >
+      <text wx:for="{{brand.coverTitleLines}}" wx:key="key" class="story-title"
+        >{{item.text}}</text
+      >
+    </view>
+  </view>
   <view
-    wx:if="{{status === 'success' && (copy.about.title || copy.about.summary)}}"
+    wx:if="{{status === 'success' && !showCover && (copy.about.title || copy.about.summary)}}"
     class="page-intro"
   >
     <text class="eyebrow">ABOUT US</text>
@@ -14,7 +32,7 @@
   </view>
   <block wx:if="{{status === 'success'}}">
     <view
-      wx:if="{{brand.description || copy.about.signOff}}"
+      wx:if="{{!showCover && (brand.description || copy.about.signOff)}}"
       class="manifesto-card"
     >
       <text wx:if="{{brand.description}}" class="manifesto-text"

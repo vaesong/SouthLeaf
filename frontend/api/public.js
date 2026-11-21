@@ -110,6 +110,8 @@ const mapBrand = (input) => {
     tagline: text(value.tagline),
     description: text(value.description),
     logoMedia: nullableMedia(value.logoMedia),
+    coverMedia:
+      value.coverMedia == null ? null : nullableMedia(value.coverMedia),
     contact,
     phone: contact.phone,
     address: contact.address,

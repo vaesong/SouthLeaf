@@ -4,11 +4,14 @@ const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { brandView, teamView } = require("../../presentation/views.js");
 function present(data) {
+  const brand = brandView(data.brand);
+  const failed = data.failedMedia || {};
   return {
     ...data,
     channels: data.brand.contact?.channels || [],
     team: teamView(data.brand.team || []),
-    brand: brandView(data.brand),
+    brand,
+    showCover: Boolean(brand.coverMedia && !failed.cover),
     copy: ready(data.copy),
     dataMode: ["success", "empty"].includes(data.status)
       ? (data.brand.meta?.dataMode ?? "")

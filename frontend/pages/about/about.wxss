@@ -4,6 +4,57 @@
   background: #f4efea;
   color: #26201b;
 }
+.story-cover {
+  position: relative;
+  height: 50vh;
+  margin: 0 -32rpx;
+  overflow: hidden;
+  background: #2a211f;
+}
+.story-photo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.story-veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 96rpx 48rpx 32rpx;
+  background: linear-gradient(
+    to top,
+    rgba(18, 11, 8, 0.86) 8%,
+    rgba(18, 11, 8, 0.4) 52%,
+    rgba(18, 11, 8, 0)
+  );
+  color: #f7f2ec;
+}
+.story-brand {
+  display: block;
+  margin-bottom: 10rpx;
+  color: rgba(247, 242, 236, 0.75);
+  font-size: 22rpx;
+  letter-spacing: 6rpx;
+}
+.story-kicker {
+  display: block;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: rgba(247, 242, 236, 0.84);
+}
+.story-title {
+  display: block;
+  margin-top: 8rpx;
+  font-family: "Songti SC", "STSong", "SimSun", serif;
+  font-size: 44rpx;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f7f2ec;
+}
 .manifesto-card {
   margin-top: 12rpx;
   padding: 32rpx 28rpx;

@@ -197,6 +197,41 @@ class CatalogDraftTest {
   }
 
   @Test
+  void aboutCoverIsASeparateBrandImageReference() {
+    var draft = base();
+    var withCover =
+        new CatalogDraft(
+            new CatalogDraft.Brand(
+                draft.brand().name(),
+                draft.brand().englishName(),
+                draft.brand().discoveryHeading(),
+                draft.brand().shareTitle(),
+                draft.brand().tagline(),
+                draft.brand().description(),
+                null,
+                "media-cover"),
+            draft.contact(),
+            draft.team(),
+            draft.channels(),
+            draft.businesses(),
+            draft.packages(),
+            draft.featuredBusinessIds(),
+            draft.featuredPackageIds(),
+            draft.featuredWorkIds(),
+            java.util.Map.of("media-cover", "About cover"),
+            List.of());
+    assertThat(withCover.validated().mediaReferences())
+        .singleElement()
+        .satisfies(
+            ref -> {
+              assertThat(ref.mediaId()).isEqualTo("media-cover");
+              assertThat(ref.ownerType()).isEqualTo("BRAND");
+              assertThat(ref.ownerId()).isEqualTo("brand");
+              assertThat(ref.position()).isEqualTo(1);
+            });
+  }
+
+  @Test
   void blankMediaAltValidatesAndClearsEveryReferencedDescription() {
     var draft = base();
     var brand =

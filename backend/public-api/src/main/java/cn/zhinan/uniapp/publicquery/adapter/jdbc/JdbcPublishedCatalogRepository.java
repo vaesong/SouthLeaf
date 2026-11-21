@@ -262,6 +262,7 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
             text(brand, "tagline"),
             text(brand, "description"),
             nullableText(brand.get("logoMediaId")),
+            nullableText(brand.get("coverMediaId")),
             team),
         new Contact(
             text(contact, "phone"),

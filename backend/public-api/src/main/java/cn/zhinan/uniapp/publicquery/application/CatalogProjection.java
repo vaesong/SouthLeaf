@@ -60,7 +60,8 @@ public final class CatalogProjection {
     return switch (binding.ownerType()) {
       case "BRAND" ->
           "brand".equals(binding.ownerId())
-              && binding.mediaId().equals(catalog.brand().logoMediaId());
+              && (binding.mediaId().equals(catalog.brand().logoMediaId())
+                  || binding.mediaId().equals(catalog.brand().coverMediaId()));
       case "WORK" ->
           work(binding.ownerId()).map(w -> w.mediaIds().contains(binding.mediaId())).orElse(false);
       case "BUSINESS" ->
@@ -171,6 +172,7 @@ public final class CatalogProjection {
         b.tagline(),
         b.description(),
         media("brand", b.logoMediaId(), "preview").orElse(null),
+        media("brand", b.coverMediaId(), "preview").orElse(null),
         contact(),
         b.team().stream()
             .map(

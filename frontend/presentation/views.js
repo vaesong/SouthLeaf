@@ -3,14 +3,29 @@ const workView = (work) => ({
   ...work,
   businessLabel: work.businessLabels.join(" · "),
 });
-const brandView = (brand) => ({
-  ...brand,
-  initial: brand.name ? brand.name.slice(0, 1) : "",
-  team: (brand.team || []).map((member) => ({
-    ...member,
-    initial: member.name ? String(member.name).slice(0, 1) : "",
-  })),
-});
+const storyLines = (description) =>
+  String(description || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+const brandView = (brand) => {
+  const source = brand || {};
+  const lines = storyLines(source.description);
+  const titleLines = lines.length > 1 ? lines.slice(1) : lines;
+  return {
+    ...source,
+    initial: source.name ? source.name.slice(0, 1) : "",
+    coverKicker: lines.length > 1 ? lines[0] : "",
+    coverTitleLines: titleLines.map((text, index) => ({
+      key: String(index),
+      text,
+    })),
+    team: (source.team || []).map((member) => ({
+      ...member,
+      initial: member.name ? String(member.name).slice(0, 1) : "",
+    })),
+  };
+};
 const teamView = (team) =>
   team.map((member) => ({ ...member, initial: member.name.slice(0, 1) }));
 const homeView = (home, priceLines) => ({

@@ -90,7 +90,7 @@ public record CatalogDraft(
                         false))
             .toList();
     return new CatalogDraft(
-        new Brand("", "", "", "", "", "", null),
+        new Brand("", "", "", "", "", "", null, null),
         new Contact("", "", ""),
         List.of(),
         List.of(),
@@ -168,6 +168,7 @@ public record CatalogDraft(
   private List<MediaReference> mediaReferences(boolean publishedOnly) {
     var refs = new ArrayList<MediaReference>();
     addRef(refs, brand.logoMediaId(), "BRAND", "brand", 0);
+    addRef(refs, brand.coverMediaId(), "BRAND", "brand", 1);
     team.stream()
         .filter(v -> !publishedOnly || v.published())
         .forEach(v -> addRef(refs, v.portraitMediaId(), "TEAM_MEMBER", v.id(), v.position()));
@@ -387,7 +388,21 @@ public record CatalogDraft(
       String shareTitle,
       String tagline,
       String description,
-      String logoMediaId) {
+      String logoMediaId,
+      String coverMediaId) {
+    /** Drafts saved before the about-page cover keep that image empty. */
+    public Brand(
+        String name,
+        String englishName,
+        String discoveryHeading,
+        String shareTitle,
+        String tagline,
+        String description,
+        String logoMediaId) {
+      this(
+          name, englishName, discoveryHeading, shareTitle, tagline, description, logoMediaId, null);
+    }
+
     void validate() {
       text(name, 255, "BRAND_FIELD_INVALID");
       text(englishName, 255, "BRAND_FIELD_INVALID");
@@ -396,6 +411,7 @@ public record CatalogDraft(
       text(tagline, 1024, "BRAND_FIELD_INVALID");
       text(description, 16000, "BRAND_FIELD_INVALID");
       if (logoMediaId != null) requireId(logoMediaId);
+      if (coverMediaId != null) requireId(coverMediaId);
     }
 
     void require(String reason) {

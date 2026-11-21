@@ -54,6 +54,38 @@ class CatalogDraftJsonTest {
   }
 
   @Test
+  void coverMediaIdRoundTripsThroughTheCatalogMapper() throws Exception {
+    var empty = CatalogDraft.empty();
+    var draft =
+        new CatalogDraft(
+            new CatalogDraft.Brand("枝南", "Zhinan", "发现", "分享", "", "第一句", null, "media-cover"),
+            empty.contact(),
+            empty.team(),
+            empty.channels(),
+            empty.businesses(),
+            empty.packages(),
+            empty.featuredBusinessIds(),
+            empty.featuredPackageIds(),
+            empty.featuredWorkIds(),
+            java.util.Map.of(),
+            java.util.List.of());
+    CatalogDraft again = JSON.readValue(JSON.writeValueAsString(draft), CatalogDraft.class);
+    assertThat(again.brand().coverMediaId()).isEqualTo("media-cover");
+    assertThat(again.brand().logoMediaId()).isNull();
+  }
+
+  @Test
+  void olderDraftJsonWithoutCoverMediaIdReadsAsNull() throws Exception {
+    String current = JSON.writeValueAsString(CatalogDraft.empty());
+    assertThat(current).contains("\"coverMediaId\":null");
+    String legacy = current.replace(",\"coverMediaId\":null", "");
+    assertThat(legacy).doesNotContain("coverMediaId");
+    CatalogDraft draft = JSON.readValue(legacy, CatalogDraft.class);
+    assertThat(draft.brand().coverMediaId()).isNull();
+    assertThat(draft.validated().brand().coverMediaId()).isNull();
+  }
+
+  @Test
   void olderDraftJsonWithoutPresentationReadsAsEmpty() throws Exception {
     String current = JSON.writeValueAsString(CatalogDraft.empty());
     assertThat(current).contains("\"presentation\"");

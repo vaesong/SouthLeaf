@@ -20,6 +20,7 @@ function draft(overrides: Partial<CatalogDraftInput> = {}): CatalogDraftInput {
       tagline: "一句",
       description: "故事",
       logoMediaId: null,
+      coverMediaId: null,
     },
     contact: { phone: "1", address: "地址", workingHours: "10:00" },
     team: [],
@@ -108,6 +109,7 @@ describe("catalog draft helpers", () => {
         tagline: "一句",
         description: "故事",
         logoMediaId: "logo-1",
+        coverMediaId: null,
       },
       mediaAltTexts: { "logo-1": "旧描述", extra: "不要留下" },
     });

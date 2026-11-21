@@ -196,6 +196,7 @@ export function emptyToNull(value: string | null | undefined): string | null {
 export function referencedMediaIds(draft: CatalogDraftInput): string[] {
   const ids = [
     draft.brand.logoMediaId,
+    draft.brand.coverMediaId,
     ...draft.team.map((item) => item.portraitMediaId),
     ...draft.channels.map((item) => item.qrMediaId),
     ...draft.businesses.map((item) => item.coverMediaId),
@@ -236,6 +237,7 @@ export function normalizeDraft(draft: CatalogDraftInput): void {
     if (item.target?.type === "ABOUT") item.target = { type: "ABOUT", id: "about" };
   });
   draft.brand.logoMediaId = emptyToNull(draft.brand.logoMediaId);
+  draft.brand.coverMediaId = emptyToNull(draft.brand.coverMediaId);
   draft.team.forEach((item, index) => {
     item.position = index;
     item.portraitMediaId = emptyToNull(item.portraitMediaId);
