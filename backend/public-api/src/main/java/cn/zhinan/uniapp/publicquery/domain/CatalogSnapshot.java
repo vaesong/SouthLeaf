@@ -190,7 +190,7 @@ public record CatalogSnapshot(
             || entry.getValue().length() > 400) {
           throw new IllegalArgumentException("presentation line is invalid");
         }
-        if (!entry.getValue().isEmpty()) kept.put(entry.getKey(), entry.getValue());
+        kept.put(entry.getKey(), entry.getValue());
       }
       presentation = Map.copyOf(kept);
     }

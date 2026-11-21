@@ -13,7 +13,7 @@ export const FEATURED_LIMIT = 3;
 export const FEATURED_WORK_LIMIT = 6;
 export const HERO_LIMIT = 5;
 
-/** Keep this list identical to CatalogPresentation.KEYS. Empty values keep the mini program's built-in sentence. */
+/** Keep this list identical to CatalogPresentation.KEYS. A missing key keeps the built-in sentence. An empty value hides it. */
 export const PRESENTATION_FIELDS = [
   { group: "首页", key: "home.themesTitle", label: "主题栏标题" },
   { group: "首页", key: "home.storiesTitle", label: "故事栏标题" },
@@ -146,13 +146,49 @@ export function presentationGroups(): {
   return groups;
 }
 
+export const COPY_SCREENS = [
+  { title: "首页", prefixes: ["home."] },
+  { title: "关于", prefixes: ["about."] },
+  { title: "作品", prefixes: ["works."] },
+  { title: "作品详情", prefixes: ["workDetail."] },
+  { title: "套餐", prefixes: ["services."] },
+  { title: "方案详情", prefixes: ["packageDetail."] },
+  { title: "预约", prefixes: ["booking.", "settlement."] },
+  { title: "我的", prefixes: ["mine."] },
+  { title: "预约详情", prefixes: ["requestDetail."] },
+] as const;
+
+export function readPresentationLine(
+  presentation: Record<string, string> | undefined,
+  key: string,
+  defaults: Readonly<Record<string, string>>,
+): string {
+  const stored = presentation?.[key];
+  if (presentation && Object.prototype.hasOwnProperty.call(presentation, key)) {
+    return stored ?? "";
+  }
+  return defaults[key] ?? "";
+}
+
+export function writePresentationLine(
+  presentation: Record<string, string>,
+  key: string,
+  value: string,
+  defaults: Readonly<Record<string, string>>,
+): void {
+  const next = value.slice(0, 400);
+  if (next === (defaults[key] ?? "")) delete presentation[key];
+  else presentation[key] = next;
+}
+
 export function ensurePresentation(draft: CatalogDraftInput): void {
   const current =
     draft.presentation && typeof draft.presentation === "object" ? draft.presentation : {};
   const next: Record<string, string> = {};
   for (const field of PRESENTATION_FIELDS) {
+    if (!Object.prototype.hasOwnProperty.call(current, field.key)) continue;
     const value = current[field.key];
-    next[field.key] = typeof value === "string" ? value.slice(0, 400) : "";
+    if (typeof value === "string") next[field.key] = value.slice(0, 400);
   }
   draft.presentation = next;
 }

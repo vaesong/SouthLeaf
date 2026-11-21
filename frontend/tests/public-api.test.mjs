@@ -351,14 +351,30 @@ test("confirmed prices gain a yuan mark without rewriting inquiry copy", () => {
   );
   assert.equal(display.priceLabel({}), "价格待公布");
 });
+test("built-in sentences load from javascript so the mini program can start", async () => {
+  const source = await fs.readFile(
+    new URL("../presentation/copy.js", import.meta.url),
+    "utf8",
+  );
+  assert.equal(source.includes(".json"), false);
+  assert.deepEqual(
+    require("../presentation/copy-defaults.js"),
+    require("../presentation/copy-defaults.json"),
+  );
+});
 test("interface sentences keep defaults until a published line replaces one", () => {
   const defaults = nest(null);
   assert.equal(defaults.home.themesTitle, "拍摄主题");
+  assert.equal(defaults.services.title, "拍摄套餐");
+  assert.equal(defaults.mine.menuServices, "拍摄套餐");
   assert.equal(defaults.mine.menuBooking, "预约咨询");
   assert.equal(defaults.packageDetail.durationLabel, "参考时长（分钟）");
   const replaced = nest({ "home.themesTitle": "本期主题", "mine.title": "" });
   assert.equal(replaced.home.themesTitle, "本期主题");
-  assert.equal(replaced.mine.title, "我的预约");
+  assert.equal(replaced.mine.title, "");
+  assert.equal(nest({}).mine.title, "我的预约");
+  assert.equal(nest({ "about.teamSubtitle": "" }).about.teamSubtitle, "");
+  assert.equal(nest(null).about.teamSubtitle, "安娜 & 方女士");
 });
 test("gallery uses validated detail media without substituting summary covers", () => {
   const a = { id: "a", src: "a.png" };

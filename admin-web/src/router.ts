@@ -20,6 +20,12 @@ export function createAdminRouter(auth: AuthStore) {
       meta: { requiresAuth: true, title: "首页布置" },
     },
     {
+      path: "/copy",
+      name: "copy",
+      component: () => import("./views/CopyView.vue"),
+      meta: { requiresAuth: true, title: "界面文案" },
+    },
+    {
       path: "/about",
       name: "about",
       component: () => import("./views/AboutView.vue"),

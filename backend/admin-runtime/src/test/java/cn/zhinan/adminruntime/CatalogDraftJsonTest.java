@@ -97,17 +97,19 @@ class CatalogDraftJsonTest {
   }
 
   @Test
-  void presentationKeepsKnownLinesAndDropsBlanks() throws Exception {
+  void presentationKeepsKnownLinesAndBlankLines() throws Exception {
     String current = JSON.writeValueAsString(CatalogDraft.empty());
     String filled =
         current.replace(
             "\"presentation\":{}",
             "\"presentation\":{\"home.themesTitle\":\"主题\",\"home.signOff\":\"\"}");
     CatalogDraft draft = JSON.readValue(filled, CatalogDraft.class);
-    assertThat(draft.presentation()).containsExactly(java.util.Map.entry("home.themesTitle", "主题"));
+    assertThat(draft.presentation())
+        .containsEntry("home.themesTitle", "主题")
+        .containsEntry("home.signOff", "");
     String published = JSON.writeValueAsString(draft.publicationSnapshot());
     assertThat(published).contains("\"home.themesTitle\":\"主题\"");
-    assertThat(published).doesNotContain("home.signOff");
+    assertThat(published).contains("\"home.signOff\":\"\"");
   }
 
   @Test

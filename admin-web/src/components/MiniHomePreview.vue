@@ -42,7 +42,7 @@ defineProps<{
     </div>
   </div>
   <div class="mp-studio">
-    <b>{{ story || "底部短句使用小程序原来的那句" }}</b>
+    <b v-if="story">{{ story }}</b>
     认识工作室理念与主理人 →
   </div>
 </template>

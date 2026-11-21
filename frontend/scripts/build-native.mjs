@@ -73,6 +73,7 @@ try {
       "api/public-display.js",
       "presentation/views.js",
       "presentation/copy.js",
+      "presentation/copy-defaults.js",
       "presentation/page-state.js",
       "presentation/booking-views.js",
       "presentation/settlement.js",

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Customer-visible mini-program lines. An empty value is omitted and renders as nothing. */
+/** Customer-visible mini-program lines. An empty value is kept and means that line stays hidden. */
 public final class CatalogPresentation {
   public static final int MAX_LINE = 400;
   public static final List<String> KEYS =
@@ -142,7 +142,7 @@ public final class CatalogPresentation {
       if (value.length() > MAX_LINE) {
         throw new ContentException(ContentFailure.INVALID_REQUEST, "PRESENTATION_LINE_TOO_LONG");
       }
-      if (!value.isEmpty()) kept.put(key, value);
+      kept.put(key, value);
     }
     return Map.copyOf(kept);
   }

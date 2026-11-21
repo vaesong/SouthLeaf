@@ -41,7 +41,7 @@ class HeroSlideJsonTest {
   }
 
   @Test
-  void missingPresentationIsEmptyAndBlankLinesAreDropped() {
+  void missingPresentationIsEmptyAndBlankLinesStay() {
     assertThat(JdbcPublishedCatalogRepository.presentation(null)).isEmpty();
     assertThatThrownBy(() -> JdbcPublishedCatalogRepository.presentation(List.of()))
         .isInstanceOf(CatalogStorageException.class);
@@ -50,6 +50,6 @@ class HeroSlideJsonTest {
                 Map.of("home.story", "一句", "home.signOff", "", "later.key", "保留")))
         .containsEntry("home.story", "一句")
         .containsEntry("later.key", "保留")
-        .doesNotContainKey("home.signOff");
+        .containsEntry("home.signOff", "");
   }
 }

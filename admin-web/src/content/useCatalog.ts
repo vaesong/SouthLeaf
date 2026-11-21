@@ -3,7 +3,7 @@ import { onBeforeRouteLeave, type RouteLocationNormalized } from "vue-router";
 import { authStoreKey } from "../auth/store";
 import { catalogStoreKey, type CatalogStore } from "./catalogStore";
 
-const EDITORS = new Set(["about", "home-layout", "businesses"]);
+const EDITORS = new Set(["about", "home-layout", "businesses", "copy"]);
 
 export function useCatalogAccess() {
   const auth = inject(authStoreKey);

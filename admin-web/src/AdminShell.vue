@@ -70,6 +70,14 @@ const links = computed(
           show: canReadContent.value,
         },
         {
+          to: "/copy",
+          name: "copy",
+          label: "界面文案",
+          icon: "text",
+          show: canReadContent.value,
+          testId: "copy-link",
+        },
+        {
           to: "/about",
           name: "about",
           label: "关于我们",

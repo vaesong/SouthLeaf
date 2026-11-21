@@ -284,7 +284,8 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
 
   /**
    * Missing presentation is an older release. Unknown keys stay so a newer publisher does not brick
-   * this reader; empty and over-long lines are dropped.
+   * this reader. An empty line is kept so the customer app can hide that sentence. Over-long lines
+   * are dropped.
    */
   static Map<String, String> presentation(Object value) {
     if (value == null) return Map.of();
@@ -293,8 +294,7 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
     var kept = new LinkedHashMap<String, String>();
     for (var entry : raw.entrySet()) {
       if (!(entry.getKey() instanceof String key) || key.isEmpty() || key.length() > 64) continue;
-      if (!(entry.getValue() instanceof String text) || text.isEmpty() || text.length() > 400)
-        continue;
+      if (!(entry.getValue() instanceof String text) || text.length() > 400) continue;
       kept.put(key, text);
     }
     return Map.copyOf(kept);

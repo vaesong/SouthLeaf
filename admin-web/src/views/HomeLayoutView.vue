@@ -23,8 +23,10 @@ import {
   HERO_LIMIT,
   moveItem,
   syncMediaAltTexts,
+  readPresentationLine,
   toggleLimitedIds,
 } from "../content/catalogDraft";
+import { PRESENTATION_DEFAULTS } from "../content/presentationDefaults";
 import { countLabel } from "../content/format";
 import { requireContentApi } from "../content/inject";
 import { describeFailure } from "../content/messages";
@@ -467,25 +469,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div v-if="draft.presentation" class="card">
-        <div class="card-head">
-          <h2>首页底部短句</h2>
-          <p>留空就用小程序原来的那句。填写并发布后，才会换成这里的句子。</p>
-        </div>
-        <div class="card-pad">
-          <div class="field">
-            <label>显示在首页最下面</label>
-            <textarea
-              v-model="draft.presentation['home.story']"
-              class="textarea"
-              maxlength="400"
-              rows="3"
-              :disabled="!canEdit"
-              data-testid="catalog-presentation-home.story"
-            ></textarea>
-          </div>
-        </div>
-      </div>
       <div class="card" id="featured-works">
         <div class="card-head">
           <h2>精选作品</h2>
@@ -672,7 +655,7 @@ onMounted(async () => {
       <template #caption>小程序首页实时预览（草稿）</template>
       <MiniHomePreview
         :title="draft.brand.name"
-        :story="draft.presentation?.['home.story'] || ''"
+        :story="readPresentationLine(draft.presentation, 'home.story', PRESENTATION_DEFAULTS)"
         :works="previewWorks"
         :hero="previewHero"
       />

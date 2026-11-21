@@ -16,7 +16,7 @@ Component({
       },
       {
         pagePath: "/pages/package/package",
-        text: "服务",
+        text: "套餐",
         iconPath: "/static/icons/tab-services.png",
         selectedIconPath: "/static/icons/tab-services-active.png",
       },
