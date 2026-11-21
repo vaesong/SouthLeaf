@@ -3,6 +3,7 @@ package cn.zhinan.adminbooking.adapter.jdbc;
 import cn.zhinan.adminbooking.domain.BookingModels.ServiceSlot;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.BoardSlot;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.DaySlot;
+import cn.zhinan.adminbooking.port.SlotOpeningPorts.PendingAsk;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.SlotGuard;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -93,6 +94,51 @@ public final class JdbcSlotGuard implements SlotGuard {
         from,
         to,
         limit);
+  }
+
+  private static final String PREFERRED_ASKS =
+      "SELECT r.id AS reservation_id, p.slot_id, s.start_at, s.end_at, r.expires_at, r.version"
+          + " FROM booking_reservation r"
+          + " JOIN booking_request_preference p ON p.reservation_id = r.id"
+          + " JOIN booking_service_slot s ON s.id = p.slot_id"
+          + " WHERE r.status = 'PENDING_CONFIRMATION'"
+          + " ORDER BY r.created_at, r.id, p.requested_at, p.slot_id LIMIT ?";
+
+  private static final String UNPLACED_ASKS =
+      "SELECT r.id AS reservation_id, r.expires_at, r.version FROM booking_reservation r"
+          + " WHERE r.status = 'PENDING_CONFIRMATION'"
+          + " AND NOT EXISTS (SELECT 1 FROM booking_request_preference p"
+          + " WHERE p.reservation_id = r.id)"
+          + " ORDER BY r.created_at, r.id LIMIT ?";
+
+  @Override
+  public List<PendingAsk> listPendingAsks(int limit) {
+    List<PendingAsk> asks = new ArrayList<>();
+    asks.addAll(
+        JdbcSupport.queryList(connections, PREFERRED_ASKS, JdbcSlotGuard::mapPreferred, limit));
+    asks.addAll(
+        JdbcSupport.queryList(connections, UNPLACED_ASKS, JdbcSlotGuard::mapUnplaced, limit));
+    return List.copyOf(asks);
+  }
+
+  private static PendingAsk mapPreferred(ResultSet resultSet) throws SQLException {
+    return new PendingAsk(
+        resultSet.getString("reservation_id"),
+        resultSet.getString("slot_id"),
+        JdbcSupport.instant(resultSet, "start_at"),
+        JdbcSupport.instant(resultSet, "end_at"),
+        JdbcSupport.instant(resultSet, "expires_at"),
+        resultSet.getInt("version"));
+  }
+
+  private static PendingAsk mapUnplaced(ResultSet resultSet) throws SQLException {
+    return new PendingAsk(
+        resultSet.getString("reservation_id"),
+        null,
+        null,
+        null,
+        JdbcSupport.instant(resultSet, "expires_at"),
+        resultSet.getInt("version"));
   }
 
   private static BoardSlot mapBoard(ResultSet resultSet) throws SQLException {

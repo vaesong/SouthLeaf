@@ -67,15 +67,12 @@ export class AdminBookingRulesApi {
   async current(): Promise<OperatingRuleCurrent> {
     const response = await this.send(CURRENT, { method: "GET" });
     const envelope = await this.read<OperatingRuleCurrent>(response);
-    const etag = response.headers.get("ETag") ?? "";
-    if (
-      envelope.code !== "OK" ||
-      !validCurrent(envelope.data) ||
-      !RULE_ETAG.test(etag) ||
-      etag !== `"o${envelope.data.version}"`
-    )
+    if (envelope.code !== "OK" || !validCurrent(envelope.data))
       throw invalidResponse(envelope.requestId);
-    return { ...envelope.data, etag };
+    const expected = `"o${envelope.data.version}"`;
+    const etag = normalizeRuleTag(response.headers.get("ETag") ?? "");
+    if (etag && etag !== expected) throw invalidResponse(envelope.requestId);
+    return { ...envelope.data, etag: etag || expected };
   }
 
   async versions(): Promise<OperatingRuleVersion[]> {
@@ -230,6 +227,11 @@ function validRules(value: unknown): value is OperatingRules {
     Number.isInteger(item.pendingExpiryHours) &&
     Number.isInteger(item.slotDurationMinutes)
   );
+}
+
+function normalizeRuleTag(header: string) {
+  const value = header.startsWith("W/") ? header.slice(2).trim() : header.trim();
+  return RULE_ETAG.test(value) ? value : "";
 }
 
 function validCurrent(value: unknown): value is Omit<OperatingRuleCurrent, "etag"> {

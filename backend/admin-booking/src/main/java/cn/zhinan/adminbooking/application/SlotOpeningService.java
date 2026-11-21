@@ -14,6 +14,7 @@ import cn.zhinan.adminbooking.port.OperatingRulePorts.OperatingRuleRepository;
 import cn.zhinan.adminbooking.port.OperatingRulePorts.StoredRule;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.BoardSlot;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.DaySlot;
+import cn.zhinan.adminbooking.port.SlotOpeningPorts.PendingAsk;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.SlotGuard;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -79,6 +80,11 @@ public final class SlotOpeningService {
     return guard.listBoard(from, to, limit).stream()
         .filter(slot -> !"CLOSED".equals(slot.availability()))
         .toList();
+  }
+
+  public List<PendingAsk> pendingAsks(int limit) {
+    if (limit < 1) throw new BookingException(BookingFailure.INVALID_REQUEST, "TIME_RANGE_INVALID");
+    return guard.listPendingAsks(limit);
   }
 
   public OpenedSlot open(String actorId, String idempotencyKey, LocalDate date, LocalTime time) {

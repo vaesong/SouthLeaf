@@ -123,4 +123,33 @@ describe("AdminBookingRulesApi", () => {
     fetcher.mockRejectedValueOnce(new Error("offline"));
     await expect(api.save(0, rules, "c".repeat(16))).rejects.toBeInstanceOf(BookingRulesApiError);
   });
+
+  it("reads rules when the version tag is missing or weak", async () => {
+    const body = {
+      code: "OK",
+      requestId: "request-2",
+      data: { version: 2, configured: true, rules },
+    };
+    const api = new AdminBookingRulesApi(vi.fn().mockResolvedValueOnce(response(200, body)));
+    await expect(api.current()).resolves.toMatchObject({ version: 2, etag: '"o2"' });
+    const weak = new AdminBookingRulesApi(
+      vi.fn().mockResolvedValueOnce(response(200, body, { ETag: 'W/"o2"' })),
+    );
+    await expect(weak.current()).resolves.toMatchObject({ etag: '"o2"' });
+  });
+
+  it("rejects a version tag that disagrees with the body", async () => {
+    const api = new AdminBookingRulesApi(
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          response(
+            200,
+            { code: "OK", requestId: "request-3", data: { version: 2, configured: true, rules } },
+            { ETag: '"o1"' },
+          ),
+        ),
+    );
+    await expect(api.current()).rejects.toMatchObject({ code: "INVALID_BOOKING_RESPONSE" });
+  });
 });

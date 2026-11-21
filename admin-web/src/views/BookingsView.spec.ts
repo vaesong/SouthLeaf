@@ -115,7 +115,10 @@ describe("BookingsView", () => {
     vi.stubGlobal("fetch", fetcher as unknown as typeof fetch);
     vi.spyOn(window, "confirm").mockReturnValue(true);
     const wrapper = mount(BookingsView, {
-      global: { provide: { [authStoreKey as symbol]: session }, stubs: { RouterLink: linkStub } },
+      global: {
+        provide: { [authStoreKey as symbol]: session },
+        stubs: { RouterLink: linkStub, WeekBoard: { template: "<div />" } },
+      },
     });
     await flushPromises();
 
@@ -197,7 +200,10 @@ describe("BookingsView", () => {
     vi.stubGlobal("fetch", fetcher as unknown as typeof fetch);
     vi.spyOn(window, "confirm").mockReturnValue(true);
     const wrapper = mount(BookingsView, {
-      global: { provide: { [authStoreKey as symbol]: session }, stubs: { RouterLink: linkStub } },
+      global: {
+        provide: { [authStoreKey as symbol]: session },
+        stubs: { RouterLink: linkStub, WeekBoard: { template: "<div />" } },
+      },
     });
     await flushPromises();
     await wrapper.get("#reservation-id").setValue(reservationId);
@@ -228,7 +234,7 @@ describe("BookingsView", () => {
     const wrapper = mount(BookingsView, {
       global: {
         provide: { [authStoreKey as symbol]: { state: { identity: { permissions: [] } } } },
-        stubs: { RouterLink: linkStub },
+        stubs: { RouterLink: linkStub, WeekBoard: { template: "<div />" } },
       },
     });
     await flushPromises();

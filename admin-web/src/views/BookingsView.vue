@@ -11,7 +11,7 @@ import {
   type ReservationDetail,
   type ReservationSummary,
 } from "../bookings/api";
-import StatusChip from "../components/StatusChip.vue";
+import WeekBoard from "../components/WeekBoard.vue";
 import {
   beijingParts,
   formatClock,
@@ -43,17 +43,6 @@ const canConfirm = computed(
   () => auth?.state.identity?.permissions.includes("RESERVATION_CONFIRM") ?? false,
 );
 const pending = ref<ReservationSummary[]>([]);
-const cards = ref<
-  Array<{
-    id: string;
-    title: string;
-    source: string;
-    status: string;
-    expiresAt: string;
-    createdAt: string;
-    startAt: string | null;
-  }>
->([]);
 const detail = ref<ReservationDetail | null>(null);
 const order = ref<OrderDetail | null>(null);
 const slots = ref<OpenSlot[]>([]);
@@ -86,7 +75,6 @@ async function refreshPending(preserveNotice = false) {
   if (!canRead.value) return;
   try {
     pending.value = await api.pending();
-    await decorate(pending.value);
     if (!preserveNotice) {
       notice.value = "";
       requestId.value = "";
@@ -159,7 +147,7 @@ async function loadConfirmSlots() {
   const to = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
   try {
     confirmSlots.value = await api.openSlots(from, to);
-    confirmSlot.value = confirmSlots.value[0]?.id ?? "";
+    confirmSlot.value = "";
     if (confirmSlots.value.length === 0) notice.value = "目前查询范围内没有可占用时段。";
   } catch (error) {
     report(error);
@@ -295,56 +283,11 @@ function clearActionKey(name: string) {
   idempotency.delete(name);
 }
 
-async function decorate(list: ReservationSummary[]) {
-  if (list.length === 0) {
-    cards.value = [];
-    return;
-  }
-  const from = new Date();
-  const to = new Date(from.getTime() + 60 * 24 * 60 * 60 * 1000);
-  if (slots.value.length === 0) {
-    try {
-      slots.value = await api.openSlots(from.toISOString(), to.toISOString());
-    } catch {
-      slots.value = [];
-    }
-  }
-  const next = [];
-  for (const item of list) {
-    let title = "新的预约请求";
-    let startAt: string | null = null;
-    try {
-      const loaded = await api.reservation(item.id);
-      if (loaded.data.orderId && canReadOrders.value) {
-        const snapshot = await api.order(loaded.data.orderId);
-        if (snapshot.snapshot.packageDisplayName) title = snapshot.snapshot.packageDisplayName;
-        startAt = snapshot.snapshot.startAt || null;
-      } else if (item.slotId) {
-        startAt = slots.value.find((slot) => slot.id === item.slotId)?.startAt ?? null;
-      }
-    } catch {
-      startAt = null;
-    }
-    next.push({
-      id: item.id,
-      title,
-      source: reservationSourceLabel(item.source),
-      status: item.status,
-      expiresAt: item.expiresAt,
-      createdAt: item.createdAt,
-      startAt,
-    });
-  }
-  cards.value = next;
-}
-
-function shootParts(value: string | null) {
-  if (!value) return null;
-  return beijingParts(value);
-}
-
 function slotOption(slot: OpenSlot) {
-  return `${formatClock(slot.startAt)}–${formatClock(slot.endAt)}`;
+  const parts = beijingParts(slot.startAt);
+  const range = `${formatClock(slot.startAt)}–${formatClock(slot.endAt)}`;
+  if (!parts) return range;
+  return `${parts.month}月${parts.day}日 ${parts.weekday} ${range}`;
 }
 
 function slotGroups(list: OpenSlot[]) {
@@ -357,13 +300,6 @@ function slotGroups(list: OpenSlot[]) {
     else groups.push({ label, slots: [slot] });
   }
   return groups;
-}
-
-function statusTone(status: string) {
-  if (status === "CONFIRMED" || status === "ACTIVE") return "live" as const;
-  if (status === "PENDING_CONFIRMATION") return "warn" as const;
-  if (status === "CANCELLED" || status === "REJECTED" || status === "EXPIRED") return "off" as const;
-  return "draft" as const;
 }
 
 const detailWhen = computed(() => {
@@ -391,11 +327,6 @@ function slotTime(slotId: string | null) {
   return slot ? formatDateTime(slot.startAt) : "已安排";
 }
 
-function selectReservation(id: string) {
-  lookupId.value = id;
-  void lookup(id);
-}
-
 onMounted(() => void refreshPending());
 </script>
 
@@ -404,7 +335,9 @@ onMounted(() => void refreshPending());
     <div class="page-head">
       <div>
         <h1>预约处理</h1>
-        <p>先处理还在等回复的预约。查以前的单子时，贴上完整编号。本阶段不收款。</p>
+        <p>
+          周历上是客人要的时间。点有申请的格子，就按那一档确认。查以前的单子时，贴上完整编号。本阶段不收款。
+        </p>
       </div>
       <div class="actions">
         <form class="search" @submit.prevent="lookup()">
@@ -429,179 +362,155 @@ onMounted(() => void refreshPending());
     <p v-if="notice" class="alert-line" role="alert">{{ notice }}</p>
     <p v-if="!canRead">缺少预约查阅能力</p>
     <template v-else>
-      <section class="card" style="margin-bottom: 18px">
-        <div class="card-head">
-          <h2>待确认</h2>
-          <p>{{ pending.length }} 单还在等回复</p>
-        </div>
-        <div v-if="cards.length === 0" class="card-pad">目前没有待确认预约。</div>
-        <div
-          v-for="card in cards"
-          :key="card.id"
-          class="booking"
-          @click="selectReservation(card.id)"
-        >
-          <div class="date-box">
-            <template v-if="shootParts(card.startAt)">
-              <small>{{ shootParts(card.startAt)?.month }} 月</small>
-              <b>{{ shootParts(card.startAt)?.day }}</b>
-              <small
-                >{{ shootParts(card.startAt)?.weekday }}
-                {{ card.startAt ? formatClock(card.startAt) : "" }}</small
-              >
-            </template>
-            <template v-else>
-              <small>时间</small>
-              <b style="font-size: 16px">待安排</b>
-            </template>
-          </div>
-          <div class="who">
-            <b>{{ card.title }} <StatusChip :tone="statusTone(card.status)" :text="reservationStatusLabel(card.status)" /></b>
-            <small>{{ card.source }} · {{ formatDateTime(card.createdAt) }} 提交</small>
-            <small>{{ tailNumber(card.id) }} · {{ formatRelative(card.expiresAt) }}</small>
-          </div>
-          <div class="acts">
-            <button
-              class="btn btn-primary btn-sm"
-              type="button"
-              @click.stop="selectReservation(card.id)"
-            >
-              处理
-            </button>
-          </div>
-        </div>
-      </section>
+      <p class="hint">{{ pending.length }} 单还在等回复</p>
+      <WeekBoard show-rules-link />
       <section v-if="detail" class="card detail-section" style="margin-top: 18px">
         <div class="card-head">
           <h2>{{ detailWhen || "时间待安排" }}</h2>
-          <p>{{ reservationStatusLabel(detail.reservation.status) }} · {{ reservationSourceLabel(detail.reservation.source) }}</p>
+          <p>
+            {{ reservationStatusLabel(detail.reservation.status) }} ·
+            {{ reservationSourceLabel(detail.reservation.source) }}
+          </p>
         </div>
         <div class="card-pad">
-        <dl>
-          <div>
-            <dt>预约编号</dt>
-            <dd>
-              <span class="record-id">{{ detail.reservation.id }}</span>
-              <button
-                class="btn btn-secondary btn-sm"
-                type="button"
-                @click="copyReservationId(detail.reservation.id)"
+          <dl>
+            <div>
+              <dt>预约编号</dt>
+              <dd>
+                <span class="record-id">{{ detail.reservation.id }}</span>
+                <button
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  @click="copyReservationId(detail.reservation.id)"
+                >
+                  复制编号
+                </button>
+              </dd>
+            </div>
+            <div>
+              <dt>提交时间</dt>
+              <dd>{{ formatDateTime(detail.reservation.createdAt) }}</dd>
+            </div>
+            <div>
+              <dt>保留到</dt>
+              <dd>
+                {{ formatDateTime(detail.reservation.expiresAt) }} ·
+                {{ formatRelative(detail.reservation.expiresAt) }}
+              </dd>
+            </div>
+          </dl>
+          <div v-if="detail.assignments.length">
+            <h3>改期记录</h3>
+            <ol class="revision-list">
+              <li v-for="assignment in detail.assignments" :key="assignment.assignedAt">
+                <span>{{ formatDateTime(assignment.assignedAt) }} · 已调整拍摄时间</span>
+              </li>
+            </ol>
+          </div>
+          <div
+            v-if="detailIsPending"
+            class="confirm-block"
+            style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px"
+          >
+            <template v-if="canConfirm">
+              <p v-if="loadingConfirmSlots" class="hint">正在读取可预约时段…</p>
+              <p class="hint">客人要的时间在周历上。这里是改到别的已开放档期，需要自己选中。</p>
+              <select
+                v-if="confirmSlots.length"
+                id="confirm-slot"
+                v-model="confirmSlot"
+                class="select"
+                :disabled="busy"
               >
-                复制编号
+                <option value="">选择要占的档期</option>
+                <optgroup
+                  v-for="group in slotGroups(confirmSlots)"
+                  :key="group.label"
+                  :label="group.label"
+                >
+                  <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
+                    {{ slotOption(slot) }}
+                  </option>
+                </optgroup>
+              </select>
+              <button
+                v-if="confirmSlots.length"
+                class="btn btn-primary"
+                type="button"
+                :disabled="busy || !confirmSlot"
+                @click="confirmAndCreateOrder"
+              >
+                {{ busy ? "处理中…" : "核对并确认" }}
               </button>
-            </dd>
-          </div>
-          <div>
-            <dt>提交时间</dt>
-            <dd>{{ formatDateTime(detail.reservation.createdAt) }}</dd>
-          </div>
-          <div>
-            <dt>保留到</dt>
-            <dd>{{ formatDateTime(detail.reservation.expiresAt) }} · {{ formatRelative(detail.reservation.expiresAt) }}</dd>
-          </div>
-        </dl>
-        <div v-if="detail.assignments.length">
-          <h3>改期记录</h3>
-          <ol class="revision-list">
-            <li v-for="assignment in detail.assignments" :key="assignment.assignedAt">
-              <span>{{ formatDateTime(assignment.assignedAt) }} · 已调整拍摄时间</span>
-            </li>
-          </ol>
-        </div>
-        <div
-          v-if="detailIsPending"
-          class="confirm-block"
-          style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px"
-        >
-          <template v-if="canConfirm">
-            <p v-if="loadingConfirmSlots" class="hint">正在读取可预约时段…</p>
-            <select
-              v-if="confirmSlots.length"
-              id="confirm-slot"
-              v-model="confirmSlot"
-              class="select"
+              <button
+                class="btn btn-secondary"
+                type="button"
+                :disabled="busy || loadingConfirmSlots"
+                @click="loadConfirmSlots"
+              >
+                重新读取时段
+              </button>
+            </template>
+            <button
+              v-if="canReject"
+              class="btn btn-danger danger-button"
+              type="button"
               :disabled="busy"
+              @click="rejectReservation"
             >
-              <optgroup v-for="group in slotGroups(confirmSlots)" :key="group.label" :label="group.label">
-                <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
-                  {{ slotOption(slot) }}
-                </option>
-              </optgroup>
-            </select>
-            <button
-              v-if="confirmSlots.length"
-              class="btn btn-primary"
-              type="button"
-              :disabled="busy || !confirmSlot"
-              @click="confirmAndCreateOrder"
-            >
-              {{ busy ? "处理中…" : "核对并确认" }}
+              {{ busy ? "处理中…" : "拒绝申请" }}
             </button>
-            <button
-              class="btn btn-secondary"
-              type="button"
-              :disabled="busy || loadingConfirmSlots"
-              @click="loadConfirmSlots"
-            >
-              重新读取时段
-            </button>
-          </template>
-          <button
-            v-if="canReject"
-            class="btn btn-danger danger-button"
-            type="button"
-            :disabled="busy"
-            @click="rejectReservation"
+          </div>
+          <div
+            v-if="detailIsConfirmed"
+            style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px"
           >
-            {{ busy ? "处理中…" : "拒绝申请" }}
-          </button>
-        </div>
-        <div
-          v-if="detailIsConfirmed"
-          style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px"
-        >
-          <button
-            v-if="canCancel"
-            class="btn btn-danger danger-button"
-            type="button"
-            :disabled="busy"
-            @click="cancel"
-          >
-            {{ busy ? "处理中…" : "取消预约" }}
-          </button>
-          <template v-if="canReschedule">
             <button
-              class="btn btn-secondary"
+              v-if="canCancel"
+              class="btn btn-danger danger-button"
               type="button"
-              :disabled="busy || loadingSlots"
-              @click="loadSlots"
-            >
-              {{ loadingSlots ? "查询时段中…" : "查询可用改期时段" }}
-            </button>
-            <select
-              v-if="slots.length"
-              id="new-slot"
-              v-model="selectedSlot"
-              class="select"
               :disabled="busy"
+              @click="cancel"
             >
-              <optgroup v-for="group in slotGroups(slots)" :key="group.label" :label="group.label">
-                <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
-                  {{ slotOption(slot) }}
-                </option>
-              </optgroup>
-            </select>
-            <button
-              v-if="slots.length"
-              class="btn btn-primary"
-              type="button"
-              :disabled="busy || !selectedSlot"
-              @click="reschedule"
-            >
-              {{ busy ? "处理中…" : "确认改期" }}
+              {{ busy ? "处理中…" : "取消预约" }}
             </button>
-          </template>
-        </div>
+            <template v-if="canReschedule">
+              <button
+                class="btn btn-secondary"
+                type="button"
+                :disabled="busy || loadingSlots"
+                @click="loadSlots"
+              >
+                {{ loadingSlots ? "查询时段中…" : "查询可用改期时段" }}
+              </button>
+              <select
+                v-if="slots.length"
+                id="new-slot"
+                v-model="selectedSlot"
+                class="select"
+                :disabled="busy"
+              >
+                <optgroup
+                  v-for="group in slotGroups(slots)"
+                  :key="group.label"
+                  :label="group.label"
+                >
+                  <option v-for="slot in group.slots" :key="slot.id" :value="slot.id">
+                    {{ slotOption(slot) }}
+                  </option>
+                </optgroup>
+              </select>
+              <button
+                v-if="slots.length"
+                class="btn btn-primary"
+                type="button"
+                :disabled="busy || !selectedSlot"
+                @click="reschedule"
+              >
+                {{ busy ? "处理中…" : "确认改期" }}
+              </button>
+            </template>
+          </div>
         </div>
       </section>
       <section

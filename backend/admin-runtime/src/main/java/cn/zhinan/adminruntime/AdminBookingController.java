@@ -18,6 +18,7 @@ import cn.zhinan.adminbooking.domain.BookingRules;
 import cn.zhinan.adminbooking.domain.OperatingRule;
 import cn.zhinan.adminbooking.port.OperatingRulePorts.StoredRule;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.BoardSlot;
+import cn.zhinan.adminbooking.port.SlotOpeningPorts.PendingAsk;
 import cn.zhinan.adminsecurity.application.AdminSessionService;
 import cn.zhinan.adminsecurity.domain.AdminAuthenticationException;
 import cn.zhinan.adminsecurity.domain.AdminPermission;
@@ -142,7 +143,11 @@ class AdminBookingController {
               slotOpening.board(from, to, MAX_PAGE_SIZE).stream()
                   .map(AdminBookingController::boardSlot)
                   .toList();
-          return ok(requestId, slots);
+          List<AskView> asks =
+              slotOpening.pendingAsks(MAX_PAGE_SIZE).stream()
+                  .map(AdminBookingController::askView)
+                  .toList();
+          return ok(requestId, new DeskView(slots, asks));
         });
   }
 
@@ -697,6 +702,16 @@ class AdminBookingController {
         value.revision());
   }
 
+  private static AskView askView(PendingAsk ask) {
+    return new AskView(
+        ask.reservationId(),
+        ask.slotId(),
+        ask.startAt() == null ? null : ask.startAt().toString(),
+        ask.endAt() == null ? null : ask.endAt().toString(),
+        ask.expiresAt().toString(),
+        ask.version());
+  }
+
   private static SlotOpenView openedView(OpenedSlot opened) {
     ServiceSlot slot = opened.slot();
     return new SlotOpenView(
@@ -902,8 +917,13 @@ class AdminBookingController {
 
   record WeekRequest(List<LocalDate> dates, List<LocalTime> times) {}
 
+  record DeskView(List<BoardSlotView> slots, List<AskView> asks) {}
+
   record BoardSlotView(
       String id, String startAt, String endAt, String availability, int revision) {}
+
+  record AskView(
+      String id, String slotId, String startAt, String endAt, String expiresAt, int version) {}
 
   record SlotOpenView(String id, String startAt, String endAt, int revision, boolean replayed) {}
 

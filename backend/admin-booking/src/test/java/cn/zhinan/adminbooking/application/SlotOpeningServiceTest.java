@@ -18,6 +18,7 @@ import cn.zhinan.adminbooking.port.OperatingRulePorts.OperatingRuleRepository;
 import cn.zhinan.adminbooking.port.OperatingRulePorts.StoredRule;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.BoardSlot;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.DaySlot;
+import cn.zhinan.adminbooking.port.SlotOpeningPorts.PendingAsk;
 import cn.zhinan.adminbooking.port.SlotOpeningPorts.SlotGuard;
 import java.time.Clock;
 import java.time.Instant;
@@ -340,6 +341,11 @@ class SlotOpeningServiceTest {
 
       @Override
       public List<BoardSlot> listBoard(Instant from, Instant to, int limit) {
+        return List.of();
+      }
+
+      @Override
+      public List<PendingAsk> listPendingAsks(int limit) {
         return List.of();
       }
     }

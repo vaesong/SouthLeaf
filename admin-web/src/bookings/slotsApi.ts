@@ -8,6 +8,20 @@ export interface BoardSlot {
   revision: number;
 }
 
+export interface SlotAsk {
+  id: string;
+  slotId: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  expiresAt: string;
+  version: number;
+}
+
+export interface WeekDesk {
+  slots: BoardSlot[];
+  asks: SlotAsk[];
+}
+
 export interface OpenedSlot {
   id: string;
   startAt: string;
@@ -73,13 +87,13 @@ export class AdminBookingSlotsApi {
 
   constructor(private readonly fetcher: typeof fetch = globalThis.fetch.bind(globalThis)) {}
 
-  async board(from: string, to: string): Promise<BoardSlot[]> {
-    const envelope = await this.read<BoardSlot[]>(
+  async board(from: string, to: string): Promise<WeekDesk> {
+    const envelope = await this.read<WeekDesk>(
       await this.send(`${BOARD}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
         method: "GET",
       }),
     );
-    if (envelope.code !== "OK" || !Array.isArray(envelope.data) || !envelope.data.every(validBoard))
+    if (envelope.code !== "OK" || !validDesk(envelope.data))
       throw invalidResponse(envelope.requestId);
     return envelope.data;
   }
@@ -214,6 +228,38 @@ export class AdminBookingSlotsApi {
       throw invalidResponse(typeof body?.requestId === "string" ? body.requestId : undefined);
     return body;
   }
+}
+
+function validDesk(value: unknown): value is WeekDesk {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    Array.isArray(item.slots) &&
+    item.slots.every(validBoard) &&
+    Array.isArray(item.asks) &&
+    item.asks.every(validAsk)
+  );
+}
+
+function validAsk(value: unknown): value is SlotAsk {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  const unplaced = item.slotId === null;
+  const slotOk = unplaced || (typeof item.slotId === "string" && ID_PATTERN.test(item.slotId));
+  const timeOk = unplaced
+    ? item.startAt === null && item.endAt === null
+    : typeof item.startAt === "string" && typeof item.endAt === "string";
+  const version = item.version;
+  return (
+    typeof item.id === "string" &&
+    ID_PATTERN.test(item.id) &&
+    slotOk &&
+    timeOk &&
+    typeof item.expiresAt === "string" &&
+    typeof version === "number" &&
+    Number.isInteger(version) &&
+    version >= 0
+  );
 }
 
 function validBoard(value: unknown): value is BoardSlot {
