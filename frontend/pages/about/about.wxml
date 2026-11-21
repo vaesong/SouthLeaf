@@ -172,12 +172,14 @@
     class="boundary-note"
     >{{copy.about.boundary}}</text
   >
-  <view wx:if="{{qrOpen}}" class="qr-mask" catchtap="handleCloseQrTap">
+  <view wx:if="{{qrOpen}}" class="qr-mask">
+    <view class="qr-dim" catchtap="handleCloseQrTap"></view>
     <view class="qr-sheet" catchtap="handleHoldQrTap">
       <image
         class="qr-sheet-image"
         src="{{qrSrc}}"
         mode="aspectFit"
+        show-menu-by-longpress="{{true}}"
         data-error-key="{{qrErrorKey}}"
         binderror="handleQrFailedError"
       ></image>

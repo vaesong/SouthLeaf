@@ -250,14 +250,22 @@
   top: 0;
   right: 0;
   bottom: 0;
+}
+.qr-dim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(38, 32, 27, 0.28);
+  animation: qr-fade 0.24s ease-out;
 }
 .qr-sheet {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 50vh;
+  height: 66vh;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -265,8 +273,25 @@
   padding: 48rpx 64rpx 64rpx;
   background: #ffffff;
   border-radius: 28rpx 28rpx 0 0;
+  animation: qr-rise 0.28s ease-out;
 }
 .qr-sheet-image {
   width: 100%;
   height: 100%;
+}
+@keyframes qr-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes qr-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }

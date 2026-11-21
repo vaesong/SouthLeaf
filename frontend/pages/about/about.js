@@ -74,6 +74,7 @@ Page({
         failedMedia: {},
         qrOpen: false,
       });
+      this.preloadQr(brand.contact && brand.contact.channels);
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
@@ -133,8 +134,20 @@ Page({
       qrOpen: true,
       qrTitle: channel.label || "",
       qrAccount: channel.account || "",
-      qrSrc: channel.qrCodeMedia.src,
+      qrSrc: channel.qrCodeMedia.thumbnail || channel.qrCodeMedia.src,
       qrErrorKey: "qr-" + channel.id,
+    });
+  },
+  preloadQr(channels) {
+    if (typeof wx.getImageInfo !== "function") return;
+    (channels || []).forEach((channel) => {
+      const media = channel && channel.qrCodeMedia;
+      const src = media && (media.thumbnail || media.src);
+      if (channel && channel.qrCodeStatus === "CONFIRMED" && src)
+        wx.getImageInfo({
+          src,
+          fail: () => {},
+        });
     });
   },
   closeQr() {
