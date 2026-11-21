@@ -74,6 +74,7 @@ public final class AdminContentGrantPolicy {
           "admin:admin_publication_command:SELECT",
           "admin:admin_publication_command:INSERT",
           "admin:admin_publication_command:DELETE",
+          "admin:admin_publication_audit:SELECT",
           "admin:admin_publication_audit:INSERT",
           "admin:admin_publication_audit:DELETE",
           "public:public_work_display_order:SELECT",

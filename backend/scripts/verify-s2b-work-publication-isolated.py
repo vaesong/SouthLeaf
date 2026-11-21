@@ -76,7 +76,7 @@ PUBLICATION_ADMIN_GRANTS = {
     "admin_work_authorization_gate": "SELECT, INSERT, UPDATE, DELETE",
     "admin_work_publication_state": "SELECT, INSERT, UPDATE, DELETE",
     "admin_publication_command": "SELECT, INSERT, DELETE",
-    "admin_publication_audit": "INSERT, DELETE",
+    "admin_publication_audit": "SELECT, INSERT, DELETE",
     "admin_catalog_draft": "SELECT",
     "admin_catalog_draft_revision": "SELECT",
     "admin_catalog_command": "SELECT, INSERT",
