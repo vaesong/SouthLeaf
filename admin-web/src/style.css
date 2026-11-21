@@ -1779,10 +1779,20 @@ a {
 .work.sortable {
   cursor: grab;
   touch-action: none;
+  user-select: none;
+}
+.work.sortable img {
+  -webkit-user-drag: none;
+}
+.works.reordering .work:hover {
+  transform: none;
 }
 .work.dragging {
-  opacity: 0.45;
+  position: relative;
+  z-index: 5;
+  opacity: 0.72;
   cursor: grabbing;
+  transition: none;
 }
 .work.drop {
   outline: 2px solid var(--accent, #8e5636);

@@ -9,6 +9,7 @@ defineProps<{ mediaId: string | null; alt?: string; quiet?: boolean; previewId?:
     <img
       :src="mediaContentPath(mediaId, 'thumbnail')"
       :alt="alt || ''"
+      draggable="false"
       :data-testid="previewId ? `catalog-media-preview-${previewId}` : undefined"
     />
   </div>

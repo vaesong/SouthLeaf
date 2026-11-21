@@ -30,6 +30,7 @@ const orders = ref<Record<string, string[]>>({});
 const orderNotice = ref("");
 const dragging = ref("");
 const dropTarget = ref("");
+const dragPoint = ref({ x: 0, y: 0 });
 const pointer = ref<{ id: string; x: number; y: number; moved: boolean } | null>(null);
 let suppressNav = false;
 let orderGeneration = 0;
@@ -147,11 +148,20 @@ function placeWork(source: string, target: string) {
   void persistOrder(ids);
 }
 
+function cardUnderPointer(x: number, y: number, ignore: string) {
+  for (const hit of document.elementsFromPoint(x, y)) {
+    const id = hit.closest<HTMLElement>("[data-work-id]")?.dataset.workId ?? "";
+    if (id && id !== ignore) return id;
+  }
+  return "";
+}
+
 function cardPointerDown(workId: string, event: PointerEvent) {
   if (!canReorder.value || event.button !== 0) return;
   if ((event.target as HTMLElement | null)?.closest("button")) return;
   (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   pointer.value = { id: workId, x: event.clientX, y: event.clientY, moved: false };
+  dragPoint.value = { x: 0, y: 0 };
 }
 
 function cardPointerMove(event: PointerEvent) {
@@ -164,9 +174,8 @@ function cardPointerMove(event: PointerEvent) {
     start.moved = true;
     dragging.value = start.id;
   }
-  const hit = document.elementFromPoint(event.clientX, event.clientY);
-  const over = hit?.closest<HTMLElement>("[data-work-id]")?.dataset.workId ?? "";
-  dropTarget.value = over && over !== start.id ? over : "";
+  dragPoint.value = { x: event.clientX - start.x, y: event.clientY - start.y };
+  dropTarget.value = cardUnderPointer(event.clientX, event.clientY, start.id);
 }
 
 function cardPointerUp() {
@@ -175,16 +184,18 @@ function cardPointerUp() {
   pointer.value = null;
   dragging.value = "";
   dropTarget.value = "";
+  dragPoint.value = { x: 0, y: 0 };
   if (!start?.moved) return;
   suppressNav = true;
   if (over) placeWork(start.id, over);
 }
 
-function guardDragClick(event: MouseEvent) {
-  if (!suppressNav) return;
-  suppressNav = false;
-  event.preventDefault();
-  event.stopPropagation();
+function openWork(workId: string) {
+  if (suppressNav) {
+    suppressNav = false;
+    return;
+  }
+  void router.push(`/works/${workId}`);
 }
 
 async function createWork() {
@@ -302,8 +313,8 @@ watch(
     </p>
     <p v-else-if="canReorder" class="hint">按住作品拖动。从左到右、从上到下就是小程序里的顺序。</p>
     <p v-if="loading">正在读取作品…</p>
-    <div v-else class="works" data-testid="works-table">
-      <RouterLink
+    <div v-else class="works" :class="{ reordering: dragging !== '' }" data-testid="works-table">
+      <div
         v-for="work in visible"
         :key="work.workId"
         class="card work"
@@ -312,13 +323,22 @@ watch(
           dragging: dragging === work.workId,
           drop: dropTarget === work.workId,
         }"
+        :style="
+          dragging === work.workId
+            ? { transform: `translate(${dragPoint.x}px, ${dragPoint.y}px)` }
+            : undefined
+        "
         :data-work-id="work.workId"
-        :to="`/works/${work.workId}`"
+        role="link"
+        tabindex="0"
+        draggable="false"
+        @dragstart.prevent
         @pointerdown="cardPointerDown(work.workId, $event)"
         @pointermove="cardPointerMove"
         @pointerup="cardPointerUp"
         @pointercancel="cardPointerUp"
-        @click.capture="guardDragClick"
+        @click="openWork(work.workId)"
+        @keydown.enter.prevent="openWork(work.workId)"
       >
         <div class="ph">
           <MediaThumb :media-id="work.coverMediaId" quiet />
@@ -341,7 +361,7 @@ watch(
             删除
           </button>
         </div>
-      </RouterLink>
+      </div>
       <WorkEditView v-if="route.params.workId" :key="String(route.params.workId)" />
       <p v-if="visible.length === 0">没有符合条件的作品。</p>
     </div>
