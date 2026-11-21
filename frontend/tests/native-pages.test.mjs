@@ -212,6 +212,17 @@ test("native present-only view fields are idempotent and preserve raw DTO text a
   assert.deepEqual(packageView(pkg).serviceItems, ["a"]);
   assert.deepEqual(homeView(homeView(home())), homeView(home()));
   assert.equal(serviceViews([{ packages: [] }])[0].number, "01");
+  const packageCover = { src: "package.png" };
+  const businessCover = { src: "business.png" };
+  const services = serviceViews([
+    {
+      coverMedia: businessCover,
+      packages: [{ coverMedia: packageCover }, { coverMedia: null }, {}],
+    },
+  ]);
+  assert.equal(services[0].packages[0].cardCover, packageCover);
+  assert.equal(services[0].packages[1].cardCover, businessCover);
+  assert.equal(services[0].packages[2].cardCover, businessCover);
 });
 test("home hero follows the configured target and ignores an unknown one", () => {
   const urls = [];

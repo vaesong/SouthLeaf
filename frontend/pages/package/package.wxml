@@ -23,22 +23,8 @@
     >
       <view class="service-heading">
         <text class="service-number">{{business.number}}</text>
-        <view>
-          <text class="service-title">{{business.name}}</text>
-          <text wx:if="{{business.summary}}" class="service-summary"
-            >{{business.summary}}</text
-          >
-        </view>
+        <text class="service-title">{{business.name}}</text>
       </view>
-      <image
-        wx:if="{{business.coverMedia && !failedMedia[business.id]}}"
-        src="{{business.coverMedia.src}}"
-        mode="aspectFill"
-        data-arg0="{{business.id}}"
-        binderror="handleMarkMediaFailedError"
-        class="service-image"
-      ></image>
-      <view wx:else class="service-image media-empty"></view>
       <view
         wx:for="{{business.packages}}"
         wx:for-item="pkg"
@@ -46,19 +32,32 @@
         data-arg0="{{pkg.id}}"
         bindtap="handleOpenPackageTap"
         wx:key="id"
-        class="service-package"
+        class="service-card"
       >
-        <view class="package-copy">
-          <text wx:if="{{pkg.name}}" class="package-name">{{pkg.name}}</text>
-          <text wx:if="{{pkg.summary}}" class="package-summary"
-            >{{pkg.summary}}</text
-          >
-        </view>
-        <view class="price-col">
-          <text class="package-price">{{pkg.priceLabel}}</text>
-          <text wx:if="{{copy.services.view}}" class="package-arrow"
-            >{{copy.services.view}}</text
-          >
+        <image
+          wx:if="{{pkg.cardCover && !failedMedia[pkg.id]}}"
+          src="{{pkg.cardCover.src}}"
+          mode="aspectFill"
+          data-arg0="{{pkg.id}}"
+          data-media="{{pkg.id}}"
+          catchtap="handleOpenPackageTap"
+          binderror="handleMarkMediaFailedError"
+          class="service-image"
+        ></image>
+        <view wx:else class="service-image media-empty"></view>
+        <view class="service-package">
+          <view class="package-copy">
+            <text wx:if="{{pkg.name}}" class="package-name">{{pkg.name}}</text>
+            <text wx:if="{{pkg.summary}}" class="package-summary"
+              >{{pkg.summary}}</text
+            >
+          </view>
+          <view class="price-col">
+            <text class="package-price">{{pkg.priceLabel}}</text>
+            <text wx:if="{{copy.services.view}}" class="package-arrow"
+              >{{copy.services.view}}</text
+            >
+          </view>
         </view>
       </view>
       <text

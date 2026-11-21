@@ -5,8 +5,11 @@
   color: #26201b;
 }
 .service-group {
-  margin-top: 28rpx;
-  padding: 28rpx 24rpx 24rpx;
+  margin-top: 36rpx;
+}
+.service-card {
+  margin-top: 20rpx;
+  padding: 24rpx;
   background: #ffffff;
   border-radius: 24rpx;
   box-shadow: 0 8rpx 24rpx -8rpx rgba(50, 35, 20, 0.06);
@@ -30,14 +33,6 @@
   letter-spacing: 4rpx;
   font-weight: 600;
 }
-.service-summary {
-  display: block;
-  margin-top: 6rpx;
-  color: #a39688;
-  font-size: 22rpx;
-  line-height: 1.6;
-  letter-spacing: 1rpx;
-}
 .service-image {
   display: block;
   width: 100%;
@@ -58,9 +53,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20rpx;
-  margin-top: 24rpx;
-  padding-top: 22rpx;
-  border-top: 1rpx solid rgba(38, 32, 27, 0.07);
+  margin-top: 20rpx;
 }
 .package-copy {
   flex: 1;

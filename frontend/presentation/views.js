@@ -30,6 +30,7 @@ const serviceViews = (groups, priceLines) =>
     packages: group.packages.map((pkg) => ({
       ...pkg,
       priceLabel: priceLabel(pkg, priceLines),
+      cardCover: pkg.coverMedia || group.coverMedia || null,
     })),
   }));
 const rows = (values) =>

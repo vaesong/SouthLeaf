@@ -208,7 +208,9 @@ Page({
     this.loadPackages();
   },
   handleMarkMediaFailedError(event) {
-    this.markMediaFailed(event.currentTarget.dataset.arg0);
+    this.markMediaFailed(
+      event.currentTarget.dataset.media || event.currentTarget.dataset.arg0,
+    );
   },
   handleOpenPackageTap(event) {
     this.openPackage(event.currentTarget.dataset.arg0);
