@@ -305,6 +305,14 @@ export class AdminContentApi {
     return this.read<WorkView[]>("/works");
   }
 
+  workOrders(): Promise<{ scopes: Record<string, string[]> }> {
+    return this.read("/works/order");
+  }
+
+  saveWorkOrder(scope: string, workIds: string[]): Promise<{ scopes: Record<string, string[]> }> {
+    return this.write("/works/order", { method: "PUT", json: { scope, workIds } });
+  }
+
   createWork(key: string): Promise<{ work: WorkView; replayed: boolean }> {
     return this.write("/works", { method: "POST", json: {}, key });
   }

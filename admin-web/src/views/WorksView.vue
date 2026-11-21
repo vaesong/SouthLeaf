@@ -24,7 +24,13 @@ const busy = ref(false);
 const notice = ref("");
 const requestId = ref("");
 const filter = ref("all");
+const category = ref("all");
 const keyword = ref("");
+const orders = ref<Record<string, string[]>>({});
+const orderNotice = ref("");
+const dragging = ref("");
+const dropTarget = ref("");
+let orderGeneration = 0;
 const deleteTarget = ref<WorkView | null>(null);
 let createKey: string | null = null;
 const canEdit = computed(() => auth?.state.identity?.permissions.includes("CONTENT_EDIT") ?? false);
@@ -54,8 +60,29 @@ function tone(state: string): "live" | "draft" | "off" {
   return "draft";
 }
 
+const businesses = computed(() => catalog?.state.draft?.businesses ?? []);
+
+function bySavedOrder(items: WorkView[]) {
+  const saved = orders.value[category.value] ?? orders.value.all ?? [];
+  const rank = new Map(saved.map((id, index) => [id, index]));
+  return [...items].sort((left, right) => {
+    const leftRank = rank.has(left.workId) ? rank.get(left.workId)! : Number.MAX_SAFE_INTEGER;
+    const rightRank = rank.has(right.workId) ? rank.get(right.workId)! : Number.MAX_SAFE_INTEGER;
+    if (leftRank !== rightRank) return leftRank - rightRank;
+    return right.updatedAt.localeCompare(left.updatedAt);
+  });
+}
+
+const inCategory = computed(() =>
+  bySavedOrder(
+    works.value.filter(
+      (work) => category.value === "all" || work.businessIds.includes(category.value),
+    ),
+  ),
+);
+
 const visible = computed(() =>
-  works.value.filter((work) => {
+  inCategory.value.filter((work) => {
     if (filter.value === "PUBLISHED" && work.publicationState !== "PUBLISHED") return false;
     if (filter.value === "WITHDRAWN" && work.publicationState !== "WITHDRAWN") return false;
     if (
@@ -68,11 +95,17 @@ const visible = computed(() =>
   }),
 );
 
+const canReorder = computed(
+  () => canEdit.value && filter.value === "all" && keyword.value.trim() === "" && !busy.value,
+);
+
 async function load() {
   loading.value = true;
   notice.value = "";
   try {
-    works.value = await api.listWorks();
+    const [listed, stored] = await Promise.all([api.listWorks(), api.workOrders()]);
+    works.value = listed;
+    orders.value = stored.scopes ?? {};
   } catch (error) {
     const failure = describeFailure(error);
     notice.value = failure.text;
@@ -80,6 +113,62 @@ async function load() {
   } finally {
     loading.value = false;
   }
+}
+
+async function persistOrder(ids: string[]) {
+  const scope = category.value;
+  const token = ++orderGeneration;
+  orders.value = { ...orders.value, [scope]: ids };
+  orderNotice.value = "";
+  try {
+    const saved = await api.saveWorkOrder(scope, ids);
+    if (token !== orderGeneration) return;
+    orders.value = saved.scopes ?? {};
+    orderNotice.value = "顺序已保存。小程序按这个顺序显示。";
+  } catch (error) {
+    if (token !== orderGeneration) return;
+    const failure = describeFailure(error);
+    notice.value = failure.text;
+    requestId.value = failure.requestId;
+    await load();
+  }
+}
+
+function moveWork(workId: string, delta: number) {
+  if (!canReorder.value) return;
+  const ids = inCategory.value.map((work) => work.workId);
+  const index = ids.indexOf(workId);
+  const next = index + delta;
+  if (index < 0 || next < 0 || next >= ids.length) return;
+  ids.splice(index, 1);
+  ids.splice(next, 0, workId);
+  void persistOrder(ids);
+}
+
+function startDrag(workId: string, event: DragEvent) {
+  if (!canReorder.value) return;
+  dragging.value = workId;
+  event.dataTransfer?.setData("text/plain", workId);
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+}
+
+function overWork(workId: string) {
+  if (!dragging.value || dragging.value === workId) return;
+  dropTarget.value = workId;
+}
+
+function dropWork(workId: string) {
+  const source = dragging.value;
+  dragging.value = "";
+  dropTarget.value = "";
+  if (!canReorder.value || !source || source === workId) return;
+  const ids = inCategory.value.map((work) => work.workId);
+  const from = ids.indexOf(source);
+  const to = ids.indexOf(workId);
+  if (from < 0 || to < 0) return;
+  ids.splice(from, 1);
+  ids.splice(to, 0, source);
+  void persistOrder(ids);
 }
 
 async function createWork() {
@@ -137,7 +226,9 @@ watch(
     <div class="page-head">
       <div>
         <h1>作品集</h1>
-        <p>每组作品单独发布。已发布的可以放到首页精选，也可以作为首页轮播的跳转目标。</p>
+        <p>
+          每组作品单独发布。在分类里拖动或上下移动，小程序就按这个顺序显示。全部和每个分类各自一份顺序。
+        </p>
       </div>
       <div class="actions">
         <button
@@ -152,10 +243,25 @@ watch(
       </div>
     </div>
     <p v-if="notice" class="alert-line" role="alert" data-testid="content-notice">{{ notice }}</p>
+    <p v-if="orderNotice" class="notice-line">{{ orderNotice }}</p>
+    <div class="seg work-cats">
+      <button type="button" :class="{ on: category === 'all' }" @click="category = 'all'">
+        全部
+      </button>
+      <button
+        v-for="business in businesses"
+        :key="business.id"
+        type="button"
+        :class="{ on: category === business.id }"
+        @click="category = business.id"
+      >
+        {{ business.name || "未命名分类" }}
+      </button>
+    </div>
     <div class="toolbar">
       <div class="seg">
         <button type="button" :class="{ on: filter === 'all' }" @click="filter = 'all'">
-          全部 {{ works.length }}
+          不限 {{ works.length }}
         </button>
         <button type="button" :class="{ on: filter === 'PUBLISHED' }" @click="filter = 'PUBLISHED'">
           已发布
@@ -175,13 +281,26 @@ watch(
         <input v-model="keyword" placeholder="搜索作品标题" />
       </div>
     </div>
+    <p v-if="canEdit && !canReorder && !busy" class="hint">
+      要调整顺序，先看这一分类的全部作品，并清空搜索。
+    </p>
+    <p v-else-if="canReorder" class="hint">
+      拖动卡片，或用上移、下移。从左到右、从上到下就是小程序里的顺序。
+    </p>
     <p v-if="loading">正在读取作品…</p>
     <div v-else class="works" data-testid="works-table">
       <RouterLink
         v-for="work in visible"
         :key="work.workId"
         class="card work"
+        :class="{ drop: dropTarget === work.workId }"
         :to="`/works/${work.workId}`"
+        @dragover.prevent="overWork(work.workId)"
+        @drop.prevent="dropWork(work.workId)"
+        @dragend="
+          dragging = '';
+          dropTarget = '';
+        "
       >
         <div class="ph">
           <MediaThumb :media-id="work.coverMediaId" quiet />
@@ -194,6 +313,31 @@ watch(
         <div class="work-body">
           <b>{{ work.title || "未命名" }}</b>
           <small>{{ businessLine(work) }} · {{ formatDate(work.updatedAt) }}更新</small>
+          <div v-if="canReorder" class="work-move">
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              draggable="true"
+              @click.prevent.stop
+              @dragstart="startDrag(work.workId, $event)"
+            >
+              拖动
+            </button>
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              @click.prevent.stop="moveWork(work.workId, -1)"
+            >
+              上移
+            </button>
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              @click.prevent.stop="moveWork(work.workId, 1)"
+            >
+              下移
+            </button>
+          </div>
           <button
             v-if="canEdit"
             class="btn btn-danger-ghost"

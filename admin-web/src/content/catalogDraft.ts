@@ -44,8 +44,6 @@ export const PRESENTATION_FIELDS = [
   { group: "作品", key: "works.summary", label: "页面摘要" },
   { group: "作品", key: "works.all", label: "全部" },
   { group: "作品", key: "works.empty", label: "没有作品时" },
-  { group: "作品", key: "works.sortNewest", label: "最新发布" },
-  { group: "作品", key: "works.sortOldest", label: "最早发布" },
   { group: "作品", key: "works.loadMore", label: "加载更多" },
   { group: "作品", key: "works.layoutEditorial", label: "等高排版" },
   { group: "作品", key: "works.layoutGrid", label: "瀑布排版" },

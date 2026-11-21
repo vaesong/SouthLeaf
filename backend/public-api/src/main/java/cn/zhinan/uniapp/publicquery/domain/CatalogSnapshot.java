@@ -196,6 +196,27 @@ public record CatalogSnapshot(
     }
   }
 
+  public CatalogSnapshot withWorks(List<Work> replacement) {
+    return new CatalogSnapshot(
+        releaseId,
+        contentVersion,
+        dataMode,
+        approvalStatus,
+        brand,
+        contact,
+        businesses,
+        packages,
+        replacement,
+        assets,
+        bindings,
+        featuredBusinesses,
+        featuredPackages,
+        featuredWorks,
+        overlayReleases,
+        heroSlides,
+        presentation);
+  }
+
   public record Brand(
       String name,
       String englishName,
@@ -306,10 +327,65 @@ public record CatalogSnapshot(
       List<String> mediaIds,
       String candidateVersion,
       String bindingVersion,
-      String subjectScopeRef) {
+      String subjectScopeRef,
+      int listPosition,
+      Map<String, Integer> categoryPositions) {
+    public Work(
+        String id,
+        String title,
+        String summary,
+        String description,
+        List<String> businessIds,
+        String packageLabel,
+        String publicationStatus,
+        Instant publishedAt,
+        String coverMediaId,
+        List<String> mediaIds,
+        String candidateVersion,
+        String bindingVersion,
+        String subjectScopeRef) {
+      this(
+          id,
+          title,
+          summary,
+          description,
+          businessIds,
+          packageLabel,
+          publicationStatus,
+          publishedAt,
+          coverMediaId,
+          mediaIds,
+          candidateVersion,
+          bindingVersion,
+          subjectScopeRef,
+          Integer.MAX_VALUE,
+          Map.of());
+    }
+
     public Work {
       businessIds = List.copyOf(businessIds);
       mediaIds = List.copyOf(mediaIds);
+      if (listPosition < 0) throw new IllegalArgumentException("work position is invalid");
+      categoryPositions = categoryPositions == null ? Map.of() : Map.copyOf(categoryPositions);
+    }
+
+    public Work placed(int listPosition, Map<String, Integer> categoryPositions) {
+      return new Work(
+          id,
+          title,
+          summary,
+          description,
+          businessIds,
+          packageLabel,
+          publicationStatus,
+          publishedAt,
+          coverMediaId,
+          mediaIds,
+          candidateVersion,
+          bindingVersion,
+          subjectScopeRef,
+          listPosition,
+          categoryPositions);
     }
   }
 

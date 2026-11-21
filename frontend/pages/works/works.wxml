@@ -7,79 +7,49 @@
         <text wx:if="{{copy.works.title}}" class="page-title"
           >{{copy.works.title}}</text
         >
-        <view class="title-actions">
-          <button
-            aria-label="{{sortLabel}}"
-            aria-expanded="{{showSortMenu}}"
-            bindtap="handleShowSortMenuTap"
-            class="sort-toggle"
-          >
-            <text>{{sortLabel}}</text>
-            <view class="sort-caret"></view>
-          </button>
-          <button
-            aria-label="{{layoutLabel}}"
-            bindtap="handleCycleLayoutTap"
-            class="layout-toggle"
-          >
-            <text class="layout-icon">▦</text>{{layoutLabel}}<text
-              class="chevron"
-              >↻</text
-            >
-          </button>
-          <view wx:if="{{showSortMenu}}" class="sort-popover">
-            <button
-              data-arg0="{{'newest'}}"
-              bindtap="handleSelectSortTap"
-              class="sort-choice {{sort === 'newest' ? 'selected' : ''}}"
-            >
-              {{copy.works.sortNewest}}<text
-                >{{sort === 'newest' ? '✓' : ''}}</text
-              >
-            </button>
-            <button
-              data-arg0="{{'oldest'}}"
-              bindtap="handleSelectSortTap2"
-              class="sort-choice {{sort === 'oldest' ? 'selected' : ''}}"
-            >
-              {{copy.works.sortOldest}}<text
-                >{{sort === 'oldest' ? '✓' : ''}}</text
-              >
-            </button>
-          </view>
-        </view>
       </view>
       <text wx:if="{{copy.works.summary}}" class="page-summary"
         >{{copy.works.summary}}</text
       >
     </view>
-    <view
-      wx:if="{{showSortMenu}}"
-      bindtap="handleShowSortMenuTap2"
-      class="sort-dismiss"
-    ></view>
-    <scroll-view
-      scroll-x="{{true}}"
-      show-scrollbar="{{false}}"
-      class="filter-row"
-    >
-      <view
-        data-arg0="{{''}}"
-        bindtap="handleSelectFilterTap"
-        class="filter-chip {{selectedBusinessId === '' ? 'active' : ''}}"
-        >{{copy.works.all}}</view
+    <view class="filter-bar">
+      <scroll-view
+        scroll-x="{{true}}"
+        show-scrollbar="{{false}}"
+        class="filter-row"
       >
-      <view
-        wx:for="{{businesses}}"
-        wx:for-item="business"
-        wx:for-index="index"
-        data-arg0="{{business.id}}"
-        bindtap="handleSelectFilterTap2"
-        wx:key="id"
-        class="filter-chip {{selectedBusinessId === business.id ? 'active' : ''}}"
-        >{{business.name}}</view
-      >
-    </scroll-view>
+        <view
+          data-arg0="{{''}}"
+          bindtap="handleSelectFilterTap"
+          class="filter-chip {{selectedBusinessId === '' ? 'active' : ''}}"
+          >{{copy.works.all}}</view
+        >
+        <view
+          wx:for="{{businesses}}"
+          wx:for-item="business"
+          wx:for-index="index"
+          data-arg0="{{business.id}}"
+          bindtap="handleSelectFilterTap2"
+          wx:key="id"
+          class="filter-chip {{selectedBusinessId === business.id ? 'active' : ''}}"
+          >{{business.name}}</view
+        >
+      </scroll-view>
+      <view class="layout-switch">
+        <button
+          data-arg0="{{'grid'}}"
+          bindtap="handleSelectLayoutTap"
+          class="layout-toggle {{layout === 'grid' ? 'on' : ''}}"
+          >{{copy.works.layoutGrid}}</button
+        >
+        <button
+          data-arg0="{{'editorial'}}"
+          bindtap="handleSelectLayoutTap2"
+          class="layout-toggle {{layout === 'editorial' ? 'on' : ''}}"
+          >{{copy.works.layoutEditorial}}</button
+        >
+      </view>
+    </view>
     <view wx:if="{{works.length && layout === 'grid'}}" class="waterfall">
       <view class="waterfall-col">
         <view

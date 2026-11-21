@@ -84,9 +84,39 @@ public class JdbcPublishedCatalogRepository implements PublishedCatalogRepositor
         && current.workEpoch() == workEpoch
         && current.catalogEpoch() == catalogEpoch) return current.snapshot();
     CatalogSnapshot snapshot = workEpoch == 0 ? v1 : merge(v1, workEpoch);
+    snapshot = place(snapshot);
     if (catalogEpoch > 0) snapshot = mergeCatalog(snapshot, catalogEpoch);
     merged.set(new Merged(v1, workEpoch, catalogEpoch, snapshot));
     return snapshot;
+  }
+
+  /** Applies the studio order. Works without a saved position stay after the ordered ones. */
+  private CatalogSnapshot place(CatalogSnapshot snapshot) {
+    var rows =
+        jdbc.queryForList(
+            "SELECT scope, work_id, position FROM public_work_display_order ORDER BY scope, position, work_id");
+    if (rows.isEmpty()) return snapshot;
+    Map<String, Integer> all = new HashMap<>();
+    Map<String, Map<String, Integer>> categories = new HashMap<>();
+    for (var row : rows) {
+      int position = integer(row, "position");
+      if (position < 0) continue;
+      String workId = str(row, "work_id");
+      if ("all".equals(str(row, "scope"))) {
+        all.put(workId, position);
+        continue;
+      }
+      categories
+          .computeIfAbsent(workId, id -> new LinkedHashMap<>())
+          .put(str(row, "scope"), position);
+    }
+    List<Work> placed = new ArrayList<>();
+    for (Work work : snapshot.works())
+      placed.add(
+          work.placed(
+              all.getOrDefault(work.id(), Integer.MAX_VALUE),
+              categories.getOrDefault(work.id(), Map.of())));
+    return snapshot.withWorks(placed);
   }
 
   /**

@@ -70,7 +70,7 @@ const home = () => ({
   contact: {},
   meta: { dataMode: "demo" },
 });
-test("native Page state uses explicit setData and preserves list sort/category/layout", async () => {
+test("native Page state uses explicit setData and keeps category layout without a sort choice", async () => {
   const calls = [];
   const p = page("works/works", {
     getBusinesses: async () => list(),
@@ -79,13 +79,15 @@ test("native Page state uses explicit setData and preserves list sort/category/l
       return list([item("fresh")]);
     },
   });
-  p.update({ selectedBusinessId: "family" });
-  await p.selectSort("oldest");
+  await p.selectFilter("family");
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].sort, "oldest");
+  assert.equal(calls[0].sort, undefined);
+  assert.equal(calls[0].businessId, "family");
   assert.equal(calls[0].cursor, undefined);
   assert.equal(p.data.selectedBusinessId, "family");
   assert.equal(p.data.layout, "grid");
+  p.selectLayout("editorial");
+  assert.equal(p.data.layout, "editorial");
   assert.equal(p.data.works[0].id, "fresh");
   assert.equal(p.data.dataMode, "demo");
   assert.ok(p.commits > 0);

@@ -83,6 +83,7 @@ PUBLICATION_ADMIN_GRANTS = {
     "admin_catalog_audit": "INSERT",
 }
 PUBLICATION_PUBLIC_GRANTS = {
+    "public_work_display_order": "SELECT, INSERT, DELETE",
     "public_work_release": "INSERT",
     "public_work_release_business": "INSERT",
     "public_work_release_media": "INSERT",

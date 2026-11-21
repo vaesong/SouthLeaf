@@ -23,6 +23,8 @@ import cn.zhinan.admincontent.port.ContentPorts.PublicationRepository;
 import cn.zhinan.admincontent.port.ContentPorts.StoredWork;
 import cn.zhinan.admincontent.port.ContentPorts.WorkRepository;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -287,6 +289,36 @@ public final class ContentApplication {
       throw new ContentException(ContentFailure.VERSION_CONFLICT, "VERSION_CONFLICT");
     publications.releaseWork(id, clock.instant());
     works.delete(id, expectedVersion);
+  }
+
+  public Map<String, List<String>> workOrders() {
+    return publications.displayOrders();
+  }
+
+  /** Replaces one list. "all" is the mini-program 全部 order; any other scope is one business. */
+  public Map<String, List<String>> saveWorkOrder(String scope, List<String> workIds) {
+    if (workIds == null || workIds.size() > 1000)
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_INVALID");
+    String key = scope == null ? "" : scope.trim();
+    boolean catalog = "all".equals(key);
+    if (!catalog && !ContentRules.businessId(key))
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_SCOPE_INVALID");
+    var ordered = new ArrayList<String>(workIds.size());
+    var seen = new HashSet<String>();
+    for (String raw : workIds) {
+      String id = ContentRules.uuid(raw);
+      if (!seen.add(id))
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_DUPLICATE");
+      StoredWork stored =
+          works
+              .find(id)
+              .orElseThrow(() -> new ContentException(ContentFailure.NOT_FOUND, "WORK_UNKNOWN"));
+      if (!catalog && !stored.draft().businessIds().contains(key))
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_CATEGORY");
+      ordered.add(id);
+    }
+    publications.replaceDisplayOrder(key, List.copyOf(ordered), clock.instant());
+    return publications.displayOrders();
   }
 
   /**

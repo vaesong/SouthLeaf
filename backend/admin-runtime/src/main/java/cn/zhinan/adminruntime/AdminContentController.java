@@ -21,6 +21,7 @@ import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -366,6 +367,26 @@ class AdminContentController {
 
   // ---------------------------------------------------------------- works
 
+  @GetMapping("/works/order")
+  ResponseEntity<?> workOrder(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_READ,
+        (principal, requestId) -> ok(requestId, new WorkOrderView(content.workOrders())));
+  }
+
+  @PutMapping("/works/order")
+  ResponseEntity<?> saveWorkOrder(HttpServletRequest request) {
+    return handle(
+        request,
+        AdminPermission.CONTENT_EDIT,
+        (principal, requestId) -> {
+          OrderBody body = orderBody(request);
+          return ok(
+              requestId, new WorkOrderView(content.saveWorkOrder(body.scope(), body.workIds())));
+        });
+  }
+
   @GetMapping("/works")
   ResponseEntity<?> works(HttpServletRequest request) {
     return handle(
@@ -679,6 +700,48 @@ class AdminContentController {
 
   private static String etag(int version) {
     return "\"v" + version + "\"";
+  }
+
+  private record WorkOrderView(Map<String, List<String>> scopes) {}
+
+  private record OrderBody(String scope, List<String> workIds) {}
+
+  private static OrderBody orderBody(HttpServletRequest request) {
+    byte[] bytes = body(request, 65_536);
+    String scope = null;
+    List<String> workIds = null;
+    try (JsonParser parser = STRICT_JSON.createParser(bytes)) {
+      if (parser.nextToken() != JsonToken.START_OBJECT)
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+        if (parser.currentToken() != JsonToken.PROPERTY_NAME)
+          throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+        String field = parser.currentName();
+        JsonToken value = parser.nextToken();
+        if ("scope".equals(field)) {
+          if (value != JsonToken.VALUE_STRING)
+            throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_SCOPE_INVALID");
+          scope = parser.getString();
+        } else if ("workIds".equals(field)) {
+          if (value != JsonToken.START_ARRAY)
+            throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_INVALID");
+          var ids = new ArrayList<String>();
+          while (parser.nextToken() != JsonToken.END_ARRAY) {
+            if (parser.currentToken() != JsonToken.VALUE_STRING)
+              throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_INVALID");
+            ids.add(parser.getString());
+          }
+          workIds = ids;
+        } else throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+      }
+      if (parser.nextToken() != null)
+        throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+    } catch (JacksonException malformed) {
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "JSON_MALFORMED");
+    }
+    if (scope == null || workIds == null)
+      throw new ContentException(ContentFailure.INVALID_REQUEST, "WORK_ORDER_INVALID");
+    return new OrderBody(scope, workIds);
   }
 
   private record FolderBody(String name, String parentId) {}

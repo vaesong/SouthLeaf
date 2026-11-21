@@ -33,11 +33,8 @@ test("detail pages have no contact CTAs; UI retains direct controls and vertical
       text(r + ".wxml") + text(r + ".js"),
       /微信联系|微信咨询|联系工作室|contact-actions|makePhoneCall/,
     );
-  assert.match(
-    text("pages/works/works.wxml"),
-    /bindtap="handleCycleLayoutTap"/,
-  );
-  assert.match(text("pages/works/works.wxml"), /sort-popover/);
+  assert.match(text("pages/works/works.wxml"), /class="layout-switch"/);
+  assert.doesNotMatch(text("pages/works/works.wxml"), /sort-popover|sort-toggle/);
   assert.doesNotMatch(
     text("pages/package/package.wxml"),
     /<scroll-view|filter-chip|business-grid/,

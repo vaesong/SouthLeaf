@@ -16,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -460,7 +461,10 @@ public final class JdbcPublicationRepository implements PublicationRepository {
                       + "active_work_publication SET visible=0, changed_at=? WHERE work_id=?",
                   stamp,
                   workId);
-          if (hidden > 0) bumpEpoch(stamp);
+          int removed =
+              db.jdbc.update(
+                  "DELETE FROM " + pub + "public_work_display_order WHERE work_id=?", workId);
+          if (hidden > 0 || removed > 0) bumpEpoch(stamp);
           List<String> commandIds =
               db.jdbc.queryForList(
                   "SELECT command_id FROM admin_publication_command WHERE work_id=?",
@@ -471,6 +475,50 @@ public final class JdbcPublicationRepository implements PublicationRepository {
           db.jdbc.update("DELETE FROM admin_publication_command WHERE work_id=?", workId);
           db.jdbc.update("DELETE FROM admin_work_publication_state WHERE work_id=?", workId);
           db.jdbc.update("DELETE FROM admin_work_authorization_gate WHERE work_id=?", workId);
+          return null;
+        });
+  }
+
+  @Override
+  public Map<String, List<String>> displayOrders() {
+    return db.read(
+        () -> {
+          var grouped = new LinkedHashMap<String, List<String>>();
+          for (var row :
+              db.jdbc.queryForList(
+                  "SELECT scope, work_id FROM "
+                      + pub
+                      + "public_work_display_order ORDER BY scope, position, work_id")) {
+            grouped
+                .computeIfAbsent((String) row.get("scope"), key -> new ArrayList<>())
+                .add((String) row.get("work_id"));
+          }
+          return Map.copyOf(grouped);
+        });
+  }
+
+  @Override
+  public void replaceDisplayOrder(String scope, List<String> workIds, Instant now) {
+    db.write(
+        () -> {
+          List<Long> epoch =
+              db.jdbc.queryForList(
+                  "SELECT epoch FROM "
+                      + pub
+                      + "public_work_projection_epoch WHERE singleton_id=1 FOR UPDATE",
+                  Long.class);
+          if (epoch.size() != 1)
+            throw new ContentException(ContentFailure.STORAGE_UNAVAILABLE, "EPOCH_MISSING");
+          db.jdbc.update("DELETE FROM " + pub + "public_work_display_order WHERE scope=?", scope);
+          for (int index = 0; index < workIds.size(); index++)
+            db.jdbc.update(
+                "INSERT INTO "
+                    + pub
+                    + "public_work_display_order (scope, work_id, position) VALUES (?,?,?)",
+                scope,
+                workIds.get(index),
+                index);
+          bumpEpoch(ContentJdbc.ts(now));
           return null;
         });
   }

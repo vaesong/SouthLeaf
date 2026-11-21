@@ -1772,6 +1772,19 @@ a {
 .work-body {
   padding: 14px 16px 16px;
 }
+.work-cats {
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.work.drop {
+  outline: 2px solid var(--accent, #8e5636);
+}
+.work-move {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
 .work-body b {
   font-family: var(--serif);
   font-size: 16px;

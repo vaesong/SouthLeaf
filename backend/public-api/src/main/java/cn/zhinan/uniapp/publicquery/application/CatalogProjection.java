@@ -39,14 +39,29 @@ public final class CatalogProjection {
             .toList();
     decisions.putAll(policy.evaluateAll(catalog, candidates));
     var stream = candidates.stream().filter(w -> decisions.get(w.id()).allowed());
-    var order =
+    var published =
         Comparator.comparing(CatalogSnapshot.Work::publishedAt)
             .thenComparing(CatalogSnapshot.Work::id);
     return switch (sort) {
-      case "newest" -> stream.sorted(order.reversed()).toList();
-      case "oldest" -> stream.sorted(order).toList();
-      default -> stream.toList();
+      case "newest" -> stream.sorted(published.reversed()).toList();
+      case "oldest" -> stream.sorted(published).toList();
+      default -> stream.sorted(displayOrder(businessId)).toList();
     };
+  }
+
+  /**
+   * Saved studio order. A category with no order of its own follows 全部. Equal ranks keep the
+   * catalog order.
+   */
+  private Comparator<CatalogSnapshot.Work> displayOrder(String businessId) {
+    return Comparator.comparingInt(
+        work -> {
+          if (businessId != null) {
+            Integer category = work.categoryPositions().get(businessId);
+            if (category != null) return category;
+          }
+          return work.listPosition();
+        });
   }
 
   public Optional<CatalogSnapshot.Work> work(String id) {

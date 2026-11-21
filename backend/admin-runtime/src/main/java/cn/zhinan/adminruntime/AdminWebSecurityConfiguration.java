@@ -143,6 +143,8 @@ class AdminWebSecurityConfiguration {
         routes.matcher(HttpMethod.GET, "/api/admin/v1/media/{mediaId}"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/media/{mediaId}/{variant}/content"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/works"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/works/order"),
+        routes.matcher(HttpMethod.PUT, "/api/admin/v1/works/order"),
         routes.matcher(HttpMethod.POST, "/api/admin/v1/works"),
         routes.matcher(HttpMethod.GET, "/api/admin/v1/works/{workId}"),
         routes.matcher(HttpMethod.PUT, "/api/admin/v1/works/{workId}"),

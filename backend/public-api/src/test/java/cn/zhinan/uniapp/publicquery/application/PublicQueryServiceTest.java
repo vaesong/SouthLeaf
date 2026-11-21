@@ -76,6 +76,8 @@ class PublicQueryServiceTest {
   void sortAndFilterAreAppliedBeforePaging() {
     var s = service(CatalogFixture::permittedBatch);
     assertThat(s.readWorks(null, "newest", 1, null).data().items().getFirst().id()).isEqualTo("w2");
+    assertThat(s.readWorks(null, "recommended", 1, null).data().items().getFirst().id())
+        .isEqualTo("w1");
     assertThat(s.readWorks("b1", "oldest", 20, null).data().items())
         .extracting(w -> w.id())
         .containsExactly("w1");

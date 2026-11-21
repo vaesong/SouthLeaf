@@ -71,6 +71,10 @@ export function describeFailure(error: unknown): {
     BODY_TOO_LARGE: "这次提交的内容太大。请少选一些图片后再保存。",
     MEDIA_VARIANTS_INCOMPLETE: "这张图片还没有准备好，请重新上传后再选。",
     PRESENTATION_LINE_TOO_LONG: "这句话太长，请缩短后再保存。",
+    WORK_ORDER_INVALID: "这次顺序无法保存，请重新加载后再排。",
+    WORK_ORDER_SCOPE_INVALID: "这个分类无法排序。",
+    WORK_ORDER_DUPLICATE: "同一组作品不能在顺序里出现两次。",
+    WORK_ORDER_CATEGORY: "有一组作品不在这个分类里，顺序没有保存。",
   };
   const base =
     (reason ? byReason[reason] : undefined) ??

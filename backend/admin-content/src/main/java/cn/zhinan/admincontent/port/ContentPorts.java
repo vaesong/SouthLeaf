@@ -120,6 +120,10 @@ public final class ContentPorts {
      */
     void releaseWork(String workId, Instant now);
 
+    Map<String, List<String>> displayOrders();
+
+    void replaceDisplayOrder(String scope, List<String> workIds, Instant now);
+
     /** Upserts the gate that publish compares with the current draft. */
     void recordAuthorization(
         String workId, String subjectScopeRef, String mediaScopeSha256, Instant now);

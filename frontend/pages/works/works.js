@@ -1,10 +1,6 @@
 const { getBusinesses, getWorks } = require("../../api/public.js");
 const { createError } = require("../../api/api.js");
-const {
-  readLayout,
-  rememberLayout,
-  nextLayout,
-} = require("../../api/public-display.js");
+const { readLayout, rememberLayout } = require("../../api/public-display.js");
 const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
@@ -13,14 +9,6 @@ function present(data) {
   const copy = ready(data.copy);
   return {
     ...data,
-    sortLabel:
-      data.sort === "oldest"
-        ? copy.works.sortOldest || ""
-        : copy.works.sortNewest || "",
-    layoutLabel:
-      data.layout === "grid"
-        ? copy.works.layoutGrid || ""
-        : copy.works.layoutEditorial || "",
     works,
     leftCol: works.filter((_, index) => index % 2 === 0),
     rightCol: works.filter((_, index) => index % 2 === 1),
@@ -40,8 +28,6 @@ Page({
     failedMedia: {},
     selectedBusinessId: "",
     layout: "grid",
-    sort: "newest",
-    showSortMenu: false,
     copy: {},
     dataMode: "",
   }),
@@ -51,7 +37,7 @@ Page({
   onHide() {
     this._hidden = true;
     this._generation++;
-    this.update({ showSortMenu: false });
+    this.update({});
   },
   onUnload() {
     this._unloaded = true;
@@ -68,9 +54,6 @@ Page({
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    this.update({
-      sort: readLayout("southleaf.works.sort", ["newest", "oldest"], "newest"),
-    });
     this.update({
       layout: readLayout(
         "southleaf.works.layout",
@@ -123,7 +106,6 @@ Page({
         getWorks({
           businessId: this.data.selectedBusinessId || undefined,
           cursor,
-          sort: this.data.sort,
         }),
       ]);
       if (version !== this._generation) return;
@@ -189,24 +171,7 @@ Page({
     this.update({
       selectedBusinessId: filter,
     });
-    this.loadWorks();
-  },
-  selectSort(sort) {
-    this.update({
-      showSortMenu: false,
-    });
-    if (!["newest", "oldest"].includes(sort) || this.data.sort === sort) return;
-    this.update({
-      sort: sort,
-    });
-    rememberLayout("southleaf.works.sort", sort);
     return this.loadWorks();
-  },
-  cycleLayout() {
-    this.update({
-      showSortMenu: false,
-    });
-    this.selectLayout(nextLayout(this.data.layout, ["grid", "editorial"]));
   },
   selectLayout(layout) {
     if (!["grid", "editorial"].includes(layout)) return;
@@ -234,24 +199,11 @@ Page({
       url: "/pages/index/index",
     });
   },
-  handleShowSortMenuTap(_event) {
-    this.update({
-      showSortMenu: !this.data.showSortMenu,
-    });
+  handleSelectLayoutTap(event) {
+    this.selectLayout(event.currentTarget.dataset.arg0);
   },
-  handleCycleLayoutTap(_event) {
-    this.cycleLayout();
-  },
-  handleSelectSortTap(event) {
-    this.selectSort(event.currentTarget.dataset.arg0);
-  },
-  handleSelectSortTap2(event) {
-    this.selectSort(event.currentTarget.dataset.arg0);
-  },
-  handleShowSortMenuTap2(_event) {
-    this.update({
-      showSortMenu: false,
-    });
+  handleSelectLayoutTap2(event) {
+    this.selectLayout(event.currentTarget.dataset.arg0);
   },
   handleSelectFilterTap(event) {
     this.selectFilter(event.currentTarget.dataset.arg0);
