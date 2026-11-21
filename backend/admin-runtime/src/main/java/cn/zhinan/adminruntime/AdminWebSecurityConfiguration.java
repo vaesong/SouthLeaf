@@ -126,7 +126,13 @@ class AdminWebSecurityConfiguration {
         routes.matcher(
             HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/confirm"),
         routes.matcher(
-            HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/reject"));
+            HttpMethod.POST, "/api/admin/v1/bookings/reservations/{reservationId}/reject"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/users"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/users/{userId}"),
+        routes.matcher(HttpMethod.PATCH, "/api/admin/v1/users/{userId}"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/users/{userId}/avatar"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/users/{userId}/visits"),
+        routes.matcher(HttpMethod.GET, "/api/admin/v1/shares/{shareId}"));
   }
 
   private static RequestMatcher contentRoutes(AdminRuntimeProperties runtime) {

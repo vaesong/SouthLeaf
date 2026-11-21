@@ -47,11 +47,15 @@ Page({
     }
   },
   onShareAppMessage() {
-    return {
-      title: this.data.pkg.name || "",
-      path: `/pages/package/pkgdetail?packageId=${encodeURIComponent(this.data.id)}`,
-      imageUrl: this.data.pkg?.coverMedia?.src || "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: this.data.pkg.name || "",
+        path: `/pages/package/pkgdetail?packageId=${encodeURIComponent(this.data.id)}`,
+        imageUrl: this.data.pkg?.coverMedia?.src || "",
+      },
+      this.data.id,
+    );
   },
   onLoad(options) {
     this._generation = 0;
@@ -61,7 +65,7 @@ Page({
     this.update({
       id: typeof id === "string" && id.trim().length <= 128 ? id.trim() : "",
     });
-    this.loadPackage();
+    require("../../user/track").enter(this).then(() => this.loadPackage()).catch(() => {});
   },
   async loadPackage() {
     if (!this.data.id) {
@@ -102,6 +106,7 @@ Page({
     });
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (this._hidden) {
       this._hidden = false;
       this.loadPackage();

@@ -15,6 +15,8 @@ import cn.zhinan.adminbooking.application.BookingApplication;
 import cn.zhinan.adminbooking.application.OperatingRuleService;
 import cn.zhinan.adminbooking.application.SlotOpeningService;
 import cn.zhinan.adminbooking.port.BookingPorts.PackageCatalog;
+import cn.zhinan.appuser.AppUserService;
+import cn.zhinan.appuser.JdbcAppUserStore;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -26,7 +28,7 @@ import org.springframework.context.annotation.Import;
 /** Explicit local booking composition over a separately verified booking-writer identity. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@Import(AdminBookingController.class)
+@Import({AdminBookingController.class, AdminUserController.class})
 class AdminBookingConfiguration {
   @Bean(destroyMethod = "close")
   VerifiedBookingDataSource verifiedBookingDataSource(AdminRuntimeProperties runtime) {
@@ -60,6 +62,15 @@ class AdminBookingConfiguration {
         audit,
         new JdbcTransactionRunner(connections),
         clock);
+  }
+
+  @Bean
+  AppUserService appUserService(VerifiedBookingDataSource verified) {
+    String scope = System.getenv("SOUTHLEAF_ADMIN_USER_APP_SCOPE");
+    if (scope == null || !scope.matches("[A-Za-z0-9._:-]{1,32}")) {
+      throw new AdminStartupException(AdminStartupException.Reason.CONFIGURATION);
+    }
+    return new AppUserService(new JdbcAppUserStore(verified.dataSource()), scope);
   }
 
   @Bean

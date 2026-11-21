@@ -31,6 +31,7 @@
         <module>object-store</module>
         <module>admin-content</module>
         <module>admin-booking</module>
+        <module>app-user</module>
         <module>admin-runtime</module>
     </modules>
     <build>

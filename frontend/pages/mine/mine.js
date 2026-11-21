@@ -1,34 +1,26 @@
-const booking = require("../../api/booking.js");
+const userApi = require("../../api/user.js");
 const { getBrand } = require("../../api/public.js");
 const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const views = require("../../presentation/booking-views.js");
 const settlement = require("../../presentation/settlement.js");
 
-const SESSION_ERRORS = [
-  "BOOKING_SESSION_REQUIRED",
-  "BOOKING_IDENTITY_REJECTED",
-];
-
-const isSessionError = (error) =>
-  Boolean(error && SESSION_ERRORS.indexOf(error.code) >= 0);
-
 function present(data) {
   const cards = (data.requests || []).map((request) =>
     views.requestCard(request, data.copy),
   );
   const profile = data.profile || null;
+  const label = profile && profile.displayLabel ? profile.displayLabel : "";
   return {
     ...data,
     cards,
     copy: ready(data.copy),
-    identityLabel: profile && profile.displayName ? profile.displayName : "",
-    identityInitial:
-      profile && profile.displayName
-        ? String(profile.displayName).slice(0, 1)
-        : "",
+    identityLabel: label,
+    identityInitial: label ? String(label).slice(0, 1) : "你",
+    nickname: profile && profile.displayName ? profile.displayName : "",
+    shortId: profile && !profile.named ? profile.shortId : "",
+    avatarSrc: data.avatarSrc || "",
     showIdentity: ["success", "empty"].includes(data.status),
-    identityExpires: views.timeLabel(profile && profile.expiresAt),
     settlementLabel: settlement.settlementLabel(),
     orderCount: cards.filter((card) => card.hasOrder).length,
   };
@@ -55,7 +47,7 @@ Page({
     this._generation = 0;
     this._hidden = false;
     this._unloaded = false;
-    this.load();
+    require("../../user/track").enter(this).then(() => this.load()).catch(() => {});
   },
   onHide() {
     this._hidden = true;
@@ -66,6 +58,7 @@ Page({
     this._generation++;
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 4 });
     }
@@ -97,22 +90,23 @@ Page({
     if (version !== this._generation) return;
     let profile;
     try {
-      profile = await booking.currentSession();
+      profile = (await userApi.profile()).data;
     } catch (error) {
       if (version !== this._generation) return;
       this.update({
         profile: null,
         requests: [],
         copy,
-        status: isSessionError(error) ? "unauthenticated" : "error",
+        status: "error",
         errorMessage: "",
       });
       return;
     }
     if (version !== this._generation) return;
     this.update({ profile, copy });
+    if (profile.hasAvatar) this.loadAvatar();
     try {
-      const response = await booking.getRequests();
+      const response = await userApi.reservations();
       if (version !== this._generation) return;
       const items = response.data.items || [];
       this.update({
@@ -126,9 +120,46 @@ Page({
       this.update({
         requests: [],
         copy,
-        status: isSessionError(error) ? "unauthenticated" : "error",
+        status: "error",
         errorMessage: "",
       });
+    }
+  },
+  loadAvatar() {
+    const value = wx.getStorageSync("southleaf.user.session");
+    if (!value) return;
+    wx.request({
+      url: `${require("../../api/api.js").getBaseURL()}/api/v1/public/users/me/avatar`,
+      header: { Authorization: `Bearer ${value}` },
+      responseType: "arraybuffer",
+      success: (response) => {
+        if (response.statusCode !== 200) return;
+        const path = `${wx.env.USER_DATA_PATH}/user-avatar.jpg`;
+        wx.getFileSystemManager().writeFile({
+          filePath: path,
+          data: response.data,
+          success: () => this.update({ avatarSrc: path }),
+        });
+      },
+    });
+  },
+  async onChooseAvatar(event) {
+    const filePath = event.detail && event.detail.avatarUrl;
+    if (!filePath) return;
+    try {
+      await userApi.uploadAvatar(filePath);
+      this.update({ avatarSrc: filePath });
+    } catch (error) {
+      wx.showToast({ title: "这张头像无法使用", icon: "none" });
+    }
+  },
+  async onNickname(event) {
+    const value = event.detail && event.detail.value ? event.detail.value : "";
+    try {
+      const profile = (await userApi.rename(value)).data;
+      this.update({ profile });
+    } catch (error) {
+      wx.showToast({ title: "昵称没有保存", icon: "none" });
     }
   },
   handleRetryTap() {

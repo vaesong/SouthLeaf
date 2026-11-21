@@ -34,6 +34,7 @@ const canReadContent = computed(() => permissions.value.includes("CONTENT_READ")
 const canEdit = computed(() => permissions.value.includes("CONTENT_EDIT"));
 const canPublish = computed(() => permissions.value.includes("CONTENT_PUBLISH"));
 const canReadBookings = computed(() => permissions.value.includes("RESERVATION_READ"));
+const canReadUsers = computed(() => permissions.value.includes("USER_READ"));
 const canReadOutbox = computed(() => permissions.value.includes("OUTBOX_READ"));
 const expiresAt = computed(() => formatExpiry(auth?.state.identity?.expiresAt ?? ""));
 const loadedBrand = computed(() => catalog?.state.draft?.brand.name?.trim() || "");
@@ -112,6 +113,13 @@ const links = computed(
       label: "预约经营",
       items: [
         {
+          to: "/users",
+          name: "users",
+          label: "用户",
+          icon: "user",
+          show: canReadUsers.value,
+        },
+        {
           to: "/bookings",
           name: "bookings",
           label: "预约处理",
@@ -151,7 +159,11 @@ const links = computed(
 );
 
 function current(name: string) {
-  return route.name === name || (name === "works" && route.name === "work-edit");
+  return (
+    route.name === name ||
+    (name === "works" && route.name === "work-edit") ||
+    (name === "users" && route.name === "user-detail")
+  );
 }
 
 async function askPublish() {

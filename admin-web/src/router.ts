@@ -62,6 +62,18 @@ export function createAdminRouter(auth: AuthStore) {
       meta: { requiresAuth: true, title: "预约处理" },
     },
     {
+      path: "/users",
+      name: "users",
+      component: () => import("./views/UsersView.vue"),
+      meta: { requiresAuth: true, title: "用户" },
+    },
+    {
+      path: "/users/:userId",
+      name: "user-detail",
+      component: () => import("./views/UserDetailView.vue"),
+      meta: { requiresAuth: true, title: "用户" },
+    },
+    {
       path: "/slots",
       name: "slots",
       component: () => import("./views/SlotsView.vue"),

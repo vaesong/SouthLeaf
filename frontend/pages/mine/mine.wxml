@@ -13,7 +13,10 @@
     wx:if="{{copy.mine.welcome || identityLabel}}"
     class="profile-welcome-card"
   >
-    <view class="profile-avatar-box">{{identityInitial || '你'}}</view>
+    <button class="profile-avatar-box" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarSrc}}" class="profile-avatar-image" src="{{avatarSrc}}" mode="aspectFill" />
+      <text wx:else>{{identityInitial || '你'}}</text>
+    </button>
     <view>
       <text wx:if="{{copy.mine.welcome}}" class="welcome-title"
         >{{copy.mine.welcome}}</text
@@ -21,21 +24,16 @@
       <text wx:if="{{showIdentity && identityLabel}}" class="welcome-name"
         >{{identityLabel}}</text
       >
+      <text wx:if="{{shortId}}" class="hint">{{shortId}}</text>
+      <input
+        wx:if="{{showIdentity}}"
+        class="nickname-input"
+        type="nickname"
+        placeholder="填写昵称"
+        value="{{nickname}}"
+        bindblur="onNickname"
+      />
     </view>
-  </view>
-  <view
-    wx:if="{{status === 'unauthenticated' && (copy.mine.signedOutTitle || copy.mine.signedOutHint)}}"
-    class="state-panel"
-  >
-    <text wx:if="{{copy.mine.signedOutTitle}}"
-      >{{copy.mine.signedOutTitle}}</text
-    >
-    <text wx:if="{{copy.mine.signedOutHint}}" class="hint"
-      >{{copy.mine.signedOutHint}}</text
-    >
-    <button wx:if="{{copy.mine.book}}" bindtap="handleNewBookingTap">
-      {{copy.mine.book}}
-    </button>
   </view>
   <view
     wx:if="{{status === 'error' && (copy.mine.closedTitle || copy.mine.closedBody)}}"
@@ -53,12 +51,6 @@
       <view class="section-head">
         <text wx:if="{{copy.mine.upcomingTitle}}" class="section-title"
           >{{copy.mine.upcomingTitle}}</text
-        >
-        <text
-          wx:if="{{copy.mine.newBooking}}"
-          class="section-action"
-          bindtap="handleNewBookingTap"
-          >{{copy.mine.newBooking}}</text
         >
       </view>
       <view wx:if="{{status === 'empty' && copy.mine.empty}}" class="hint"

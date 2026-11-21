@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import { authStoreKey } from "../auth/store";
 import {
   AdminBookingApi,
@@ -23,6 +24,7 @@ import {
 } from "../content/format";
 
 const api = new AdminBookingApi();
+const route = useRoute();
 const auth = inject(authStoreKey);
 const canRead = computed(
   () => auth?.state.identity?.permissions.includes("RESERVATION_READ") ?? false,
@@ -327,7 +329,11 @@ function slotTime(slotId: string | null) {
   return slot ? formatDateTime(slot.startAt) : "已安排";
 }
 
-onMounted(() => void refreshPending());
+onMounted(() => {
+  void refreshPending();
+  const reservation = route?.query?.reservation;
+  if (typeof reservation === "string" && reservation.trim()) void lookup(reservation);
+});
 </script>
 
 <template>

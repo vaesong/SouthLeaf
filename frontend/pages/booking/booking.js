@@ -139,7 +139,7 @@ Page({
       earliestDay: dayOffset(0),
       latestDay: dayOffset(30),
     });
-    this.load();
+    require("../../user/track").enter(this).then(() => this.load()).catch(() => {});
   },
   onHide() {
     this._hidden = true;
@@ -150,6 +150,7 @@ Page({
     this._generation++;
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (this._hidden) {
       this._hidden = false;
       this.load();

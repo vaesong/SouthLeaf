@@ -51,17 +51,21 @@ Page({
     }
   },
   onShareAppMessage() {
-    return {
-      title: this.data.brand.shareTitle || "",
-      path: "/pages/index/index",
-      imageUrl: this.data.team?.[0]?.portraitMedia?.src || "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: this.data.brand.shareTitle || "",
+        path: "/pages/index/index",
+        imageUrl: this.data.team?.[0]?.portraitMedia?.src || "",
+      },
+      "",
+    );
   },
   onLoad() {
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    this.loadBrand();
+    require("../../user/track").enter(this).then(() => this.loadBrand()).catch(() => {});
   },
   async loadBrand() {
     const version = ++this._generation;
@@ -173,6 +177,7 @@ Page({
     });
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 3 });
     }

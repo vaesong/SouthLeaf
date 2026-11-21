@@ -1,0 +1,5 @@
+<view class="gate">
+  <text class="gate-title">登录没有完成</text>
+  <text class="gate-copy">请检查网络后再试一次。完成后会回到首页。</text>
+  <button class="gate-button" disabled="{{busy}}" bindtap="retry">重试</button>
+</view>

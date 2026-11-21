@@ -72,9 +72,10 @@ Page({
     this.update({
       selectedBusinessId: options?.businessId || "",
     });
-    this.loadWorks();
+    require("../../user/track").enter(this).then(() => this.loadWorks()).catch(() => {});
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1 });
     }
@@ -88,11 +89,15 @@ Page({
     } else if (resume) this.loadWorks();
   },
   onShareAppMessage() {
-    return {
-      title: (this.data.copy.works && this.data.copy.works.title) || "",
-      path: "/pages/works/works",
-      imageUrl: this.data.works?.[0]?.coverMedia?.src || "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: (this.data.copy.works && this.data.copy.works.title) || "",
+        path: "/pages/works/works",
+        imageUrl: this.data.works?.[0]?.coverMedia?.src || "",
+      },
+      "",
+    );
   },
   async loadWorks(reset = true) {
     const version = reset ? ++this._generation : this._generation;

@@ -34,7 +34,12 @@ public final class AdminBookingGrantPolicy {
           "booking_notification_outbox",
           "booking_audit",
           "admin_booking_operating_rule",
-          "admin_booking_operating_rule_version");
+          "admin_booking_operating_rule_version",
+          "app_user",
+          "app_user_avatar",
+          "app_user_audit",
+          "share_card",
+          "visit_event");
 
   /** Tables the booking slice may read but must never write. */
   public static final List<String> READ_ONLY_TABLES =

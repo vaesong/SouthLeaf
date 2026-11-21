@@ -55,17 +55,21 @@ Page({
     }
   },
   onShareAppMessage() {
-    return {
-      title: this.data.home.brand.shareTitle || "",
-      path: "/pages/index/index",
-      imageUrl: this.data.home?.heroItems?.[0]?.media?.src || "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: this.data.home.brand.shareTitle || "",
+        path: "/pages/index/index",
+        imageUrl: this.data.home?.heroItems?.[0]?.media?.src || "",
+      },
+      "",
+    );
   },
   onLoad() {
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    this.loadHome();
+    require("../../user/track").enter(this).then(() => this.loadHome()).catch(() => {});
   },
   async loadHome() {
     const version = ++this._generation;
@@ -142,6 +146,7 @@ Page({
     });
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 });
     }

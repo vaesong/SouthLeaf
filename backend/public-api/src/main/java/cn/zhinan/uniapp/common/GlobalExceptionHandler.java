@@ -1,5 +1,6 @@
 package cn.zhinan.uniapp.common;
 
+import cn.zhinan.appuser.AppUserException;
 import cn.zhinan.uniapp.booking.PublicBookingException;
 import cn.zhinan.uniapp.dto.PublicDtos;
 import cn.zhinan.uniapp.publicquery.PublicQueryException;
@@ -63,6 +64,51 @@ public class GlobalExceptionHandler {
                 "BOOKING_" + ex.getErrorCode().name(),
                 bookingMessage(ex.getErrorCode()),
                 new PublicDtos.Meta(Instant.now(), null, null, null)));
+  }
+
+  @ExceptionHandler(AppUserException.class)
+  public ResponseEntity<PublicApiResponse<Object>> userFailure(AppUserException ex) {
+    HttpStatus status =
+        switch (ex.code()) {
+          case INVALID, AVATAR_REJECTED -> HttpStatus.BAD_REQUEST;
+          case SESSION_REQUIRED, IDENTITY_REJECTED -> HttpStatus.UNAUTHORIZED;
+          case NOT_FOUND -> HttpStatus.NOT_FOUND;
+          case CONFLICT -> HttpStatus.CONFLICT;
+          case UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+    String requestId = "req_" + UUID.randomUUID().toString().replace("-", "");
+    return ResponseEntity.status(status)
+        .cacheControl(CacheControl.noStore())
+        .body(
+            PublicApiResponse.error(
+                requestId,
+                "USER_" + userCode(ex.code()),
+                userMessage(ex.code()),
+                new PublicDtos.Meta(Instant.now(), null, null, null)));
+  }
+
+  private static String userCode(AppUserException.Code code) {
+    return switch (code) {
+      case INVALID -> "REQUEST_INVALID";
+      case SESSION_REQUIRED -> "SESSION_REQUIRED";
+      case IDENTITY_REJECTED -> "IDENTITY_REJECTED";
+      case NOT_FOUND -> "NOT_FOUND";
+      case CONFLICT -> "CONFLICT";
+      case AVATAR_REJECTED -> "AVATAR_REJECTED";
+      case UNAVAILABLE -> "SERVICE_UNAVAILABLE";
+    };
+  }
+
+  private static String userMessage(AppUserException.Code code) {
+    return switch (code) {
+      case INVALID -> "资料不符合要求";
+      case SESSION_REQUIRED -> "请重新进入小程序";
+      case IDENTITY_REJECTED -> "微信登录没有完成，请重试";
+      case NOT_FOUND -> "没有找到对应的内容";
+      case CONFLICT -> "资料刚刚被改过，请刷新后再试";
+      case AVATAR_REJECTED -> "这张头像无法使用，请另选一张";
+      case UNAVAILABLE -> "登录暂时不可用，请稍后重试";
+    };
   }
 
   private static String bookingMessage(PublicBookingException.ErrorCode code) {

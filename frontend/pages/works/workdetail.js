@@ -52,14 +52,18 @@ Page({
     }
   },
   onShareAppMessage() {
-    return {
-      title: this.data.work.title || "",
-      path: `/pages/works/workdetail?workId=${encodeURIComponent(this.data.id)}`,
-      imageUrl:
-        this.data.work?.coverMedia?.src ||
-        this.data.availableMedia?.[0]?.src ||
-        "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: this.data.work.title || "",
+        path: `/pages/works/workdetail?workId=${encodeURIComponent(this.data.id)}`,
+        imageUrl:
+          this.data.work?.coverMedia?.src ||
+          this.data.availableMedia?.[0]?.src ||
+          "",
+      },
+      this.data.id,
+    );
   },
   onLoad(options) {
     this._generation = 0;
@@ -76,7 +80,7 @@ Page({
     this.update({
       id: typeof id === "string" && id.trim().length <= 128 ? id.trim() : "",
     });
-    this.loadWork();
+    require("../../user/track").enter(this).then(() => this.loadWork()).catch(() => {});
   },
   async loadWork() {
     if (!this.data.id) {
@@ -150,6 +154,7 @@ Page({
     });
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (this._hidden) {
       this._hidden = false;
       this.loadWork();

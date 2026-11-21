@@ -1,0 +1,23 @@
+.gate {
+  min-height: 100vh;
+  padding: 180rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.gate-title {
+  font-size: 40rpx;
+  margin-bottom: 16rpx;
+}
+.gate-copy {
+  color: #75685b;
+  line-height: 1.6;
+}
+.gate-button {
+  margin-top: 48rpx;
+  padding: 18rpx 64rpx;
+  background: #8e5636;
+  color: #fff;
+  border-radius: 999rpx;
+}

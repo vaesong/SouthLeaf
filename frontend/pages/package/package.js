@@ -51,9 +51,10 @@ Page({
     this._generation = 0;
     this._unloaded = false;
     this._hidden = false;
-    this.loadPackages();
+    require("../../user/track").enter(this).then(() => this.loadPackages()).catch(() => {});
   },
   onShow() {
+    require("../../user/track").enter(this).catch(() => {});
     if (typeof this.getTabBar === "function" && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
@@ -71,11 +72,15 @@ Page({
     }
   },
   onShareAppMessage() {
-    return {
-      title: (this.data.copy.services && this.data.copy.services.title) || "",
-      path: "/pages/package/package",
-      imageUrl: this.data.serviceGroups?.[0]?.coverMedia?.src || "",
-    };
+    return require("../../user/track").share(
+      this,
+      {
+        title: (this.data.copy.services && this.data.copy.services.title) || "",
+        path: "/pages/package/package",
+        imageUrl: this.data.serviceGroups?.[0]?.coverMedia?.src || "",
+      },
+      "",
+    );
   },
   async loadPackages(reset = true) {
     const version = reset ? ++this._generation : this._generation;

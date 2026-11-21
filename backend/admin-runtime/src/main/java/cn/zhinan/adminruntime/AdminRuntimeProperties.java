@@ -27,7 +27,8 @@ final class AdminRuntimeProperties {
           "SOUTHLEAF_ADMIN_BOOKING_MODE",
           "SOUTHLEAF_ADMIN_BOOKING_DB_USERNAME",
           "SOUTHLEAF_ADMIN_BOOKING_DB_PASSWORD",
-          "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER");
+          "SOUTHLEAF_ADMIN_BOOKING_DB_EXPECTED_USER",
+          "SOUTHLEAF_ADMIN_USER_APP_SCOPE");
   private final String url, username, password, schema, expectedUser;
   private final AdminWebProperties web;
   private final AdminContentProperties content;

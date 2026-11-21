@@ -24,8 +24,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   font-family: "Songti SC", "STSong", "SimSun", serif;
   font-size: 40rpx;
+}
+.profile-avatar-image {
+  width: 104rpx;
+  height: 104rpx;
+}
+.nickname-input {
+  margin-top: 8rpx;
+  font-size: 26rpx;
 }
 .welcome-title {
   display: block;

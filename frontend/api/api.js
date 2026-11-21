@@ -18,6 +18,13 @@ const PUBLIC_ERROR_MESSAGES = {
   BOOKING_RESOURCE_UNAVAILABLE: "预约记录不存在",
   BOOKING_SERVICE_UNAVAILABLE: "预约服务暂不可用",
   BOOKING_RULES_UNCONFIGURED: "暂未开放预约，请稍后再来或直接联系我们",
+  USER_REQUEST_INVALID: "资料不符合要求",
+  USER_SESSION_REQUIRED: "请重新进入小程序",
+  USER_IDENTITY_REJECTED: "微信登录没有完成，请重试",
+  USER_NOT_FOUND: "没有找到对应的内容",
+  USER_CONFLICT: "资料刚刚被改过，请刷新后再试",
+  USER_AVATAR_REJECTED: "这张头像无法使用，请另选一张",
+  USER_SERVICE_UNAVAILABLE: "登录暂时不可用，请稍后重试",
 };
 const statusByCode = {
   OK: 200,
@@ -37,6 +44,13 @@ const statusByCode = {
   BOOKING_PACKAGE_CATALOG_UNCONFIGURED: 503,
   BOOKING_SERVICE_UNAVAILABLE: 503,
   BOOKING_RULES_UNCONFIGURED: 503,
+  USER_REQUEST_INVALID: 400,
+  USER_SESSION_REQUIRED: 401,
+  USER_IDENTITY_REJECTED: 401,
+  USER_NOT_FOUND: 404,
+  USER_CONFLICT: 409,
+  USER_AVATAR_REJECTED: 400,
+  USER_SERVICE_UNAVAILABLE: 503,
 };
 // A resource that was just created answers 201; every other code has exactly one status. Without
 // this, a successful intake is read as a malformed response and the page says "please retry".
@@ -135,10 +149,13 @@ const get = (path, params = {}, headers = {}) =>
   send("GET", path, { params, headers });
 const post = (path, body = null, headers = {}) =>
   send("POST", path, { body, headers });
+const put = (path, body = null, headers = {}) =>
+  send("PUT", path, { body, headers });
 
 module.exports = {
   get,
   post,
+  put,
   PUBLIC_ERROR_MESSAGES,
   showToast,
   createError,

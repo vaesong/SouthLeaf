@@ -8,7 +8,8 @@
     "pages/about/about",
     "pages/booking/booking",
     "pages/booking/requestdetail",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/gate/gate"
   ],
   "window": {
     "navigationBarTextStyle": "black",
