@@ -270,15 +270,40 @@ public final class CatalogProjection {
   }
 
   public PublicDtos.WorkDetail detail(CatalogSnapshot.Work w) {
+    var ordered = coverFirst(w.mediaIds(), w.coverMediaId());
+    var media = new ArrayList<PublicDtos.Media>(ordered.size());
+    for (int i = 0; i < ordered.size(); i++) {
+      var item = media(w.id(), ordered.get(i), "preview").orElseThrow();
+      media.add(
+          new PublicDtos.Media(
+              item.id(),
+              item.thumbnailUrl(),
+              item.previewUrl(),
+              item.width(),
+              item.height(),
+              item.altText(),
+              i));
+    }
     return new PublicDtos.WorkDetail(
         w.id(),
         w.title(),
         w.summary(),
         w.description(),
-        w.mediaIds().stream().map(id -> media(w.id(), id, "preview").orElseThrow()).toList(),
+        media,
         w.businessIds().stream().map(this::businessName).toList(),
         w.packageLabel(),
         contact(),
         w.publishedAt());
+  }
+
+  /** Detail opens on the cover. Photos already stored behind it keep their relative order. */
+  static List<String> coverFirst(List<String> ids, String cover) {
+    if (cover == null || ids.isEmpty() || cover.equals(ids.get(0))) return ids;
+    int at = ids.indexOf(cover);
+    if (at < 0) return ids;
+    var ordered = new ArrayList<String>(ids.size());
+    ordered.add(cover);
+    for (int i = 0; i < ids.size(); i++) if (i != at) ordered.add(ids.get(i));
+    return List.copyOf(ordered);
   }
 }

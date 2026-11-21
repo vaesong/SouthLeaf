@@ -20,7 +20,7 @@ import {
   uploadFailureText,
   uploadFilesSequentially,
 } from "../content/uploadFiles";
-import { addWorkMedia } from "../content/workMedia";
+import { addWorkMedia, coverFirst, moveWorkMedia, placeWorkCover } from "../content/workMedia";
 import { catalogStoreKey } from "../content/catalogStore";
 import { requireContentApi } from "../content/inject";
 import {
@@ -54,6 +54,9 @@ const pickerOpen = ref(false);
 const withdrawOpen = ref(false);
 const deleteOpen = ref(false);
 const uploading = ref(false);
+const dragging = ref("");
+const dropTarget = ref("");
+const pointer = ref<{ id: string; x: number; y: number; moved: boolean } | null>(null);
 
 const businessChoices = computed(() => {
   const listed = [...(catalog?.state.draft?.businesses ?? [])].sort(
@@ -123,7 +126,7 @@ function fill(view: WorkView) {
   form.subjectScopeRef = view.subjectScopeRef || suggestedScopeRef(view.workId);
   form.businessIds = view.businessIds.join(", ");
   form.selected = view.media.map((m) => m.mediaId);
-  form.cover = view.coverMediaId ?? "";
+  form.cover = coverFirst(form.selected, view.coverMediaId ?? "");
 }
 
 async function load() {
@@ -157,8 +160,13 @@ function toggleBusiness(id: string) {
   form.businessIds = next.join(", ");
 }
 
+function syncCover() {
+  form.cover = form.selected[0] ?? "";
+}
+
 function chooseMedia(mediaId: string) {
-  if (addWorkMedia(form.selected, mediaId) === "added" && !form.cover) form.cover = mediaId;
+  addWorkMedia(form.selected, mediaId);
+  syncCover();
 }
 
 async function uploadMedia(files: File[], folderId: string | null = null) {
@@ -167,8 +175,8 @@ async function uploadMedia(files: File[], folderId: string | null = null) {
   const failure = await uploadFilesSequentially(files, async (file, key) => {
     const result = await api.upload(file, file.name, key, folderId);
     library.value = rememberUploadedMedia(library.value, result.media);
-    if (addWorkMedia(form.selected, result.media.mediaId) === "added" && !form.cover)
-      form.cover = result.media.mediaId;
+    addWorkMedia(form.selected, result.media.mediaId);
+    syncCover();
   });
   if (failure) {
     notice.value = uploadFailureText(failure.file.name, failure.error);
@@ -179,12 +187,52 @@ async function uploadMedia(files: File[], folderId: string | null = null) {
 
 function toggle(mediaId: string) {
   const index = form.selected.indexOf(mediaId);
-  if (index >= 0) {
-    form.selected.splice(index, 1);
-    if (form.cover === mediaId) form.cover = "";
-    return;
+  if (index >= 0) form.selected.splice(index, 1);
+  else addWorkMedia(form.selected, mediaId);
+  syncCover();
+}
+
+function setCover(mediaId: string) {
+  placeWorkCover(form.selected, mediaId);
+  syncCover();
+}
+
+function placePhoto(source: string, target: string) {
+  moveWorkMedia(form.selected, form.selected.indexOf(source), form.selected.indexOf(target));
+  syncCover();
+}
+
+function photoPointerDown(mediaId: string, event: PointerEvent) {
+  if (!canEdit.value || busy.value !== "" || event.button !== 0) return;
+  if ((event.target as HTMLElement | null)?.closest("button")) return;
+  event.preventDefault();
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  pointer.value = { id: mediaId, x: event.clientX, y: event.clientY, moved: false };
+}
+
+function photoPointerMove(event: PointerEvent) {
+  const start = pointer.value;
+  if (!start || !canEdit.value) return;
+  if (!start.moved) {
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (dx * dx + dy * dy < 25) return;
+    start.moved = true;
+    dragging.value = start.id;
   }
-  addWorkMedia(form.selected, mediaId);
+  const hit = document.elementFromPoint(event.clientX, event.clientY);
+  const over = hit?.closest<HTMLElement>("[data-media-id]")?.dataset.mediaId ?? "";
+  dropTarget.value = over && over !== start.id ? over : "";
+}
+
+function photoPointerUp() {
+  const start = pointer.value;
+  const over = dropTarget.value;
+  pointer.value = null;
+  dragging.value = "";
+  dropTarget.value = "";
+  if (!start?.moved || !over) return;
+  placePhoto(start.id, over);
 }
 
 async function save() {
@@ -245,7 +293,7 @@ function draftBody() {
       .map((id) => id.trim())
       .filter((id) => id.length > 0),
     media: form.selected.map((mediaId) => ({ mediaId, altText: "" })),
-    coverMediaId: form.cover || null,
+    coverMediaId: form.selected[0] ?? null,
   };
 }
 
@@ -370,12 +418,27 @@ onMounted(() => {
           </div>
         </div>
         <div class="field">
-          <label>图片<em>点星标设为封面</em></label>
+          <label>图片<em>第一张是封面</em></label>
+          <p class="hint">按住照片拖动调整顺序。点星标把这张放到最前。</p>
           <div class="thumbs">
-            <div v-for="mediaId in form.selected" :key="mediaId" class="work-thumb">
+            <div
+              v-for="mediaId in form.selected"
+              :key="mediaId"
+              class="work-thumb"
+              :class="{
+                sortable: canEdit,
+                dragging: dragging === mediaId,
+                drop: dropTarget === mediaId,
+              }"
+              :data-media-id="mediaId"
+              @pointerdown="photoPointerDown(mediaId, $event)"
+              @pointermove="photoPointerMove"
+              @pointerup="photoPointerUp"
+              @pointercancel="photoPointerUp"
+            >
               <div class="thumb" :class="{ cover: form.cover === mediaId }">
                 <div class="ph">
-                  <img :src="mediaContentPath(mediaId, 'thumbnail')" alt="" />
+                  <img :src="mediaContentPath(mediaId, 'thumbnail')" alt="" draggable="false" />
                 </div>
                 <span v-if="form.cover === mediaId" class="cover-badge">封面</span>
                 <div class="over">
@@ -385,7 +448,7 @@ onMounted(() => {
                     aria-label="设为封面"
                     data-testid="media-cover"
                     :disabled="!canEdit"
-                    @click="form.cover = mediaId"
+                    @click="setCover(mediaId)"
                   >
                     <AppIcon name="star" />
                   </button>

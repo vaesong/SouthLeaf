@@ -80,6 +80,22 @@ class ContentDomainTest {
   }
 
   @Test
+  void coverLeadsTheSavedPhotoOrder() {
+    var draft =
+        new WorkDraft(
+            "t",
+            "s",
+            "x",
+            List.of(),
+            List.of(new WorkDraft.MediaBinding(M1, ""), new WorkDraft.MediaBinding(M2, "")),
+            M2);
+    assertThat(draft.validated().media())
+        .extracting(WorkDraft.MediaBinding::mediaId)
+        .containsExactly(M2, M1);
+    assertThat(draft.validated().coverMediaId()).isEqualTo(M2);
+  }
+
+  @Test
   void mediaScopeDigestIsOrderIndependent() {
     assertThat(ContentRules.mediaScopeDigest(List.of(M1, M2)))
         .isEqualTo(ContentRules.mediaScopeDigest(List.of(M2, M1)))

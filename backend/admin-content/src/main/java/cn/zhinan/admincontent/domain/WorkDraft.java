@@ -51,6 +51,12 @@ public record WorkDraft(
       if (!"".equals(binding.altText())) changed = true;
       cleared.add(new MediaBinding(binding.mediaId(), ""));
     }
+    // The cover is the first photo. Saving or publishing keeps that photo at position 0.
+    int coverAt = indexOf(cleared, coverMediaId);
+    if (coverAt > 0) {
+      cleared.add(0, cleared.remove(coverAt));
+      changed = true;
+    }
     if (!changed) return this;
     return new WorkDraft(title, summary, subjectScopeRef, businessIds, cleared, coverMediaId);
   }
@@ -69,6 +75,13 @@ public record WorkDraft(
 
   public List<String> mediaIds() {
     return media.stream().map(MediaBinding::mediaId).toList();
+  }
+
+  private static int indexOf(List<MediaBinding> bindings, String mediaId) {
+    if (mediaId == null) return -1;
+    for (int i = 0; i < bindings.size(); i++)
+      if (mediaId.equals(bindings.get(i).mediaId())) return i;
+    return -1;
   }
 
   private static boolean hasControl(String value) {

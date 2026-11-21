@@ -1901,11 +1901,13 @@ a {
   justify-content: flex-end;
   gap: 6px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.15s;
 }
 .thumb:hover .over,
 .thumb:focus-within .over {
   opacity: 1;
+  pointer-events: auto;
 }
 .thumb .over .icon-btn {
   background: rgba(255, 253, 249, 0.94);
@@ -1913,6 +1915,18 @@ a {
 .work-thumb {
   display: grid;
   gap: 8px;
+}
+.work-thumb.sortable {
+  cursor: grab;
+  touch-action: none;
+}
+.work-thumb.dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+.work-thumb.drop .thumb {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
 }
 button.upload {
   appearance: none;

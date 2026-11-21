@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import cn.zhinan.uniapp.authorization.port.*;
+import cn.zhinan.uniapp.dto.PublicDtos;
 import cn.zhinan.uniapp.publicquery.domain.CatalogSnapshot;
 import cn.zhinan.uniapp.publicquery.port.*;
 import cn.zhinan.uniapp.support.CatalogFixture;
@@ -230,6 +231,59 @@ class PublicQueryServiceTest {
   void immutableSnapshotCannotBeChangedByCallers() {
     assertThatThrownBy(() -> CatalogFixture.snapshot().works().clear())
         .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  void detailOpensOnTheCoverEvenWhenItWasNotStoredFirst() {
+    var base = CatalogFixture.snapshot();
+    var works = new ArrayList<CatalogSnapshot.Work>();
+    for (var work : base.works()) {
+      works.add(
+          work.id().equals("w1")
+              ? new CatalogSnapshot.Work(
+                  work.id(),
+                  work.title(),
+                  work.summary(),
+                  work.description(),
+                  work.businessIds(),
+                  work.packageLabel(),
+                  work.publicationStatus(),
+                  work.publishedAt(),
+                  "m2",
+                  List.of("m1", "m2"),
+                  work.candidateVersion(),
+                  work.bindingVersion(),
+                  work.subjectScopeRef())
+              : work);
+    }
+    var bindings = new ArrayList<>(base.bindings());
+    bindings.add(new CatalogSnapshot.Binding("WORK", "w1", "m2", 1));
+    var snapshot =
+        new CatalogSnapshot(
+            base.releaseId(),
+            base.contentVersion(),
+            base.dataMode(),
+            base.approvalStatus(),
+            base.brand(),
+            base.contact(),
+            base.businesses(),
+            base.packages(),
+            works,
+            base.assets(),
+            bindings,
+            base.featuredBusinesses(),
+            base.featuredPackages(),
+            base.featuredWorks(),
+            base.overlayReleases(),
+            base.heroSlides(),
+            base.presentation());
+    var detail =
+        new CatalogProjection(
+                snapshot,
+                new PublicVisibilityPolicy(CatalogFixture::permittedBatch, CatalogFixture.CLOCK))
+            .detail(works.getFirst());
+    assertThat(detail.media()).extracting(PublicDtos.Media::id).containsExactly("m2", "m1");
+    assertThat(detail.media()).extracting(PublicDtos.Media::sortOrder).containsExactly(0, 1);
   }
 
   @Test

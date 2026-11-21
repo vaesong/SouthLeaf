@@ -130,12 +130,13 @@ public final class JdbcPublicationRepository implements PublicationRepository {
             version);
     var draft =
         new WorkDraft(
-            (String) v.get("title"),
-            (String) v.get("summary"),
-            (String) v.get("subject_scope_ref"),
-            businesses,
-            bindings,
-            (String) v.get("cover_media_id"));
+                (String) v.get("title"),
+                (String) v.get("summary"),
+                (String) v.get("subject_scope_ref"),
+                businesses,
+                bindings,
+                (String) v.get("cover_media_id"))
+            .validated();
     draft.requireComplete();
     List<String> mediaIds = draft.mediaIds();
     var ready =
