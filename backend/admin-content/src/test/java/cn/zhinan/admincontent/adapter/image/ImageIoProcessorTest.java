@@ -34,7 +34,8 @@ class ImageIoProcessorTest {
     assertThat(thumb.metadata().variant()).isEqualTo("thumbnail");
     assertThat(thumb.metadata().width()).isEqualTo(480);
     assertThat(thumb.metadata().height()).isEqualTo(240);
-    assertThat(preview.metadata().width()).isEqualTo(2000);
+    assertThat(preview.metadata().width()).isEqualTo(1920);
+    assertThat(preview.metadata().height()).isEqualTo(960);
     for (var variant : result.variants()) {
       assertThat(variant.metadata().objectKey())
           .isEqualTo(variant.metadata().sha256() + ".png")

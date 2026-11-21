@@ -66,6 +66,7 @@
             <image
               wx:if="{{member.portraitMedia && !failedMedia[member.id]}}"
               src="{{member.portraitMedia.src}}"
+              lazy-load="{{true}}"
               mode="aspectFill"
               data-arg0="{{member.id}}"
               binderror="handleMarkMediaFailedError"

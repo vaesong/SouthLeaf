@@ -89,6 +89,7 @@
         <image
           wx:if="{{home.featuredWorks[0].coverMedia && !failedMedia['work-' + home.featuredWorks[0].id]}}"
           src="{{home.featuredWorks[0].coverMedia.src}}"
+          lazy-load="{{true}}"
           mode="aspectFill"
           data-arg0="{{'work-' + home.featuredWorks[0].id}}"
           binderror="handleMarkMediaFailedError"
@@ -121,6 +122,7 @@
           <image
             wx:if="{{work.coverMedia && !failedMedia['work-' + work.id]}}"
             src="{{work.coverMedia.src}}"
+            lazy-load="{{true}}"
             mode="aspectFill"
             data-arg0="{{'work-' + work.id}}"
             binderror="handleMarkMediaFailedError"

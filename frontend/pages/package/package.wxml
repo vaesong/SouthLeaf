@@ -37,6 +37,7 @@
         <image
           wx:if="{{pkg.cardCover && !failedMedia[pkg.id]}}"
           src="{{pkg.cardCover.src}}"
+          lazy-load="{{index > 0}}"
           mode="aspectFill"
           data-arg0="{{pkg.id}}"
           data-media="{{pkg.id}}"

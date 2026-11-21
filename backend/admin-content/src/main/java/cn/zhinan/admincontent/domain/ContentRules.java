@@ -30,7 +30,7 @@ public final class ContentRules {
   public static final int THUMBNAIL_EDGE = 480;
 
   /** Longest side stored for the guest-facing image. Larger originals are reduced to this. */
-  public static final int PREVIEW_EDGE = 3840;
+  public static final int PREVIEW_EDGE = 1920;
 
   /** Longest side decoded in memory. Bigger originals are subsampled down to about this size. */
   public static final int DECODE_EDGE = 4096;

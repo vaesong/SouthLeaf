@@ -72,6 +72,7 @@
           <image
             wx:if="{{!failedMedia[media.id || media.src]}}"
             src="{{media.src}}"
+            lazy-load="{{true}}"
             mode="{{layout === 'album' ? 'widthFix' : 'aspectFill'}}"
             data-arg0="{{media.id || media.src}}"
             binderror="handleMarkGalleryMediaFailedError"
