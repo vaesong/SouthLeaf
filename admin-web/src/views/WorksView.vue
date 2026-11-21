@@ -30,6 +30,8 @@ const orders = ref<Record<string, string[]>>({});
 const orderNotice = ref("");
 const dragging = ref("");
 const dropTarget = ref("");
+const pointer = ref<{ id: string; x: number; y: number; moved: boolean } | null>(null);
+let suppressNav = false;
 let orderGeneration = 0;
 const deleteTarget = ref<WorkView | null>(null);
 let createKey: string | null = null;
@@ -134,41 +136,55 @@ async function persistOrder(ids: string[]) {
   }
 }
 
-function moveWork(workId: string, delta: number) {
-  if (!canReorder.value) return;
-  const ids = inCategory.value.map((work) => work.workId);
-  const index = ids.indexOf(workId);
-  const next = index + delta;
-  if (index < 0 || next < 0 || next >= ids.length) return;
-  ids.splice(index, 1);
-  ids.splice(next, 0, workId);
-  void persistOrder(ids);
-}
-
-function startDrag(workId: string, event: DragEvent) {
-  if (!canReorder.value) return;
-  dragging.value = workId;
-  event.dataTransfer?.setData("text/plain", workId);
-  if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
-}
-
-function overWork(workId: string) {
-  if (!dragging.value || dragging.value === workId) return;
-  dropTarget.value = workId;
-}
-
-function dropWork(workId: string) {
-  const source = dragging.value;
-  dragging.value = "";
-  dropTarget.value = "";
-  if (!canReorder.value || !source || source === workId) return;
+function placeWork(source: string, target: string) {
+  if (!canReorder.value || source === target) return;
   const ids = inCategory.value.map((work) => work.workId);
   const from = ids.indexOf(source);
-  const to = ids.indexOf(workId);
+  const to = ids.indexOf(target);
   if (from < 0 || to < 0) return;
   ids.splice(from, 1);
   ids.splice(to, 0, source);
   void persistOrder(ids);
+}
+
+function cardPointerDown(workId: string, event: PointerEvent) {
+  if (!canReorder.value || event.button !== 0) return;
+  if ((event.target as HTMLElement | null)?.closest("button")) return;
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  pointer.value = { id: workId, x: event.clientX, y: event.clientY, moved: false };
+}
+
+function cardPointerMove(event: PointerEvent) {
+  const start = pointer.value;
+  if (!start || !canReorder.value) return;
+  if (!start.moved) {
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (dx * dx + dy * dy < 25) return;
+    start.moved = true;
+    dragging.value = start.id;
+  }
+  const hit = document.elementFromPoint(event.clientX, event.clientY);
+  const over = hit?.closest<HTMLElement>("[data-work-id]")?.dataset.workId ?? "";
+  dropTarget.value = over && over !== start.id ? over : "";
+}
+
+function cardPointerUp() {
+  const start = pointer.value;
+  const over = dropTarget.value;
+  pointer.value = null;
+  dragging.value = "";
+  dropTarget.value = "";
+  if (!start?.moved) return;
+  suppressNav = true;
+  if (over) placeWork(start.id, over);
+}
+
+function guardDragClick(event: MouseEvent) {
+  if (!suppressNav) return;
+  suppressNav = false;
+  event.preventDefault();
+  event.stopPropagation();
 }
 
 async function createWork() {
@@ -227,7 +243,7 @@ watch(
       <div>
         <h1>作品集</h1>
         <p>
-          每组作品单独发布。在分类里拖动或上下移动，小程序就按这个顺序显示。全部和每个分类各自一份顺序。
+          每组作品单独发布。按住作品拖到新的位置，小程序就按这个顺序显示。全部和每个分类各自一份顺序。
         </p>
       </div>
       <div class="actions">
@@ -284,23 +300,25 @@ watch(
     <p v-if="canEdit && !canReorder && !busy" class="hint">
       要调整顺序，先看这一分类的全部作品，并清空搜索。
     </p>
-    <p v-else-if="canReorder" class="hint">
-      拖动卡片，或用上移、下移。从左到右、从上到下就是小程序里的顺序。
-    </p>
+    <p v-else-if="canReorder" class="hint">按住作品拖动。从左到右、从上到下就是小程序里的顺序。</p>
     <p v-if="loading">正在读取作品…</p>
     <div v-else class="works" data-testid="works-table">
       <RouterLink
         v-for="work in visible"
         :key="work.workId"
         class="card work"
-        :class="{ drop: dropTarget === work.workId }"
+        :class="{
+          sortable: canReorder,
+          dragging: dragging === work.workId,
+          drop: dropTarget === work.workId,
+        }"
+        :data-work-id="work.workId"
         :to="`/works/${work.workId}`"
-        @dragover.prevent="overWork(work.workId)"
-        @drop.prevent="dropWork(work.workId)"
-        @dragend="
-          dragging = '';
-          dropTarget = '';
-        "
+        @pointerdown="cardPointerDown(work.workId, $event)"
+        @pointermove="cardPointerMove"
+        @pointerup="cardPointerUp"
+        @pointercancel="cardPointerUp"
+        @click.capture="guardDragClick"
       >
         <div class="ph">
           <MediaThumb :media-id="work.coverMediaId" quiet />
@@ -313,31 +331,6 @@ watch(
         <div class="work-body">
           <b>{{ work.title || "未命名" }}</b>
           <small>{{ businessLine(work) }} · {{ formatDate(work.updatedAt) }}更新</small>
-          <div v-if="canReorder" class="work-move">
-            <button
-              class="btn btn-ghost btn-sm"
-              type="button"
-              draggable="true"
-              @click.prevent.stop
-              @dragstart="startDrag(work.workId, $event)"
-            >
-              拖动
-            </button>
-            <button
-              class="btn btn-ghost btn-sm"
-              type="button"
-              @click.prevent.stop="moveWork(work.workId, -1)"
-            >
-              上移
-            </button>
-            <button
-              class="btn btn-ghost btn-sm"
-              type="button"
-              @click.prevent.stop="moveWork(work.workId, 1)"
-            >
-              下移
-            </button>
-          </div>
           <button
             v-if="canEdit"
             class="btn btn-danger-ghost"

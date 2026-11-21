@@ -35,20 +35,20 @@
           >{{business.name}}</view
         >
       </scroll-view>
-      <view class="layout-switch">
-        <button
-          data-arg0="{{'grid'}}"
-          bindtap="handleSelectLayoutTap"
-          class="layout-toggle {{layout === 'grid' ? 'on' : ''}}"
-          >{{copy.works.layoutGrid}}</button
-        >
-        <button
-          data-arg0="{{'editorial'}}"
-          bindtap="handleSelectLayoutTap2"
-          class="layout-toggle {{layout === 'editorial' ? 'on' : ''}}"
-          >{{copy.works.layoutEditorial}}</button
-        >
-      </view>
+      <button
+        aria-label="{{layoutLabel}}"
+        bindtap="handleCycleLayoutTap"
+        class="layout-toggle"
+      >
+        <view class="layout-mark {{layout}}">
+          <view class="mark-col"
+            ><view class="mark-bar"></view><view class="mark-bar"></view
+          ></view>
+          <view class="mark-col"
+            ><view class="mark-bar"></view><view class="mark-bar"></view
+          ></view>
+        </view>
+      </button>
     </view>
     <view wx:if="{{works.length && layout === 'grid'}}" class="waterfall">
       <view class="waterfall-col">

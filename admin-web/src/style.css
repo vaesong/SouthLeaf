@@ -1776,14 +1776,16 @@ a {
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
+.work.sortable {
+  cursor: grab;
+  touch-action: none;
+}
+.work.dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
 .work.drop {
   outline: 2px solid var(--accent, #8e5636);
-}
-.work-move {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
 }
 .work-body b {
   font-family: var(--serif);

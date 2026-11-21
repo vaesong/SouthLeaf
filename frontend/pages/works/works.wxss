@@ -7,31 +7,63 @@
 .filter-bar {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  box-sizing: border-box;
+  height: 88rpx;
+  padding: 8rpx 0 24rpx;
 }
 .filter-row {
   flex: 1;
-  min-width: 0;
-  width: auto;
-  height: 72rpx;
+  width: 0;
+  height: 56rpx;
   white-space: nowrap;
 }
-.layout-switch {
-  display: flex;
+.filter-bar .layout-toggle {
   flex: none;
-  align-items: center;
-  gap: 8rpx;
-}
-.layout-toggle {
+  align-self: center;
+  width: 56rpx;
+  min-width: 56rpx;
+  max-width: 56rpx;
+  height: 56rpx;
+  min-height: 56rpx;
+  max-height: 56rpx;
+  margin: 0 0 0 12rpx;
+  padding: 0;
   background: #ffffff;
-  color: #75685b;
-  font-size: 22rpx;
   box-shadow: 0 8rpx 24rpx -8rpx rgba(50, 35, 20, 0.06);
 }
-.layout-toggle.on {
-  background: #26201b;
-  color: #ffffff;
-  box-shadow: none;
+.layout-mark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3rpx;
+  width: 19rpx;
+  height: 22rpx;
+}
+.mark-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3rpx;
+  width: 8rpx;
+  height: 22rpx;
+}
+.mark-bar {
+  width: 8rpx;
+  border-radius: 2rpx;
+  background: #8e5636;
+}
+.layout-mark.grid .mark-col:first-child .mark-bar:first-child,
+.layout-mark.grid .mark-col:last-child .mark-bar:last-child {
+  height: 14rpx;
+}
+.layout-mark.grid .mark-col:first-child .mark-bar:last-child,
+.layout-mark.grid .mark-col:last-child .mark-bar:first-child {
+  height: 8rpx;
+}
+.layout-mark.editorial .mark-col {
+  justify-content: center;
+}
+.layout-mark.editorial .mark-bar {
+  height: 9rpx;
 }
 .filter-chip {
   margin-right: 16rpx;

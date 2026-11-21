@@ -86,8 +86,10 @@ test("native Page state uses explicit setData and keeps category layout without 
   assert.equal(calls[0].cursor, undefined);
   assert.equal(p.data.selectedBusinessId, "family");
   assert.equal(p.data.layout, "grid");
-  p.selectLayout("editorial");
+  p.cycleLayout();
   assert.equal(p.data.layout, "editorial");
+  p.cycleLayout();
+  assert.equal(p.data.layout, "grid");
   assert.equal(p.data.works[0].id, "fresh");
   assert.equal(p.data.dataMode, "demo");
   assert.ok(p.commits > 0);

@@ -1,6 +1,10 @@
 const { getBusinesses, getWorks } = require("../../api/public.js");
 const { createError } = require("../../api/api.js");
-const { readLayout, rememberLayout } = require("../../api/public-display.js");
+const {
+  readLayout,
+  rememberLayout,
+  nextLayout,
+} = require("../../api/public-display.js");
 const { ready, showing } = require("../../presentation/copy.js");
 const { commit } = require("../../presentation/page-state.js");
 const { workView } = require("../../presentation/views.js");
@@ -9,6 +13,10 @@ function present(data) {
   const copy = ready(data.copy);
   return {
     ...data,
+    layoutLabel:
+      data.layout === "grid"
+        ? copy.works.layoutGrid || ""
+        : copy.works.layoutEditorial || "",
     works,
     leftCol: works.filter((_, index) => index % 2 === 0),
     rightCol: works.filter((_, index) => index % 2 === 1),
@@ -180,6 +188,9 @@ Page({
     });
     rememberLayout("southleaf.works.layout", layout);
   },
+  cycleLayout() {
+    this.selectLayout(nextLayout(this.data.layout, ["grid", "editorial"]));
+  },
   markMediaFailed(id) {
     this.update({
       failedMedia: {
@@ -199,11 +210,8 @@ Page({
       url: "/pages/index/index",
     });
   },
-  handleSelectLayoutTap(event) {
-    this.selectLayout(event.currentTarget.dataset.arg0);
-  },
-  handleSelectLayoutTap2(event) {
-    this.selectLayout(event.currentTarget.dataset.arg0);
+  handleCycleLayoutTap(_event) {
+    this.cycleLayout();
   },
   handleSelectFilterTap(event) {
     this.selectFilter(event.currentTarget.dataset.arg0);
